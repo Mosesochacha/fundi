@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+:root {
+  --orange-950: #431407;
+  --orange-900: #7c2d12;
+  --orange-700: #c2410c;
+  --orange-500: #f97316;
+  --orange-300: #fdba74;
+  --orange-100: #ffedd5;
+  --orange-50:  #fff7ed;
+  --orange-25:  #fffaf5;
+  --cream:      #FDFAF6;
+  --coral:      #E05A2B;
+  --coral-lt:   #FEF0E8;
+}
+
+@theme inline {
+  --color-primary:    #f97316;
+  --color-primaryDark: #ea580c;
+  --color-error:      #ef4444;
+  --color-success:    #22c55e;
+  --color-cream:      #FDFAF6;
+  --color-coral:      #E05A2B;
+  --color-coral-lt:   #FEF0E8;
+}
+
+/* Font utilities — reference Next.js font CSS variables set on <body> */
+@layer utilities {
+  .font-playfair { font-family: var(--font-playfair); }
+  .font-dm-sans  { font-family: var(--font-dm-sans);  }
+}
+
+@utility scrollbar-hide {
+  &::-webkit-scrollbar { display: none; }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
