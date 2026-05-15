@@ -11,20 +11,12 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <SocialProof />
       </div>
 
-      {/* Mobile header strip */}
-      <div
-        className="md:hidden h-20 flex items-center justify-center flex-shrink-0"
-        style={{ background: "var(--orange-950)" }}
-      >
-        <span className="text-white text-2xl font-bold font-playfair">Fundi</span>
-      </div>
-
       {/* Right panel — form area */}
       <div
-        className="flex-1 flex items-center justify-center px-6 py-10 md:px-12"
+        className="flex-1 flex flex-col px-6 py-12 md:px-12 md:items-center md:justify-center min-h-screen md:min-h-0"
         style={{ background: "var(--cream)" }}
       >
-        <div className="w-full max-w-[440px]">{children}</div>
+        <div className="w-full max-w-[440px] mx-auto">{children}</div>
       </div>
     </div>
   );

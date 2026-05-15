@@ -5,9 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useState } from "react";
 import { motion } from "framer-motion";
-import { useVerifyEmailMutation, useResendVerificationMutation } from "@/store/apiSlice";
+import { useVerifyEmailMutation } from "@/store/apiSlice";
 import { useToastContext } from "@/context/ToastContext";
 import FormInput from "@/components/auth/FormInput";
 import Button from "@/components/ui/Button";
@@ -27,9 +26,7 @@ export default function VerifyEmailPage() {
   const email = searchParams.get("email") ?? "";
 
   const [verifyEmail, { isLoading }] = useVerifyEmailMutation();
-  const [resendVerification, { isLoading: isResending }] = useResendVerificationMutation();
-  const { success, error: toastError, info } = useToastContext();
-  const [resendCooldown, setResendCooldown] = useState(0);
+  const { success, error: toastError } = useToastContext();
 
   const {
     register,
@@ -55,23 +52,6 @@ export default function VerifyEmailPage() {
       } else {
         toastError(msg || "Verification failed. Please try again.");
       }
-    }
-  };
-
-  const handleResend = async () => {
-    if (resendCooldown > 0 || !email) return;
-    try {
-      await resendVerification({ email }).unwrap();
-      info("A new code has been sent to your email.");
-      setResendCooldown(60);
-      const interval = setInterval(() => {
-        setResendCooldown((s) => {
-          if (s <= 1) { clearInterval(interval); return 0; }
-          return s - 1;
-        });
-      }, 1000);
-    } catch {
-      toastError("Could not resend code. Please try again.");
     }
   };
 
@@ -108,25 +88,20 @@ export default function VerifyEmailPage() {
         </Button>
       </form>
 
-      <div className="text-center space-y-2">
-        <p className="text-[13px] text-gray-500 font-dm-sans">
-          Didn't get a code?{" "}
-          <button
-            type="button"
-            onClick={handleResend}
-            disabled={resendCooldown > 0 || isResending}
-            className="font-medium transition-colors disabled:text-gray-400"
-            style={{ color: resendCooldown > 0 ? undefined : "var(--orange-500)" }}
-          >
-            {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend code"}
-          </button>
+      <div className="rounded-xl bg-orange-50 border border-orange-100 px-4 py-4 space-y-2">
+        <p className="text-[13px] font-semibold text-orange-700 font-dm-sans">
+          This code expires in 10 minutes
         </p>
-        <p className="text-[13px] text-gray-400 font-dm-sans">
-          <Link href="/register" className="hover:text-gray-600 transition-colors">
-            ← Back to register
-          </Link>
+        <p className="text-[13px] text-orange-600 font-dm-sans leading-relaxed">
+          If the code expires before you use it, go back to register and sign up again to receive a fresh code. Make sure to check your spam or junk folder — sometimes verification emails land there.
         </p>
       </div>
+
+      <p className="text-center text-[13px] text-gray-400 font-dm-sans">
+        <Link href="/register" className="hover:text-gray-600 transition-colors">
+          ← Back to register
+        </Link>
+      </p>
     </motion.div>
   );
 }

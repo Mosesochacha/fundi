@@ -9,7 +9,7 @@ import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { setCredentials, logOut, type AuthUser, type AuthProfile } from "@/store/authSlice";
 import { useGetMeQuery } from "@/store/apiSlice";
 
-const AUTH_PATHS = ["/login", "/register", "/forgot-password"];
+const AUTH_PATHS = ["/login", "/register", "/forgot-password", "/verify-email", "/reset-password"];
 const FULL_CONTENT_PATHS = ["/settings"];
 const SETUP_PATHS = ["/setup"];
 

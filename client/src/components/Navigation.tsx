@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { Bell, Search, PenSquare, Hammer, ChevronDown } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { logOut } from "@/store/authSlice";
-import { apiSlice } from "@/store/apiSlice";
+import { apiSlice, useLogoutMutation } from "@/store/apiSlice";
 import FilterBar from "./FilterBar";
 
 export default function Navigation() {
@@ -15,11 +15,18 @@ export default function Navigation() {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
   const isFeed = pathname === "/feed";
+  const [logoutMutation] = useLogoutMutation();
 
-  const handleLogout = () => {
-    dispatch(logOut());
-    dispatch(apiSlice.util.resetApiState());
-    setMenuOpen(false);
+  const handleLogout = async () => {
+    try {
+      await logoutMutation().unwrap();
+    } catch {
+      // Cookie clearing may still succeed even if the request errors
+    } finally {
+      dispatch(logOut());
+      dispatch(apiSlice.util.resetApiState());
+      setMenuOpen(false);
+    }
   };
 
   return (

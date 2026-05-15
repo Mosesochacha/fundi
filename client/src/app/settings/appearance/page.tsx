@@ -10,7 +10,7 @@ import SettingsSection from "@/components/settings/SettingsSection";
 import Button from "@/components/ui/Button";
 
 const THEMES = [
-  { id: "orange", label: "Teal",   color: "#f97316" },
+  { id: "orange", label: "Orange", color: "#f97316" },
   { id: "coral",  label: "Coral",  color: "#E05A2B" },
   { id: "royal",  label: "Royal",  color: "#1D4ED8" },
   { id: "forest", label: "Forest", color: "#15803D" },

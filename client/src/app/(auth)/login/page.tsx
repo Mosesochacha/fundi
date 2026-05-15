@@ -37,6 +37,7 @@ export default function LoginPage() {
 
   const [hasError, setHasError] = useState(false);
   const [lockSecondsLeft, setLockSecondsLeft] = useState(0);
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
 
   const {
     register,
@@ -106,7 +107,13 @@ export default function LoginPage() {
       }
 
       if (status === 401) {
-        toastError("Incorrect email or password. Please try again.");
+        const msg = (err as { data?: { message?: string } })?.data?.message ?? "";
+        if (msg.toLowerCase().includes("verify")) {
+          setUnverifiedEmail(data.email.trim().toLowerCase());
+        } else {
+          setUnverifiedEmail(null);
+          toastError("Incorrect email or password. Please try again.");
+        }
       } else if (status === 429) {
         toastError("Too many attempts. Please wait a few minutes.");
       } else {
@@ -131,6 +138,22 @@ export default function LoginPage() {
         <div className="bg-coral-lt border border-coral/30 rounded-xl px-4 py-3 text-sm text-gray-700 font-dm-sans">
           Account locked. Try again in{" "}
           <span className="font-semibold text-coral">{formatLock(lockSecondsLeft)}</span>
+        </div>
+      )}
+
+      {unverifiedEmail && (
+        <div className="rounded-xl bg-orange-50 border border-orange-200 px-4 py-4 space-y-2">
+          <p className="text-[13px] font-semibold text-orange-700 font-dm-sans">Email not verified</p>
+          <p className="text-[13px] text-orange-600 font-dm-sans leading-relaxed">
+            Check your inbox for the 6-digit verification code we sent when you registered.
+          </p>
+          <Link
+            href={`/verify-email?email=${encodeURIComponent(unverifiedEmail)}`}
+            className="inline-block text-[13px] font-semibold font-dm-sans underline underline-offset-2"
+            style={{ color: "var(--orange-500)" }}
+          >
+            Enter verification code →
+          </Link>
         </div>
       )}
 

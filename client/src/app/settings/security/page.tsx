@@ -9,6 +9,7 @@ import {
   useRevokeSessionMutation,
   useRevokeAllSessionsMutation,
   useGetLoginHistoryQuery,
+  useResendVerificationMutation,
 } from "@/store/apiSlice";
 import { useAppSelector } from "@/store/hooks";
 import SettingsHeader from "@/components/settings/SettingsHeader";
@@ -44,6 +45,7 @@ function timeAgo(date: string) {
 export default function SecuritySettingsPage() {
   const { success, error } = useToastContext();
   const { user } = useAppSelector((s) => s.auth);
+  const [resendVerification, { isLoading: resending }] = useResendVerificationMutation();
 
   const [changePassword, { isLoading: changingPwd }] = useChangePasswordMutation();
   const [revokeSession] = useRevokeSessionMutation();
@@ -239,7 +241,23 @@ export default function SecuritySettingsPage() {
         >
           {user?.emailVerified
             ? <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">Verified</span>
-            : <button className="text-xs font-medium text-[#f97316]">Resend</button>
+            : (
+              <button
+                disabled={resending}
+                onClick={async () => {
+                  if (!user?.email) return;
+                  try {
+                    await resendVerification({ email: user.email }).unwrap();
+                    success("Verification email sent — check your inbox");
+                  } catch {
+                    error("Failed to send. Please try again.");
+                  }
+                }}
+                className="text-xs font-medium text-[#f97316] hover:text-orange-600 disabled:opacity-50 transition-colors"
+              >
+                {resending ? "Sending…" : "Resend"}
+              </button>
+            )
           }
         </SettingsRow>
       </SettingsSection>

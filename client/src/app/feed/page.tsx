@@ -5,6 +5,7 @@ import Link from "next/link";
 import { PenSquare } from "lucide-react";
 import { useAppSelector } from "@/store/hooks";
 import PostCard from "@/components/PostCard";
+import PostCardSkeleton from "@/components/PostCardSkeleton";
 import RightSidebar from "@/components/sidebar/RightSidebar";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:9000/api/v1";
@@ -90,10 +91,17 @@ export default function FeedPage() {
           {posts.map((post) => <PostCard key={post.id} post={post} />)}
         </div>
 
-        {/* Loading spinner */}
-        {loading && (
-          <div className="flex justify-center py-8">
-            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        {/* Skeleton — initial load only (no posts yet) */}
+        {loading && posts.length === 0 && (
+          <div className="space-y-4">
+            {Array.from({ length: 4 }).map((_, i) => <PostCardSkeleton key={i} />)}
+          </div>
+        )}
+
+        {/* Inline spinner — loading more at bottom */}
+        {loading && posts.length > 0 && (
+          <div className="flex justify-center py-6">
+            <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         )}
 

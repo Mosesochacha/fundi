@@ -37,8 +37,8 @@ export default function DangerZone() {
       if (!data.success) throw new Error(data.message);
       dispatch(logOut());
       router.push("/login");
-    } catch {
-      error("Failed to delete account. Please try again.");
+    } catch (e: any) {
+      error(e?.message || "Failed to delete account. Please try again.");
       setDeleting(false);
     }
   };
