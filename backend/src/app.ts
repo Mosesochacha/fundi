@@ -106,7 +106,7 @@ const API_VERSION = "/api/v1";
 app.use(API_VERSION, routes);
 
 // Health check for Render and uptime monitors
-app.get("/healthz", (req, res) => {
+app.get(["/health", "/healthz"], (req, res) => {
   res.status(200).json({ ok: true, uptime: process.uptime() });
 });
 
