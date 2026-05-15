@@ -22,6 +22,13 @@ export const csrfProtection: RequestHandler = (
     return next();
   }
 
+  // Bearer token in Authorization header: cross-site requests cannot forge custom headers,
+  // so CSRF does not apply regardless of whether the cookie is also present.
+  const authHeader = req.headers['authorization'];
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return next();
+  }
+
   // JWT only in Authorization: cross-site requests do not attach it; skip double-submit.
   if (!req.cookies?.[ACCESS_COOKIE_NAME]) {
     return next();
