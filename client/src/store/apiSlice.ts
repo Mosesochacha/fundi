@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { logOut } from "./authSlice";
+import { logOut, setCredentials } from "./authSlice";
+import type { RootState } from "./index";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:9000/api/v1";
 
@@ -7,15 +8,30 @@ const baseQuery = fetchBaseQuery({
   baseUrl: API_BASE,
   credentials: "include",
   prepareHeaders: (headers, { getState }) => {
-    const token = (getState() as { auth: { accessToken: string | null } }).auth.accessToken;
+    const token = (getState() as RootState).auth.accessToken;
     if (token) headers.set("authorization", `Bearer ${token}`);
     return headers;
   },
 });
 
 const baseQueryWithReauth: typeof baseQuery = async (args, api, extra) => {
-  const result = await baseQuery(args, api, extra);
-  if (result.error?.status === 401) api.dispatch(logOut());
+  let result = await baseQuery(args, api, extra);
+  if (result.error?.status === 401 || result.error?.status === 403) {
+    // Attempt silent refresh using the lot_r1 httpOnly cookie
+    const refreshResult = await baseQuery(
+      { url: "/auth/refresh", method: "POST" },
+      api,
+      extra
+    );
+    if (refreshResult.data) {
+      const newToken = (refreshResult.data as { data: { accessToken: string } }).data.accessToken;
+      const { user, profile } = (api.getState() as RootState).auth;
+      api.dispatch(setCredentials({ user: user!, profile, accessToken: newToken }));
+      result = await baseQuery(args, api, extra);
+    } else {
+      api.dispatch(logOut());
+    }
+  }
   return result;
 };
 
@@ -101,6 +117,18 @@ export const apiSlice = createApi({
     checkUsername: builder.query<ApiResponse, string>({
       query: (u) => `/profiles/check-username?u=${encodeURIComponent(u)}`,
     }),
+    checkUsernamePublic: builder.query<ApiResponse, string>({
+      query: (u) => `/public/check-username?u=${encodeURIComponent(u)}`,
+    }),
+
+    // Setup / onboarding
+    generateProfile: builder.mutation<ApiResponse, GenerateProfileInput>({
+      query: (data) => ({ url: "/generate/profile", method: "POST", body: data }),
+    }),
+    publishProfile: builder.mutation<ApiResponse, void>({
+      query: () => ({ url: "/profile/publish", method: "POST" }),
+      invalidatesTags: ["User", "Profile"],
+    }),
 
     // Settings — notifications
     getNotifications: builder.query<ApiResponse, void>({
@@ -180,6 +208,9 @@ export const {
   useToggleFollowMutation,
   useUpdateProfileMutation,
   useCheckUsernameQuery,
+  useCheckUsernamePublicQuery,
+  useGenerateProfileMutation,
+  usePublishProfileMutation,
   useGetNotificationsQuery,
   useUpdateNotificationsMutation,
   useGetPrivacyQuery,
@@ -204,4 +235,8 @@ interface UpdateProfileInput {
   bio?: string; tagline?: string; phone?: string; whatsapp?: string;
   yearsExperience?: number; services?: string[]; theme?: string;
   displayNameFormat?: string; profileLayout?: string;
+}
+interface GenerateProfileInput {
+  fullName?: string; profession: string; location?: string;
+  yearsExperience?: number; differentiator?: string;
 }

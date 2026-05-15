@@ -11,6 +11,48 @@ const getGroq = (): Groq => {
   return _groq;
 };
 
+interface GenerateProfileInput {
+  fullName?: string;
+  profession: string;
+  location?: string;
+  yearsExperience?: number;
+  differentiator?: string;
+}
+
+export const generateProfile = async ({ fullName, profession, location, yearsExperience, differentiator }: GenerateProfileInput) => {
+  const experience = yearsExperience ? `${yearsExperience} years of experience` : 'some experience';
+  const loc = location || 'Kenya';
+  const name = fullName || 'the professional';
+
+  const completion = await getGroq().chat.completions.create({
+    model: 'llama-3.1-8b-instant',
+    messages: [
+      {
+        role: 'system',
+        content: `You are helping a ${profession} in ${loc}, Kenya create a professional profile. Write in first person (e.g. "I am..."). Be warm, confident, and specific. Return ONLY valid JSON with these exact keys: tagline, bio, services, callToAction. services must be an array of 4-6 short strings. bio must be 2-3 sentences (max 200 words). tagline must be under 80 characters.`,
+      },
+      {
+        role: 'user',
+        content: `Name: ${name}\nProfession: ${profession}\nLocation: ${loc}\nExperience: ${experience}\nWhat makes me stand out: ${differentiator || 'quality work and professionalism'}\n\nGenerate my profile. Return only JSON.`,
+      },
+    ],
+    temperature: 0.7,
+    max_tokens: 400,
+  });
+
+  const raw = completion.choices[0].message.content?.trim() ?? '{}';
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('Invalid AI response');
+  const parsed = JSON.parse(jsonMatch[0]);
+
+  return {
+    tagline: String(parsed.tagline || `${profession} in ${loc}`).slice(0, 100),
+    bio: String(parsed.bio || ''),
+    services: Array.isArray(parsed.services) ? parsed.services.slice(0, 6).map(String) : [],
+    callToAction: String(parsed.callToAction || 'Get in touch'),
+  };
+};
+
 export const polishPost = async (roughText: string, profession: string, postType: string) => {
   const completion = await getGroq().chat.completions.create({
     model: 'llama-3.1-8b-instant',

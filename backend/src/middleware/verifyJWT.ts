@@ -23,12 +23,10 @@ const verifyJWT: RequestHandler = async (
   next: NextFunction
 ): Promise<void> => {
   const authHeader = req.headers["authorization"];
-  const cookieToken = (req as any).cookies?.lot_a1;
-  const headerToken =
+  const token =
     authHeader && authHeader.startsWith("Bearer ")
       ? authHeader.split(" ")[1]
       : null;
-  const token = cookieToken || headerToken;
 
   if (!token) {
     // Don't expose implementation details - generic error
@@ -133,12 +131,10 @@ export const optionalVerifyJWT: RequestHandler = async (
   next: NextFunction
 ): Promise<void> => {
   const authHeader = req.headers["authorization"];
-  const cookieToken = (req as any).cookies?.lot_a1;
-  const headerToken =
+  const token =
     authHeader && authHeader.startsWith("Bearer ")
       ? authHeader.split(" ")[1]
       : null;
-  const token = cookieToken || headerToken;
 
   // If no token, continue without setting req.user
   if (!token) {

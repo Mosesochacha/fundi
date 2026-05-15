@@ -4,10 +4,10 @@ import OTPService from '../services/otp.service';
 import { sendSuccess, sendError, asyncHandler, formatUserResponse } from '../utils/helpers';
 import { HTTP_STATUS, RESPONSE_MESSAGES } from '../utils/constants';
 import { AuthenticatedRequest } from '../middleware/verifyJWT';
+import { setAuthCookie, clearAuthCookies } from '../utils/authCookies';
 import db from '../models';
 
-const COOKIE_NAME = 'lot_a1';
-const COOKIE_MAX_AGE = 12 * 24 * 60 * 60 * 1000; // 12 days
+const REFRESH_COOKIE = 'lot_r1';
 
 class AuthController {
   register = asyncHandler(async (req: Request, res: Response) => {
@@ -95,13 +95,7 @@ class AuthController {
         req.ip || '',
         req.get('user-agent') || ''
       );
-      res.cookie(COOKIE_NAME, result.tokens.accessToken, {
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: COOKIE_MAX_AGE,
-        path: '/',
-      });
+      setAuthCookie(res, 'lot_r1', result.tokens.refreshToken, req);
       return sendSuccess(res, RESPONSE_MESSAGES.LOGIN_SUCCESS, result);
     } catch (err: any) {
       const msg: string = err?.message ?? '';
@@ -149,8 +143,31 @@ class AuthController {
   });
 
   logout = asyncHandler(async (req: Request, res: Response) => {
-    res.clearCookie(COOKIE_NAME, { path: '/' });
+    const refreshToken = (req as any).cookies?.lot_r1;
+    if (refreshToken) {
+      await AuthService.logout(refreshToken);
+    }
+    clearAuthCookies(res, req); // clears lot_a1, lot_r1, lot_c1 with correct domain
     return sendSuccess(res, 'Logged out successfully');
+  });
+
+  refresh = asyncHandler(async (req: Request, res: Response) => {
+    const refreshToken = (req as any).cookies?.[REFRESH_COOKIE];
+    if (!refreshToken) {
+      return sendError(res, HTTP_STATUS.UNAUTHORIZED, 'Session expired. Please sign in again.');
+    }
+    try {
+      const tokens = await AuthService.refreshToken(
+        refreshToken,
+        req.ip || '',
+        req.get('user-agent') || ''
+      );
+      setAuthCookie(res, 'lot_r1', tokens.refreshToken, req);
+      return sendSuccess(res, 'Token refreshed', { accessToken: tokens.accessToken });
+    } catch {
+      clearAuthCookies(res, req);
+      return sendError(res, HTTP_STATUS.UNAUTHORIZED, 'Session expired. Please sign in again.');
+    }
   });
 
   me = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
@@ -181,7 +198,7 @@ class AuthController {
     }
     try {
       await AuthService.changePassword(userId, currentPassword, newPassword);
-      res.clearCookie(COOKIE_NAME, { path: '/' });
+      clearAuthCookies(res, req);
       return sendSuccess(res, 'Password changed. Please sign in again.');
     } catch (err: any) {
       if (err?.message === 'Current password is incorrect') {
@@ -222,7 +239,7 @@ class AuthController {
     }
     try {
       await AuthService.deleteAccount(userId, 'User requested deletion');
-      res.clearCookie(COOKIE_NAME, { path: '/' });
+      clearAuthCookies(res, req);
       return sendSuccess(res, 'Account deleted successfully');
     } catch (err: any) {
       return sendError(res, HTTP_STATUS.INTERNAL_SERVER_ERROR, RESPONSE_MESSAGES.SERVER_ERROR);

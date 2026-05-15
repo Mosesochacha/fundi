@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Navigation from "./Navigation";
 import LeftSidebar from "./sidebar/LeftSidebar";
 import BottomNav from "./BottomNav";
@@ -11,6 +11,7 @@ import { useGetMeQuery } from "@/store/apiSlice";
 
 const AUTH_PATHS = ["/login", "/register", "/forgot-password"];
 const FULL_CONTENT_PATHS = ["/settings"];
+const SETUP_PATHS = ["/setup"];
 
 function SessionRestorer() {
   const dispatch = useAppDispatch();
@@ -30,19 +31,52 @@ function SessionRestorer() {
   return null;
 }
 
+function OnboardingGuard() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { isLoggedIn, user } = useAppSelector((s) => s.auth);
+  const isAuth = AUTH_PATHS.some((p) => pathname.startsWith(p));
+  const isSetup = SETUP_PATHS.some((p) => pathname.startsWith(p));
+
+  useEffect(() => {
+    if (!isLoggedIn || isAuth) return;
+    if (!user?.isOnboarded && !isSetup) {
+      router.replace("/setup");
+    } else if (user?.isOnboarded && pathname === "/setup") {
+      // Only redirect from the choice screen, not from mid-flow or complete pages
+      router.replace("/feed");
+    }
+  }, [isLoggedIn, user?.isOnboarded, isSetup, isAuth, pathname, router]);
+
+  return null;
+}
+
 export default function LayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { isLoggedIn } = useAppSelector((s) => s.auth);
   const isAuth = AUTH_PATHS.some((p) => pathname.startsWith(p));
   const isFullContent = FULL_CONTENT_PATHS.some((p) => pathname.startsWith(p));
+  const isSetup = SETUP_PATHS.some((p) => pathname.startsWith(p));
 
   if (isAuth) return <>{children}</>;
+
+  // Setup flow: fullscreen, no nav/sidebar
+  if (isSetup) {
+    return (
+      <>
+        <SessionRestorer />
+        <OnboardingGuard />
+        {children}
+      </>
+    );
+  }
 
   // Settings and other full-content pages: no sidebar, no container padding
   if (isFullContent) {
     return (
       <>
         <SessionRestorer />
+        <OnboardingGuard />
         <Navigation />
         <div className="min-h-screen" style={{ background: "var(--orange-25)" }}>
           <main className="pb-16 lg:pb-0">{children}</main>
@@ -55,6 +89,7 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
   return (
     <>
       <SessionRestorer />
+      <OnboardingGuard />
       <Navigation />
       <div className="min-h-screen" style={{ background: "var(--orange-25)" }}>
         {isLoggedIn ? (

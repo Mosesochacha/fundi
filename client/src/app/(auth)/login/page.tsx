@@ -64,12 +64,31 @@ export default function LoginPage() {
       dispatch(setCredentials({ user, profile, accessToken: tokens.accessToken }));
       localStorage.removeItem(ATTEMPTS_KEY);
       localStorage.removeItem(LOCKED_KEY);
-      success("Welcome back! Taking you to your dashboard...");
-      router.push("/feed");
+      if (!user.isOnboarded) {
+        router.push("/setup");
+      } else {
+        success("Welcome back! Taking you to your dashboard...");
+        router.push("/feed");
+      }
     } catch (err) {
+      const status = (err as { status?: number })?.status;
+
+      // Server/network errors are not the user's fault — don't count as failed attempts
+      if (!status || status >= 500) {
+        setHasError(true);
+        setTimeout(() => setHasError(false), 500);
+        toastError(
+          status
+            ? "Something went wrong on our end. Please try again in a moment."
+            : "Connection error. Please check your internet."
+        );
+        return;
+      }
+
       setHasError(true);
       setTimeout(() => setHasError(false), 500);
 
+      // Only count 401/403 as failed login attempts
       const attempts = (Number(localStorage.getItem(ATTEMPTS_KEY) ?? 0)) + 1;
       localStorage.setItem(ATTEMPTS_KEY, String(attempts));
 
@@ -86,15 +105,13 @@ export default function LoginPage() {
         warning(`${remaining} attempt${remaining === 1 ? "" : "s"} remaining before temporary lockout.`);
       }
 
-      const msg = (err as { data?: { message?: string } })?.data?.message ?? "";
-      if (msg.toLowerCase().includes("invalid") || msg.toLowerCase().includes("incorrect") || msg.toLowerCase().includes("credentials")) {
+      if (status === 401) {
         toastError("Incorrect email or password. Please try again.");
-      } else if (msg.toLowerCase().includes("rate") || msg.toLowerCase().includes("limit")) {
-        toastError("Too many attempts. Please wait 5 minutes.");
-      } else if (!msg) {
-        toastError("Connection error. Please check your internet.");
+      } else if (status === 429) {
+        toastError("Too many attempts. Please wait a few minutes.");
       } else {
-        toastError(msg);
+        const msg = (err as { data?: { message?: string } })?.data?.message ?? "";
+        toastError(msg || "Something went wrong. Please try again.");
       }
     }
   };
