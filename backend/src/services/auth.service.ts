@@ -55,7 +55,7 @@ class AuthService {
           email,
           passwordHash,
           role: role || 'user',
-          emailVerified: true,
+          emailVerified: false,
           status: 'active',
           termsAccepted: !!termsAccepted,
           termsAcceptedAt: termsAccepted ? new Date() : null,

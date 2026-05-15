@@ -1,4 +1,5 @@
 // backend/sequelize.config.js
+require('dotenv').config();
 const isProduction = process.env.NODE_ENV === 'production';
 
 // Register ts-node for dev

@@ -54,6 +54,18 @@ export const apiSlice = createApi({
       query: () => "/auth/me",
       providesTags: ["User"],
     }),
+    verifyEmail: builder.mutation<ApiResponse, { email: string; code: string }>({
+      query: (data) => ({ url: "/auth/verify-email", method: "POST", body: data }),
+    }),
+    resendVerification: builder.mutation<ApiResponse, { email: string }>({
+      query: (data) => ({ url: "/auth/resend-verification", method: "POST", body: data }),
+    }),
+    forgotPassword: builder.mutation<ApiResponse, { email: string }>({
+      query: (data) => ({ url: "/auth/forgot-password", method: "POST", body: data }),
+    }),
+    resetPassword: builder.mutation<ApiResponse, { token: string; newPassword: string }>({
+      query: (data) => ({ url: "/auth/reset-password", method: "POST", body: data }),
+    }),
 
     // Feed
     getFeed: builder.query<ApiResponse, { type?: string; page?: number; limit?: number }>({
@@ -195,6 +207,10 @@ export const {
   useLoginMutation,
   useLogoutMutation,
   useGetMeQuery,
+  useVerifyEmailMutation,
+  useResendVerificationMutation,
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
   useGetFeedQuery,
   useGetPostQuery,
   useCreatePostMutation,

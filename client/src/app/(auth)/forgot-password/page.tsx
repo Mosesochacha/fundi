@@ -1,19 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion, AnimatePresence } from "framer-motion";
+import { useForgotPasswordMutation } from "@/store/apiSlice";
+import { useToastContext } from "@/context/ToastContext";
 import FormInput from "@/components/auth/FormInput";
 import Button from "@/components/ui/Button";
 import PageHeader from "@/components/ui/PageHeader";
 
-const forgotSchema = z.object({
+const schema = z.object({
   email: z.string().email("Please enter a valid email address"),
 });
-type ForgotFormValues = z.infer<typeof forgotSchema>;
+type FormValues = z.infer<typeof schema>;
 
 const EnvelopeIcon = () => (
   <svg width="80" height="80" viewBox="0 0 80 80" fill="none" aria-hidden="true">
@@ -22,33 +23,26 @@ const EnvelopeIcon = () => (
       d="M16 28C16 25.8 17.8 24 20 24H60C62.2 24 64 25.8 64 28V52C64 54.2 62.2 56 60 56H20C17.8 56 16 54.2 16 52V28Z"
       stroke="#f97316" strokeWidth="2.5" strokeLinejoin="round"
     />
-    <path
-      d="M16 28L40 44L64 28"
-      stroke="#f97316" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-    />
+    <path d="M16 28L40 44L64 28" stroke="#f97316" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
 export default function ForgotPasswordPage() {
-  const [sent, setSent] = useState(false);
-  const [sentEmail, setSentEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [forgotPassword, { isLoading, isSuccess }] = useForgotPasswordMutation();
+  const { error: toastError } = useToastContext();
 
   const {
     register,
     handleSubmit,
+    getValues,
     formState: { errors },
-  } = useForm<ForgotFormValues>({ resolver: zodResolver(forgotSchema) });
+  } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
-  const onSubmit = async (data: ForgotFormValues) => {
-    setIsLoading(true);
+  const onSubmit = async (data: FormValues) => {
     try {
-      // TODO: wire to backend /auth/forgot-password endpoint when added
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      setSentEmail(data.email.trim());
-      setSent(true);
-    } finally {
-      setIsLoading(false);
+      await forgotPassword({ email: data.email.trim().toLowerCase() }).unwrap();
+    } catch {
+      toastError("Something went wrong. Please try again.");
     }
   };
 
@@ -59,7 +53,7 @@ export default function ForgotPasswordPage() {
       transition={{ duration: 0.35, ease: "easeOut" }}
     >
       <AnimatePresence mode="wait">
-        {!sent ? (
+        {!isSuccess ? (
           <motion.div
             key="form"
             initial={{ opacity: 0 }}
@@ -69,7 +63,7 @@ export default function ForgotPasswordPage() {
           >
             <PageHeader
               title="Reset your password"
-              subtitle="Enter your email and we will send you a link"
+              subtitle="Enter your email and we'll send you a reset link"
             />
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
@@ -109,29 +103,24 @@ export default function ForgotPasswordPage() {
             >
               <EnvelopeIcon />
             </motion.div>
-
             <div>
               <h1 className="text-[28px] font-bold text-gray-900 font-playfair leading-tight">
-                Reset link sent
+                Check your email
               </h1>
               <p className="text-[15px] text-gray-600 mt-3 font-dm-sans leading-relaxed">
-                Check your email for a link to reset your password.
-                <br />
-                <span className="font-semibold text-gray-800">{sentEmail}</span>
+                We sent a reset link to{" "}
+                <span className="font-semibold text-gray-800">{getValues("email")}</span>.
+                Click the link in the email to set a new password.
               </p>
             </div>
-
             <p className="text-[13px] text-gray-400 italic font-dm-sans">
-              Check your spam folder if you do not see it within 2 minutes.
+              Check your spam folder if you don't see it within 2 minutes.
             </p>
-
-            <Link
-              href="/login"
-              className="block w-full h-[52px] rounded-[10px] border-[1.5px] border-[#f97316] text-[15px] font-semibold font-dm-sans transition-all duration-200 flex items-center justify-center"
-              style={{ color: "var(--orange-500)" }}
-            >
-              Back to login
-            </Link>
+            <p className="text-[13px] text-gray-500 font-dm-sans">
+              <Link href="/login" className="hover:text-gray-600 transition-colors">
+                ← Back to login
+              </Link>
+            </p>
           </motion.div>
         )}
       </AnimatePresence>

@@ -71,8 +71,8 @@ export default function RegisterPage() {
         ageConfirmed: data.ageConfirmed,
       }).unwrap();
 
-      success("Account created! Please sign in.");
-      router.push("/login");
+      success("Account created! Please verify your email.");
+      router.push(`/verify-email?email=${encodeURIComponent(data.email.trim().toLowerCase())}`);
     } catch (err: any) {
       shake();
       toastError(err?.data?.message || "Registration failed. Please try again.");

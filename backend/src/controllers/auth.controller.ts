@@ -1,11 +1,14 @@
+import crypto from 'crypto';
 import { Request, Response } from 'express';
 import AuthService from '../services/auth.service';
 import OTPService from '../services/otp.service';
-import { sendSuccess, sendError, asyncHandler, formatUserResponse } from '../utils/helpers';
+import { sendSuccess, sendError, asyncHandler, formatUserResponse, hashString } from '../utils/helpers';
 import { HTTP_STATUS, RESPONSE_MESSAGES } from '../utils/constants';
 import { AuthenticatedRequest } from '../middleware/verifyJWT';
 import { setAuthCookie, clearAuthCookies } from '../utils/authCookies';
 import db from '../models';
+import logger from '../utils/logger';
+import emailService from '../services/email.service';
 
 const REFRESH_COOKIE = 'lot_r1';
 
@@ -59,6 +62,12 @@ class AuthController {
         termsAccepted: !!termsAccepted,
         ageConfirmed: !!ageConfirmed,
       });
+
+      // Send verification OTP (non-blocking — registration succeeds regardless)
+      OTPService.generateOTP(email.toLowerCase().trim(), 'verification').catch((err) => {
+        logger.warn('Failed to send verification OTP after register', { email, err });
+      });
+
       return sendSuccess(res, RESPONSE_MESSAGES.USER_CREATED, result);
     } catch (err: any) {
       console.error('Register error:', err);
@@ -126,18 +135,27 @@ class AuthController {
     }
 
     // Always return the same message — don't reveal whether the email exists
-    const message = 'If an account with that email exists, a reset code has been sent.';
+    const message = 'If an account with that email exists, a reset link has been sent.';
 
-    const userExists = await AuthService.checkUserExists(email.toLowerCase().trim());
-    if (!userExists) {
-      return sendSuccess(res, message);
-    }
+    const normalizedEmail = email.toLowerCase().trim();
+    const user = await db.User.findOne({ where: { email: normalizedEmail } });
+    if (!user) return sendSuccess(res, message);
 
-    const result = await OTPService.generateOTP(email.toLowerCase().trim(), 'reset');
-    if (!result.success) {
-      // Rate-limited — still return 200 to avoid enumeration
-      return sendSuccess(res, message);
-    }
+    // Invalidate existing unused tokens
+    await (db.PasswordResetToken as any).update(
+      { isUsed: true },
+      { where: { userId: user.id, isUsed: false } }
+    );
+
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const tokenHash = hashString(rawToken);
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+    await (db.PasswordResetToken as any).create({ userId: user.id, tokenHash, expiresAt, isUsed: false });
+
+    emailService.sendPasswordResetEmail(normalizedEmail, rawToken, user.firstName ?? undefined).catch((err: any) => {
+      logger.warn('[Auth] Failed to send password reset email', { email: normalizedEmail, err });
+    });
 
     return sendSuccess(res, message);
   });
@@ -247,24 +265,67 @@ class AuthController {
   });
 
   resetPassword = asyncHandler(async (req: Request, res: Response) => {
-    const { email, code, newPassword } = req.body;
+    const { token, newPassword } = req.body;
 
-    if (!email || !code || !newPassword) {
-      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Email, code, and newPassword are required');
+    if (!token || !newPassword) {
+      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Token and newPassword are required');
     }
 
     if (newPassword.length < 8) {
       return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Password must be at least 8 characters');
     }
 
-    const verification = await OTPService.verifyOTP(email.toLowerCase().trim(), code, 'reset');
+    const tokenHash = hashString(token);
+    const resetToken = await (db.PasswordResetToken as any).findOne({ where: { tokenHash, isUsed: false } });
+
+    if (!resetToken || new Date(resetToken.expiresAt) < new Date()) {
+      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'This reset link is invalid or has expired.');
+    }
+
+    await resetToken.update({ isUsed: true });
+    await AuthService.resetPasswordByUserId(resetToken.userId, newPassword);
+
+    return sendSuccess(res, 'Password reset successfully. You can now log in with your new password.');
+  });
+
+  verifyEmail = asyncHandler(async (req: Request, res: Response) => {
+    const { email, code } = req.body;
+
+    if (!email || !code) {
+      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Email and code are required');
+    }
+
+    const verification = await OTPService.verifyOTP(email.toLowerCase().trim(), code, 'verification');
     if (!verification.success) {
       return sendError(res, HTTP_STATUS.BAD_REQUEST, verification.message);
     }
 
-    await AuthService.resetPassword(email.toLowerCase().trim(), newPassword);
+    await AuthService.markEmailAsVerified(email.toLowerCase().trim());
+    return sendSuccess(res, 'Email verified successfully. You can now sign in.');
+  });
 
-    return sendSuccess(res, 'Password reset successfully. You can now log in with your new password.');
+  resendVerification = asyncHandler(async (req: Request, res: Response) => {
+    const { email } = req.body;
+
+    if (!email) {
+      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Email is required');
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Please provide a valid email address');
+    }
+
+    // Always return the same message — don't reveal whether the email exists
+    const message = 'If your account exists and is unverified, a new code has been sent.';
+
+    const userExists = await AuthService.checkUserExists(email.toLowerCase().trim());
+    if (!userExists) return sendSuccess(res, message);
+
+    const result = await OTPService.generateOTP(email.toLowerCase().trim(), 'verification');
+    if (!result.success) return sendSuccess(res, message); // rate limited — still 200
+
+    return sendSuccess(res, message);
   });
 }
 
