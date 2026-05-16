@@ -13,6 +13,7 @@ import { useGetMeQuery } from "@/store/apiSlice";
 const AUTH_PATHS = ["/login", "/register", "/forgot-password", "/verify-email", "/reset-password"];
 const FULL_CONTENT_PATHS = ["/settings", "/messages"];
 const SETUP_PATHS = ["/setup"];
+const LANDING_PATHS = ["/"];
 
 function SessionRestorer() {
   const dispatch = useAppDispatch();
@@ -60,6 +61,9 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
   const isSetup = SETUP_PATHS.some((p) => pathname.startsWith(p));
 
   if (isAuth) return <>{children}</>;
+
+  const isLanding = LANDING_PATHS.includes(pathname);
+  if (isLanding) return <>{children}</>;
 
   // Setup flow: fullscreen, no nav/sidebar
   if (isSetup) {
