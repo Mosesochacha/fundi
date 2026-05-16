@@ -2,12 +2,10 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import { useAppSelector, useAppDispatch } from "@/store/hooks";
-import { setPostType } from "@/store/feedSlice";
+import { useAppSelector } from "@/store/hooks";
 import PostCard from "@/components/PostCard";
 import PostCardSkeleton from "@/components/PostCardSkeleton";
 import RightSidebar from "@/components/sidebar/RightSidebar";
-import FeedFilter from "@/components/FeedFilter";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:9000/api/v1";
 
@@ -24,7 +22,6 @@ interface Post {
 }
 
 export default function FeedPage() {
-  const dispatch = useAppDispatch();
   const { isLoggedIn, accessToken, profile } = useAppSelector((s) => s.auth);
   const token = accessToken;
   const { postType, dateRange, profession, location } = useAppSelector((s) => s.feed);
@@ -103,9 +100,6 @@ export default function FeedPage() {
             <span className="text-sm text-gray-400 font-dm-sans">Share your work or a tip...</span>
           </Link>
         )}
-
-        {/* Filter tabs */}
-        <FeedFilter active={postType} onChange={(v) => dispatch(setPostType(v))} />
 
         {/* Post list */}
         <div className="space-y-4">
