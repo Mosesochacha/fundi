@@ -107,7 +107,7 @@ export default function NewPostPage() {
       const payload = { content, postType, images, ...(scheduleEnabled && scheduledAt ? { scheduledAt: new Date(scheduledAt).toISOString() } : {}) };
 
       const res = await createPost(payload).unwrap();
-      const data = (res as { data: { id: string; status: string } }).data;
+      const data = (res as { data: { id: string; slug: string; status: string } }).data;
 
       posthog.capture("post_created", { postType, scheduled: data.status === "SCHEDULED", hasImages: images.length > 0 });
 
@@ -115,7 +115,7 @@ export default function NewPostPage() {
         toastSuccess("Post scheduled!");
         router.push("/feed");
       } else {
-        router.push(`/post/${data.id}`);
+        router.push(`/post/${data.slug}`);
       }
     } catch (err) {
       toastError((err as { data?: { error?: string } })?.data?.error || "Failed to publish post.");
