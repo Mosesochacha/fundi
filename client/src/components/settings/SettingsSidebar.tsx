@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  User, Settings, Lock, Bell, Palette, Eye, CreditCard, LogOut
+  User, Settings, Lock, Bell, Palette, Eye, CreditCard, LogOut, BarChart2
 } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { logOut } from "@/store/authSlice";
@@ -13,6 +13,7 @@ const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:9000/api/v1";
 
 const NAV_ITEMS = [
   { href: "/settings/profile",       label: "Profile",       icon: User },
+  { href: "/settings/analytics",     label: "Analytics",     icon: BarChart2 },
   { href: "/settings/account",       label: "Account",       icon: Settings },
   { href: "/settings/security",      label: "Security",      icon: Lock },
   { href: "/settings/notifications", label: "Notifications", icon: Bell },

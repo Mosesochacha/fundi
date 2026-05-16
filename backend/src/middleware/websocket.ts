@@ -1,6 +1,5 @@
 import { Server as SocketIOServer } from "socket.io";
 import type { Server as HTTPServer } from "http";
-import db from "../models";
 
 let io: SocketIOServer | undefined;
 
@@ -12,24 +11,20 @@ export const setupWebSocket = (server: HTTPServer): void => {
     },
   });
 
-  io.on("connection", async (socket) => {
-    const userId = socket.handshake.query.userId as string;
-    
-    // Minimal: personal room join for notifications only
+  io.on("connection", (socket) => {
+    // Join personal room for notifications and messages
     socket.on("join", (userId: string) => {
       socket.join(String(userId));
     });
 
-    socket.on("disconnect", (reason) => {
-      // Connection closed
+    // Typing indicators — relay to the other participant's room
+    socket.on("typing", ({ conversationId, toUserId, isTyping }: { conversationId: string; toUserId: string; isTyping: boolean }) => {
+      socket.to(String(toUserId)).emit("typing", { conversationId, isTyping });
     });
 
-    socket.on("error", (error) => {
-      // Socket error handled
-    });
+    socket.on("disconnect", () => {});
+    socket.on("error", () => {});
   });
 };
 
 export const getIo = (): SocketIOServer | undefined => io;
-
-

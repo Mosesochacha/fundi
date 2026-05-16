@@ -7,7 +7,7 @@ import { optimizeBannerImage } from '../utils/imageOptimizer';
 import logger from '../utils/logger';
 
 // Ensure upload directories exist
-const uploadDirs = ['uploads/avatars', 'uploads/documents', 'uploads/receipts', 'uploads/temp', 'uploads/logos', 'uploads/banners', 'uploads/log', 'uploads/banner'];
+const uploadDirs = ['uploads/avatars', 'uploads/documents', 'uploads/receipts', 'uploads/temp', 'uploads/logos', 'uploads/banners', 'uploads/log', 'uploads/banner', 'uploads/work'];
 uploadDirs.forEach(dir => {
   const fullPath = path.join(__dirname, '..', '..', dir);
   if (!fs.existsSync(fullPath)) {
@@ -34,6 +34,8 @@ const storage = multer.diskStorage({
       uploadPath = 'uploads/logos';
     } else if (file.fieldname === 'banner') {
       uploadPath = 'uploads/banners';
+    } else if (file.fieldname === 'work') {
+      uploadPath = 'uploads/work';
     } else if (file.fieldname === 'favicon') {
       uploadPath = 'uploads/favicons';
     }
@@ -53,7 +55,7 @@ const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilt
   const extname = path.extname(file.originalname).toLowerCase();
   const mimetype = file.mimetype;
 
-  if (file.fieldname === 'avatar' || file.fieldname === 'logo' || file.fieldname === 'banner' || file.fieldname === 'favicon') {
+  if (file.fieldname === 'avatar' || file.fieldname === 'logo' || file.fieldname === 'banner' || file.fieldname === 'favicon' || file.fieldname === 'work') {
     if (allowedImageTypes.test(extname) && (mimetype.startsWith('image/') || mimetype === 'image/vnd.microsoft.icon')) {
       return cb(null, true);
     } else {
@@ -134,6 +136,7 @@ export const uploadBanner = (req: Request, res: Response, next: NextFunction) =>
 };
 
 export const uploadFavicon = upload.single('favicon');
+export const uploadWork = upload.single('work');
 export const uploadMultiple = upload.array('files', 5);
 
 export const cleanupFile = (filePath: string): void => {

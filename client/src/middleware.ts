@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const PROTECTED = ["/feed", "/setup", "/settings", "/post"];
+const PROTECTED = ["/feed", "/setup", "/settings", "/post", "/messages"];
 const AUTH_ONLY = ["/login", "/register", "/forgot-password", "/reset-password", "/verify-email"];
 
 export function middleware(request: NextRequest) {
@@ -32,6 +32,7 @@ export const config = {
     "/setup/:path*",
     "/settings/:path*",
     "/post/:path*",
+    "/messages/:path*",
     "/login",
     "/register",
     "/forgot-password",

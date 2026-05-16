@@ -17,7 +17,7 @@ class OTPService {
   private readonly OTP_LENGTH = 6;
   private readonly OTP_EXPIRY = 600; // 10 minutes
   private readonly MAX_ATTEMPTS = 3;
-  private readonly RATE_LIMIT_WINDOW = 300; // 5 minutes
+  private readonly RATE_LIMIT_WINDOW = 3600; // 1 hour
   private readonly MAX_REQUESTS_PER_WINDOW = 3;
 
   /**

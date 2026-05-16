@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { Bell, Search, PenSquare, Hammer, ChevronDown, Compass } from "lucide-react";
+import { Bell, Search, PenSquare, Hammer, ChevronDown, Compass, MessageCircle } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { logOut } from "@/store/authSlice";
 import { apiSlice, useLogoutMutation } from "@/store/apiSlice";
@@ -67,6 +67,16 @@ export default function Navigation() {
         <div className="flex items-center gap-1.5 ml-auto">
           {isLoggedIn && profile ? (
             <>
+              {/* Messages */}
+              <Link
+                href="/messages"
+                className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors relative ${
+                  pathname.startsWith("/messages") ? "bg-orange-50 text-[#f97316]" : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                }`}
+              >
+                <MessageCircle className="w-[18px] h-[18px]" />
+              </Link>
+
               {/* Notification bell */}
               <button className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors relative">
                 <Bell className="w-[18px] h-[18px]" />

@@ -5,12 +5,13 @@ import { usePathname, useRouter } from "next/navigation";
 import Navigation from "./Navigation";
 import LeftSidebar from "./sidebar/LeftSidebar";
 import BottomNav from "./BottomNav";
+import SocketInit from "./SocketInit";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { setCredentials, logOut, type AuthUser, type AuthProfile } from "@/store/authSlice";
 import { useGetMeQuery } from "@/store/apiSlice";
 
 const AUTH_PATHS = ["/login", "/register", "/forgot-password", "/verify-email", "/reset-password"];
-const FULL_CONTENT_PATHS = ["/settings"];
+const FULL_CONTENT_PATHS = ["/settings", "/messages"];
 const SETUP_PATHS = ["/setup"];
 
 function SessionRestorer() {
@@ -66,6 +67,7 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
       <>
         <SessionRestorer />
         <OnboardingGuard />
+        <SocketInit />
         {children}
       </>
     );
@@ -77,6 +79,7 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
       <>
         <SessionRestorer />
         <OnboardingGuard />
+        <SocketInit />
         <Navigation />
         <div className="min-h-screen" style={{ background: "var(--orange-25)" }}>
           <main className="pb-16 lg:pb-0">{children}</main>
@@ -90,6 +93,7 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
     <>
       <SessionRestorer />
       <OnboardingGuard />
+      <SocketInit />
       <Navigation />
       <div className="min-h-screen" style={{ background: "var(--orange-25)" }}>
         {isLoggedIn ? (

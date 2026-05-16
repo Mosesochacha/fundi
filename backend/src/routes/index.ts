@@ -11,6 +11,7 @@ import generateRoutes from './generate.routes';
 import settingsRoutes from './settings.routes';
 import sessionsRoutes from './sessions.routes';
 import photosRoutes from './photos.routes';
+import messagesRoutes from './messages.routes';
 import searchRoutes from './search.routes';
 import verifyJWT from '../middleware/verifyJWT';
 import { csrfProtection } from '../middleware/csrfProtection';
@@ -36,5 +37,6 @@ router.use(generateRoutes);
 router.use(settingsRoutes);
 router.use(sessionsRoutes);
 router.use(photosRoutes);
+router.use(messagesRoutes);
 
 export default router;

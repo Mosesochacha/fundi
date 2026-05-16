@@ -8,6 +8,7 @@ import SettingsSidebar from "@/components/settings/SettingsSidebar";
 
 const SECTION_LABELS: Record<string, string> = {
   "/settings/profile":       "Profile",
+  "/settings/analytics":     "Analytics",
   "/settings/account":       "Account",
   "/settings/security":      "Security",
   "/settings/notifications": "Notifications",

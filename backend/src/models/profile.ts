@@ -27,6 +27,7 @@ export class Profile extends Model<
   declare theme: CreationOptional<string>;
   declare whatsapp: CreationOptional<string | null>;
   declare views: CreationOptional<number>;
+  declare workPhotos: CreationOptional<string[] | null>;
   // Notification preferences
   declare emailProfileViewed: CreationOptional<boolean>;
   declare emailNewFollower: CreationOptional<boolean>;
@@ -95,6 +96,7 @@ export function initModel(sequelize: Sequelize): typeof Profile {
       theme: { type: DataTypes.STRING(20), defaultValue: 'orange' },
       whatsapp: { type: DataTypes.STRING(30), allowNull: true },
       views: { type: DataTypes.INTEGER, defaultValue: 0 },
+      workPhotos: { type: DataTypes.JSON, allowNull: true, defaultValue: [] },
       // Notification preferences
       emailProfileViewed: { type: DataTypes.BOOLEAN, defaultValue: true },
       emailNewFollower: { type: DataTypes.BOOLEAN, defaultValue: true },

@@ -60,25 +60,49 @@ export const createRateLimiter = (options: RateLimitOptions) => {
 
 // Predefined rate limiters
 export const authRateLimit = createRateLimiter({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  maxRequests: 5, // 5 attempts per window
-  message: 'Too many authentication attempts, please try again later.'
+  windowMs: 15 * 60 * 1000,
+  maxRequests: 10,
+  message: 'Too many authentication attempts, please try again later.',
+});
+
+export const passwordResetRateLimit = createRateLimiter({
+  windowMs: 60 * 60 * 1000,
+  maxRequests: 3,
+  message: 'Too many password reset requests. Please wait an hour before trying again.',
 });
 
 export const apiRateLimit = createRateLimiter({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  maxRequests: 100, // 100 requests per window
-  message: 'Too many API requests, please try again later.'
+  windowMs: 15 * 60 * 1000,
+  maxRequests: 100,
+  message: 'Too many API requests, please try again later.',
 });
 
 export const uploadRateLimit = createRateLimiter({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  maxRequests: 10, // 10 uploads per hour
-  message: 'Too many uploads, please try again later.'
+  windowMs: 60 * 60 * 1000,
+  maxRequests: 20,
+  message: 'Too many uploads, please try again later.',
+});
+
+export const profileUpdateRateLimit = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  maxRequests: 20,
+  message: 'Too many profile update requests, please try again later.',
+});
+
+export const aiGenerationRateLimit = createRateLimiter({
+  windowMs: 24 * 60 * 60 * 1000,
+  maxRequests: 3,
+  message: 'Daily AI generation limit reached. Try again tomorrow.',
+});
+
+export const postCreationRateLimit = createRateLimiter({
+  windowMs: 24 * 60 * 60 * 1000,
+  maxRequests: 10,
+  message: 'Daily post limit reached. Try again tomorrow.',
 });
 
 export const tipRateLimit = createRateLimiter({
-  windowMs: 60 * 1000, // 1 minute
-  maxRequests: 5, // 5 tips per minute
-  message: 'Too many tips sent, please wait before sending another.'
+  windowMs: 60 * 1000,
+  maxRequests: 5,
+  message: 'Too many tips sent, please wait before sending another.',
 });

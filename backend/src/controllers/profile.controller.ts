@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { Response } from 'express';
 import { Op } from 'sequelize';
 import { AuthenticatedRequest } from '../middleware/verifyJWT';
@@ -27,8 +28,26 @@ class ProfileController {
       db.Post.count({ where: { authorId: profile.id } }),
     ]);
 
-    // Fire-and-forget view increment
-    db.Profile.increment('views', { where: { id: profile.id } }).catch(() => {});
+    // Track view with IP deduplication (same IP within 1 hour not counted twice)
+    const clientIp = req.ip || req.headers['x-forwarded-for']?.toString().split(',')[0] || 'unknown';
+    const ipHash = crypto.createHash('sha256').update(clientIp).digest('hex');
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    const referrer = req.headers.referer || req.query.ref as string || null;
+    const parsedRef = referrer?.includes('wa.me') || referrer?.includes('whatsapp') ? 'whatsapp'
+      : referrer?.includes('instagram') ? 'instagram'
+      : referrer?.includes('google') ? 'google'
+      : referrer ? 'direct' : null;
+
+    const recentView = await (db as any).ProfileView?.findOne({
+      where: { profileId: profile.id, ipHash, createdAt: { [Op.gte]: oneHourAgo } },
+    }).catch(() => null);
+
+    if (!recentView) {
+      Promise.all([
+        (db as any).ProfileView?.create({ profileId: profile.id, ipHash, referrer: parsedRef }).catch(() => {}),
+        db.Profile.increment('views', { where: { id: profile.id } }).catch(() => {}),
+      ]);
+    }
 
     const p = profile.get({ plain: true });
     return sendSuccess(res, 'Profile retrieved', {
@@ -204,6 +223,53 @@ class ProfileController {
     });
 
     return sendSuccess(res, 'Profiles found', profiles.map((p: any) => p.get({ plain: true })));
+  });
+
+  getAnalytics = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const userId = req.user?.id;
+    if (!userId) return sendError(res, HTTP_STATUS.UNAUTHORIZED, 'Unauthorized');
+
+    const profile: any = await db.Profile.findOne({ where: { userId }, attributes: ['id', 'views'] });
+    if (!profile) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Profile not found');
+
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const weekStart = new Date(todayStart.getTime() - 6 * 24 * 60 * 60 * 1000);
+
+    const [viewsToday, viewsWeek, dailyRows] = await Promise.all([
+      (db as any).ProfileView?.count({ where: { profileId: profile.id, createdAt: { [Op.gte]: todayStart } } }).catch(() => 0) ?? 0,
+      (db as any).ProfileView?.count({ where: { profileId: profile.id, createdAt: { [Op.gte]: weekStart } } }).catch(() => 0) ?? 0,
+      (db as any).ProfileView?.findAll({
+        where: { profileId: profile.id, createdAt: { [Op.gte]: weekStart } },
+        attributes: ['createdAt', 'referrer'],
+      }).catch(() => []) ?? [],
+    ]);
+
+    // Build per-day counts for last 7 days
+    const dailyCounts: Record<string, number> = {};
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(todayStart.getTime() - i * 24 * 60 * 60 * 1000);
+      dailyCounts[d.toISOString().slice(0, 10)] = 0;
+    }
+    for (const row of dailyRows as any[]) {
+      const day = new Date(row.createdAt).toISOString().slice(0, 10);
+      if (day in dailyCounts) dailyCounts[day]++;
+    }
+
+    // Referrer breakdown
+    const referrerCounts: Record<string, number> = { whatsapp: 0, instagram: 0, google: 0, direct: 0 };
+    for (const row of dailyRows as any[]) {
+      const r = row.referrer || 'direct';
+      if (r in referrerCounts) referrerCounts[r]++;
+    }
+
+    return sendSuccess(res, 'Analytics retrieved', {
+      totalViews: profile.views ?? 0,
+      viewsToday,
+      viewsThisWeek: viewsWeek,
+      daily: Object.entries(dailyCounts).map(([date, count]) => ({ date, count })),
+      referrers: referrerCounts,
+    });
   });
 
   checkUsernamePublic = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
