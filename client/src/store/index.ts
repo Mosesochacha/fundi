@@ -3,14 +3,16 @@ import { persistReducer, persistStore, FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, 
 import { apiSlice } from "./apiSlice";
 import authReducer from "./authSlice";
 import feedReducer from "./feedSlice";
+import searchReducer from "./searchSlice";
 
 export function makeStore() {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const storage = require("redux-persist/lib/storage").default;
 
   const rootReducer = combineReducers({
-    auth: persistReducer({ key: "auth", storage, whitelist: ["user", "profile", "isLoggedIn"] }, authReducer),
-    feed: feedReducer,
+    auth:   persistReducer({ key: "auth", storage, whitelist: ["user", "profile", "isLoggedIn"] }, authReducer),
+    feed:   feedReducer,
+    search: searchReducer,
     [apiSlice.reducerPath]: apiSlice.reducer,
   });
 

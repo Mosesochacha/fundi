@@ -71,6 +71,14 @@ const initializeServices = async (): Promise<void> => {
     logger.error("Cron jobs initialization failed", { error });
   }
 
+  try {
+    const { default: typesenseService } = await import("./services/typesense.service");
+    await typesenseService.setup();
+    logger.info("Typesense initialized");
+  } catch (error) {
+    logger.error("Typesense initialization failed", { error });
+  }
+
   logger.info("Services initialized");
 };
 

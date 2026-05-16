@@ -4,6 +4,7 @@ import { AuthenticatedRequest } from '../middleware/verifyJWT';
 import db from '../models';
 import { sendSuccess, sendError, asyncHandler, paginate } from '../utils/helpers';
 import { HTTP_STATUS } from '../utils/constants';
+import typesenseService from '../services/typesense.service';
 
 const AUTHOR_ATTRS = ['id', 'fullName', 'profession', 'location', 'avatarUrl', 'username'];
 
@@ -95,7 +96,18 @@ class ProfileController {
     }
 
     await profile.update(updates);
-    return sendSuccess(res, 'Profile updated', profile.get({ plain: true }));
+    const p = profile.get({ plain: true });
+    typesenseService.updateProfile(p.id, {
+      fullName:   p.fullName,
+      username:   p.username,
+      profession: p.profession,
+      location:   p.location,
+      bio:        p.bio,
+      services:   p.services   || [],
+      avatarUrl:  p.avatarUrl,
+      theme:      p.theme,
+    });
+    return sendSuccess(res, 'Profile updated', p);
   });
 
   publishProfile = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
@@ -116,6 +128,21 @@ class ProfileController {
         { where: { id: userId } }
       ),
     ]);
+
+    typesenseService.upsertProfile({
+      id:           profile.id,
+      fullName:     profile.fullName,
+      username:     profile.username,
+      profession:   profile.profession,
+      location:     profile.location,
+      bio:          profile.bio          || '',
+      services:     profile.services     || [],
+      avatarUrl:    profile.avatarUrl    || '',
+      theme:        profile.theme        || '',
+      profileViews: profile.views        || 0,
+      isPublished:  true,
+      createdAt:    new Date(profile.createdAt).getTime(),
+    }).catch(() => {});
 
     const BASE = process.env.FRONTEND_URL || 'http://localhost:3000';
     return sendSuccess(res, 'Profile published', {

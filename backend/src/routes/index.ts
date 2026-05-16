@@ -11,6 +11,7 @@ import generateRoutes from './generate.routes';
 import settingsRoutes from './settings.routes';
 import sessionsRoutes from './sessions.routes';
 import photosRoutes from './photos.routes';
+import searchRoutes from './search.routes';
 import verifyJWT from '../middleware/verifyJWT';
 import { csrfProtection } from '../middleware/csrfProtection';
 
@@ -24,6 +25,7 @@ router.use(profileRoutes);
 router.use(feedRoutes);
 router.use(postRoutes);
 router.use(commentRoutes);
+router.use(searchRoutes);
 
 // Routes below require JWT (verifyJWT is not duplicated on individual sub-routers).
 router.use(verifyJWT);
