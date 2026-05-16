@@ -3,18 +3,52 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Hammer, Lightbulb, HelpCircle, Briefcase, MessageCircle, Share2, MoreHorizontal } from "lucide-react";
 import { useAppSelector } from "@/store/hooks";
 import { useToggleLikeMutation } from "@/store/apiSlice";
 
-const BADGE: Record<string, string> = {
-  SHOWCASE: 'bg-orange-50 text-orange-700 border-orange-200',
-  TIP:      'bg-blue-50 text-blue-700 border-blue-200',
-  QUESTION: 'bg-violet-50 text-violet-700 border-violet-200',
-  HIRING:   'bg-green-50 text-green-700 border-green-200',
-};
+type PostTypeKey = "SHOWCASE" | "TIP" | "QUESTION" | "HIRING";
 
-const BADGE_LABEL: Record<string, string> = {
-  SHOWCASE: 'Showcase', TIP: 'Pro Tip', QUESTION: 'Question', HIRING: 'Hiring',
+const TYPE_META: Record<PostTypeKey, {
+  label: string;
+  Icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  accent: string;
+  chipBg: string;
+  chipText: string;
+  chipRing: string;
+}> = {
+  SHOWCASE: {
+    label: "Showcase",
+    Icon:   Hammer,
+    accent: "bg-orange-500",
+    chipBg: "bg-orange-50",
+    chipText: "text-orange-700",
+    chipRing: "ring-orange-200/70",
+  },
+  TIP: {
+    label: "Pro Tip",
+    Icon:   Lightbulb,
+    accent: "bg-emerald-500",
+    chipBg: "bg-emerald-50",
+    chipText: "text-emerald-700",
+    chipRing: "ring-emerald-200/70",
+  },
+  QUESTION: {
+    label: "Question",
+    Icon:   HelpCircle,
+    accent: "bg-sky-500",
+    chipBg: "bg-sky-50",
+    chipText: "text-sky-700",
+    chipRing: "ring-sky-200/70",
+  },
+  HIRING: {
+    label: "Hiring",
+    Icon:   Briefcase,
+    accent: "bg-violet-500",
+    chipBg: "bg-violet-50",
+    chipText: "text-violet-700",
+    chipRing: "ring-violet-200/70",
+  },
 };
 
 interface Post {
@@ -36,15 +70,16 @@ interface Post {
   };
 }
 
-
 function timeAgo(date: string) {
   const s = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
   if (s < 60) return "just now";
   const m = Math.floor(s / 60);
-  if (m < 60) return `${m}m ago`;
+  if (m < 60) return `${m}m`;
   const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.floor(h / 24)}d ago`;
+  if (h < 24) return `${h}h`;
+  const d = Math.floor(h / 24);
+  if (d < 7) return `${d}d`;
+  return new Date(date).toLocaleDateString("en", { month: "short", day: "numeric" });
 }
 
 export default function PostCard({ post: initial }: { post: Post }) {
@@ -52,12 +87,20 @@ export default function PostCard({ post: initial }: { post: Post }) {
   const router = useRouter();
   const [toggleLike] = useToggleLikeMutation();
   const [post, setPost] = useState(initial);
+  const [burst, setBurst] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const postHref = `/post/${post.slug}`;
+  const meta = TYPE_META[post.postType as PostTypeKey];
 
   const handleLike = async () => {
     if (!isLoggedIn) { router.push("/login"); return; }
-    setPost((p) => ({ ...p, likedByMe: !p.likedByMe, likesCount: p.likesCount + (p.likedByMe ? -1 : 1) }));
+    const willLike = !post.likedByMe;
+    if (willLike) {
+      setBurst(true);
+      setTimeout(() => setBurst(false), 500);
+    }
+    setPost((p) => ({ ...p, likedByMe: willLike, likesCount: p.likesCount + (willLike ? 1 : -1) }));
     try {
       const res = await toggleLike(post.id).unwrap();
       const data = (res as { data: { liked: boolean; likesCount: number } }).data;
@@ -67,73 +110,108 @@ export default function PostCard({ post: initial }: { post: Post }) {
     }
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
     const url = `${window.location.origin}${postHref}`;
     if (navigator.share) {
       navigator.share({ title: post.author.fullName, url });
     } else {
-      navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
   return (
-    <article className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200">
-      <div className="p-5 space-y-4">
+    <article className="group relative bg-white rounded-2xl border border-[color:var(--line)] shadow-[0_1px_3px_rgba(40,20,5,0.06)] hover:shadow-[0_10px_28px_-8px_rgba(40,20,5,0.13)] hover:border-orange-200/80 transition-all duration-300 overflow-hidden">
+      {/* Left accent strip — dim at rest, vivid on hover */}
+      {meta && (
+        <span className={`absolute left-0 top-0 bottom-0 w-[3px] ${meta.accent} opacity-25 group-hover:opacity-100 transition-opacity duration-300`} />
+      )}
+
+      <div className="p-5 sm:p-6 space-y-4">
         {/* Author row */}
-        <div className="flex items-start justify-between gap-3">
-          <Link href={`/profile/${post.author.username}`} className="flex items-center gap-3 min-w-0 group">
+        <header className="flex items-center justify-between gap-3">
+          <Link href={`/profile/${post.author.username}`} className="flex items-center gap-3 min-w-0 group/author">
             <div className="relative shrink-0">
-              <div className="w-11 h-11 rounded-full bg-orange-100 flex items-center justify-center text-primary font-bold overflow-hidden ring-2 ring-transparent group-hover:ring-orange-200 transition-all">
-                {post.author.avatarUrl
+              <div className="w-11 h-11 rounded-full bg-orange-100 flex items-center justify-center text-[color:var(--orange-700)] font-bold overflow-hidden ring-2 ring-[color:var(--line)] group-hover/author:ring-orange-300 shadow-[0_2px_6px_rgba(40,20,5,0.08)] transition-all duration-200">
+                {post.author.avatarUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  ? <img src={post.author.avatarUrl} alt={post.author.fullName} className="w-full h-full object-cover" />
-                  : <span className="text-sm">{post.author.fullName?.[0]?.toUpperCase()}</span>}
+                  <img src={post.author.avatarUrl} alt={post.author.fullName} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-sm font-playfair">{post.author.fullName?.[0]?.toUpperCase()}</span>
+                )}
               </div>
             </div>
             <div className="min-w-0">
-              <p className="font-semibold text-sm text-gray-900 truncate leading-tight group-hover:text-primary transition-colors">
+              <p className="font-semibold text-[14px] text-[color:var(--ink)] truncate leading-tight group-hover/author:text-primary transition-colors">
                 {post.author.fullName}
               </p>
-              <p className="text-xs text-gray-400 truncate mt-0.5 leading-tight">
-                <span className="text-gray-500 font-medium">{post.author.profession}</span>
-                {post.author.location && <> &middot; {post.author.location}</>}
+              <p className="text-[12px] text-[color:var(--ink-soft)] truncate mt-0.5 leading-tight">
+                <span className="font-medium">{post.author.profession}</span>
+                {post.author.location && <span className="text-gray-400"> · {post.author.location}</span>}
               </p>
             </div>
           </Link>
 
-          <span className="text-xs text-gray-400 tabular-nums shrink-0">{timeAgo(post.createdAt)}</span>
-        </div>
-
-        {/* Post type badge */}
-        {BADGE[post.postType] && (
-          <span className={`inline-block text-[10px] font-semibold px-2.5 py-0.5 rounded-full border ${BADGE[post.postType]}`}>
-            {BADGE_LABEL[post.postType]}
-          </span>
-        )}
+          <div className="flex items-center gap-2 shrink-0">
+            {meta && (
+              <span className={`inline-flex items-center gap-1 text-[10.5px] font-semibold uppercase tracking-wider px-2 py-1 rounded-full ring-1 ring-inset stamp ${meta.chipBg} ${meta.chipText} ${meta.chipRing}`}>
+                <meta.Icon className="w-3 h-3" strokeWidth={2.5} />
+                {meta.label}
+              </span>
+            )}
+            <span className="text-[11px] text-gray-400 tabular-nums font-medium">{timeAgo(post.createdAt)}</span>
+          </div>
+        </header>
 
         {/* Content */}
-        <Link href={postHref} className="block group">
-          <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed group-hover:text-gray-900 transition-colors line-clamp-3">
+        <Link href={postHref} className="block group/content">
+          <p className="text-[15px] text-[color:var(--ink)]/90 whitespace-pre-line leading-[1.65] line-clamp-4 font-dm-sans group-hover/content:text-[color:var(--ink)] transition-colors">
             {post.content}
           </p>
+          {post.content.length > 240 && (
+            <span className="inline-block mt-2 text-[12px] text-primary font-semibold tracking-wide hover:underline underline-offset-2 decoration-2">
+              Continue reading →
+            </span>
+          )}
         </Link>
-        {post.content.length > 200 && (
-          <Link href={postHref} className="text-xs text-orange-500 font-medium hover:underline -mt-2 block">
-            Read more
-          </Link>
-        )}
 
         {/* Images */}
         {post.images?.length > 0 && (() => {
           const imgs = post.images.slice(0, 4);
-          const gridClass = imgs.length > 1 ? 'grid grid-cols-2 gap-1' : '';
-          const imgH = imgs.length === 1 ? 'h-64' : imgs.length <= 2 ? 'h-52' : 'h-40';
-          return (
-            <Link href={postHref}>
-              <div className={`${gridClass} rounded-xl overflow-hidden`}>
+          if (imgs.length === 1) {
+            return (
+              <Link href={postHref} className="block rounded-xl overflow-hidden border border-[color:var(--line)] bg-[color:var(--orange-50)]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={imgs[0]} alt="" className="w-full h-72 sm:h-80 object-cover hover:scale-[1.02] transition-transform duration-700" />
+              </Link>
+            );
+          }
+          if (imgs.length === 2) {
+            return (
+              <Link href={postHref} className="grid grid-cols-2 gap-1 rounded-xl overflow-hidden">
                 {imgs.map((url, i) => (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img key={i} src={url} alt="" className={`w-full ${imgH} object-cover`} />
+                  <img key={i} src={url} alt="" className="w-full h-56 object-cover hover:scale-[1.03] transition-transform duration-500" />
+                ))}
+              </Link>
+            );
+          }
+          return (
+            <Link href={postHref} className="grid grid-cols-3 gap-1 rounded-xl overflow-hidden h-64">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={imgs[0]} alt="" className="col-span-2 row-span-2 w-full h-full object-cover hover:scale-[1.02] transition-transform duration-500" />
+              <div className="grid grid-rows-2 gap-1">
+                {imgs.slice(1, 3).map((url, i) => (
+                  <div key={i} className="relative overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={url} alt="" className="w-full h-full object-cover" />
+                    {i === 1 && imgs.length > 3 && (
+                      <div className="absolute inset-0 bg-black/55 flex items-center justify-center text-white font-playfair text-xl">
+                        +{post.images.length - 3}
+                      </div>
+                    )}
+                  </div>
                 ))}
               </div>
             </Link>
@@ -141,44 +219,50 @@ export default function PostCard({ post: initial }: { post: Post }) {
         })()}
 
         {/* Action bar */}
-        <div className="flex items-center pt-1 border-t border-gray-100 -mx-1">
+        <div className="flex items-center pt-2 -mx-1.5 border-t border-[color:var(--line-soft)]">
           <button
             onClick={handleLike}
-            className={`flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-xl transition-all ${
+            aria-label={post.likedByMe ? "Remove appreciation" : "Appreciate this post"}
+            className={`flex items-center gap-1.5 text-[12px] font-semibold px-3 py-2 rounded-lg transition-all duration-200 ${
               post.likedByMe
-                ? "text-primary"
-                : "text-gray-400 hover:text-primary hover:bg-orange-50"
+                ? "text-white bg-primary shadow-[0_2px_8px_-2px_rgba(249,115,22,0.5)]"
+                : "text-gray-500 hover:text-primary hover:bg-orange-50"
             }`}
           >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill={post.likedByMe ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${post.likedByMe ? 'scale-110' : ''}`}>
-              <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z" />
-              <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
-            </svg>
-            {post.likesCount > 0 && <span className="tabular-nums">{post.likesCount}</span>}
+            <Hammer
+              className={`w-[15px] h-[15px] ${post.likedByMe ? "fill-current" : ""} ${burst ? "like-burst" : ""}`}
+              strokeWidth={2.2}
+            />
+            <span className="tabular-nums">{post.likesCount > 0 ? post.likesCount : ""}</span>
             <span className="hidden sm:inline">{post.likedByMe ? "Appreciated" : "Appreciate"}</span>
           </button>
 
           <Link
             href={postHref}
-            className="flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-xl text-gray-400 hover:text-orange-500 hover:bg-orange-50 transition-all"
+            className="flex items-center gap-1.5 text-[12px] font-semibold px-3 py-2 rounded-lg text-gray-500 hover:text-[color:var(--ink)] hover:bg-[color:var(--line-soft)] transition-all duration-200"
           >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            </svg>
-            {post.commentsCount > 0 && <span className="tabular-nums">{post.commentsCount}</span>}
+            <MessageCircle className="w-[15px] h-[15px]" strokeWidth={2.2} />
+            <span className="tabular-nums">{post.commentsCount > 0 ? post.commentsCount : ""}</span>
             <span className="hidden sm:inline">Comment</span>
           </Link>
 
           <button
             onClick={handleShare}
-            className="flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-xl text-gray-400 hover:text-gray-700 hover:bg-gray-50 transition-all ml-auto"
+            className={`flex items-center gap-1.5 text-[12px] font-semibold px-3 py-2 rounded-lg transition-all duration-200 ml-auto ${
+              copied
+                ? "text-emerald-600 bg-emerald-50"
+                : "text-gray-500 hover:text-[color:var(--ink)] hover:bg-[color:var(--line-soft)]"
+            }`}
           >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
-              <polyline points="16 6 12 2 8 6" />
-              <line x1="12" y1="2" x2="12" y2="15" />
-            </svg>
-            <span className="hidden sm:inline">Share</span>
+            <Share2 className="w-[15px] h-[15px]" strokeWidth={2.2} />
+            <span className="hidden sm:inline">{copied ? "Copied!" : "Share"}</span>
+          </button>
+
+          <button
+            aria-label="More options"
+            className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 hover:text-[color:var(--ink)] hover:bg-[color:var(--line-soft)] transition-all duration-200"
+          >
+            <MoreHorizontal className="w-4 h-4" />
           </button>
         </div>
       </div>
