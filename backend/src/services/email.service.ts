@@ -69,6 +69,34 @@ class EmailService {
     }
   }
 
+  async sendWelcomeEmail(email: string, displayName?: string): Promise<boolean> {
+    if (!this.isConfigured()) {
+      logger.warn('[EmailService] RESEND_API_KEY not set — welcome email not sent', { email });
+      return false;
+    }
+
+    const name = displayName || email.split('@')[0];
+    const html = this.buildWelcomeEmail(name, email);
+
+    try {
+      const { error } = await resend.emails.send({
+        from: FROM_DISPLAY,
+        to: email,
+        subject: 'Welcome to Fundi — your profile awaits',
+        html,
+      });
+      if (error) {
+        logger.error('[EmailService] Resend error (welcome)', { email, error });
+        return false;
+      }
+      logger.info('[EmailService] Welcome email sent via Resend', { email });
+      return true;
+    } catch (err: any) {
+      logger.error('[EmailService] Failed to send welcome email', { email, error: err?.message });
+      return false;
+    }
+  }
+
   private wrap(content: string, recipientEmail: string): string {
     return `<!DOCTYPE html>
 <html lang="en">
@@ -100,6 +128,26 @@ class EmailService {
   </table>
 </body>
 </html>`;
+  }
+
+  private buildWelcomeEmail(name: string, email: string): string {
+    const setupUrl = `${APP_URL}/setup`;
+    const content = `
+      <p style="margin:0 0 8px;font-size:24px;font-weight:700;color:#1c1917;">Welcome, ${name}!</p>
+      <p style="margin:0 0 32px;font-size:15px;color:#78716c;line-height:1.7;">
+        Your Fundi account is verified and ready. Build your professional profile in under 2 minutes — our AI does the writing for you.
+      </p>
+
+      <a href="${setupUrl}" style="display:inline-block;background:#f97316;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:13px 28px;border-radius:6px;">
+        Build my profile now
+      </a>
+
+      <hr style="border:none;border-top:1px solid #f5f5f4;margin:36px 0 24px;">
+
+      <p style="margin:0;font-size:12px;color:#a8a29e;line-height:1.7;">
+        You're receiving this because you just verified your Fundi account. Questions? Reply to this email.
+      </p>`;
+    return this.wrap(content, email);
   }
 
   private buildVerificationEmail(name: string, code: string, email: string): string {

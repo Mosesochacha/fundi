@@ -116,10 +116,28 @@ class AuthService {
         throw new Error("Account is deactivated");
       }
 
+      // Account lock check
+      if (user.lockedUntil && user.lockedUntil > new Date()) {
+        const minutesLeft = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000);
+        throw new Error(`Account locked. Try again in ${minutesLeft} minute${minutesLeft === 1 ? '' : 's'}.`);
+      }
+
       const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
       if (!isPasswordValid) {
+        const attempts = (user.loginAttempts ?? 0) + 1;
+        const update: Record<string, any> = { loginAttempts: attempts };
+        if (attempts >= 5) {
+          update.lockedUntil = new Date(Date.now() + 30 * 60 * 1000);
+          logger.warn('Account locked after 5 failed attempts', { userId: user.id, ipAddress });
+        }
+        await user.update(update);
         logger.warn('Login failed: invalid password', { userId: user.id, ipAddress });
         throw new Error("Invalid credentials");
+      }
+
+      // Reset lock on successful login
+      if (user.loginAttempts > 0 || user.lockedUntil) {
+        await user.update({ loginAttempts: 0, lockedUntil: null });
       }
 
       const tokens = await this.generateTokens(user, ipAddress, userAgent);

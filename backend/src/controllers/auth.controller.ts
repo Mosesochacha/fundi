@@ -117,6 +117,9 @@ class AuthController {
       if (msg === 'Account is deactivated') {
         return sendError(res, HTTP_STATUS.FORBIDDEN, 'Your account has been deactivated.');
       }
+      if (msg.startsWith('Account locked')) {
+        return sendError(res, HTTP_STATUS.TOO_MANY_REQUESTS, msg);
+      }
       console.error('Login error:', err);
       return sendError(res, HTTP_STATUS.INTERNAL_SERVER_ERROR, RESPONSE_MESSAGES.SERVER_ERROR);
     }
@@ -300,7 +303,12 @@ class AuthController {
       return sendError(res, HTTP_STATUS.BAD_REQUEST, verification.message);
     }
 
-    await AuthService.markEmailAsVerified(email.toLowerCase().trim());
+    const normalizedEmail = email.toLowerCase().trim();
+    await AuthService.markEmailAsVerified(normalizedEmail);
+
+    const user = await db.User.findOne({ where: { email: normalizedEmail }, attributes: ['firstName'] });
+    emailService.sendWelcomeEmail(normalizedEmail, user?.firstName ?? undefined).catch(() => {});
+
     return sendSuccess(res, 'Email verified successfully. You can now sign in.');
   });
 

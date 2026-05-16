@@ -19,6 +19,8 @@ export class User extends Model {
   declare termsAcceptedAt: Date | null;
   declare ageConfirmed: boolean;
   declare ageConfirmedAt: Date | null;
+  declare loginAttempts: number;
+  declare lockedUntil: Date | null;
 
   static associate(models: any) {
     User.hasOne(models.Profile, { foreignKey: 'userId', as: 'profile', onDelete: 'CASCADE' });
@@ -122,6 +124,15 @@ export function initModel(sequelize: Sequelize): typeof User {
         type: DataTypes.UUID,
         allowNull: true,
         comment: 'ID of the organization the user belongs to'
+      },
+      loginAttempts: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
+      lockedUntil: {
+        type: DataTypes.DATE,
+        allowNull: true,
       },
     },
     {
