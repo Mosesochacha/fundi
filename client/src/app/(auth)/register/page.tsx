@@ -6,6 +6,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock } from "lucide-react";
+import posthog from "posthog-js";
 import { useRegisterMutation } from "@/store/apiSlice";
 import { useToastContext } from "@/context/ToastContext";
 import { registerSchema, type RegisterFormValues } from "@/lib/validations/auth";
@@ -66,6 +67,7 @@ export default function RegisterPage() {
         ageConfirmed: data.ageConfirmed,
       }).unwrap();
 
+      posthog.capture("user_registered", { profession: data.profession, location: data.location });
       success("Account created! Please verify your email.");
       router.push(`/verify-email?email=${encodeURIComponent(data.email.trim().toLowerCase())}`);
     } catch (err: any) {

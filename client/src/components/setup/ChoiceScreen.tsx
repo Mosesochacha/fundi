@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import posthog from "posthog-js";
 import { Sparkles, PenLine } from "lucide-react";
 
 export default function ChoiceScreen() {
@@ -33,6 +34,7 @@ export default function ChoiceScreen() {
           <p className="text-sm font-semibold mb-5" style={{ color: "#f97316" }}>⚡ Under 2 minutes</p>
           <Link
             href="/setup/ai"
+            onClick={() => posthog.capture("setup_path_chosen", { path: "ai" })}
             className="w-full flex items-center justify-center rounded-xl text-white font-semibold text-base h-[52px] transition-opacity hover:opacity-90"
             style={{ backgroundColor: "#f97316" }}
           >
@@ -50,6 +52,7 @@ export default function ChoiceScreen() {
           <p className="text-sm text-gray-500 mb-5">🕐 5 to 10 minutes</p>
           <Link
             href="/setup/manual"
+            onClick={() => posthog.capture("setup_path_chosen", { path: "manual" })}
             className="w-full flex items-center justify-center rounded-xl font-semibold text-base h-[52px] border border-gray-300 text-gray-900 bg-white transition-colors hover:bg-gray-50"
           >
             Set up manually →

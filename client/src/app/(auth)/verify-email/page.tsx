@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion } from "framer-motion";
+import posthog from "posthog-js";
 import { useVerifyEmailMutation } from "@/store/apiSlice";
 import { useToastContext } from "@/context/ToastContext";
 import FormInput from "@/components/auth/FormInput";
@@ -41,6 +42,7 @@ export default function VerifyEmailPage() {
     }
     try {
       await verifyEmail({ email, code: data.code }).unwrap();
+      posthog.capture("email_verified");
       success("Email verified! You can now sign in.");
       router.push("/login");
     } catch (err: any) {

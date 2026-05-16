@@ -8,8 +8,11 @@ const router = Router();
 
 router.post('/posts', verifyJWT, postCreationRateLimit, PostController.createPost);
 // Must be before /posts/:id to avoid param capture
+router.get('/posts/scheduled', verifyJWT, PostController.getScheduledPosts);
 router.get('/posts/by-slug/:slug', optionalAuth, PostController.getPostBySlug);
 router.get('/posts/:id', optionalAuth, PostController.getPost);
 router.delete('/posts/:id', verifyJWT, PostController.deletePost);
+router.patch('/posts/:id/schedule', verifyJWT, PostController.reschedulePost);
+router.delete('/posts/:id/schedule', verifyJWT, PostController.cancelScheduledPost);
 
 export default router;

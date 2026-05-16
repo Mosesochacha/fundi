@@ -8,6 +8,7 @@ import {
 } from 'sequelize';
 
 export type PostType = 'SHOWCASE' | 'TIP' | 'QUESTION' | 'HIRING';
+export type PostStatus = 'DRAFT' | 'SCHEDULED' | 'PUBLISHED';
 
 export class Post extends Model<
   InferAttributes<Post>,
@@ -20,6 +21,9 @@ export class Post extends Model<
   declare images: CreationOptional<string[]>;
   declare likesCount: CreationOptional<number>;
   declare commentsCount: CreationOptional<number>;
+  declare slug: CreationOptional<string | null>;
+  declare status: CreationOptional<PostStatus>;
+  declare scheduledAt: CreationOptional<Date | null>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 
@@ -55,6 +59,13 @@ export function initModel(sequelize: Sequelize): typeof Post {
       },
       likesCount: { type: DataTypes.INTEGER, defaultValue: 0 },
       commentsCount: { type: DataTypes.INTEGER, defaultValue: 0 },
+      slug: { type: DataTypes.STRING(300), allowNull: true, unique: true },
+      status: {
+        type: DataTypes.ENUM('DRAFT', 'SCHEDULED', 'PUBLISHED'),
+        allowNull: false,
+        defaultValue: 'PUBLISHED',
+      },
+      scheduledAt: { type: DataTypes.DATE, allowNull: true },
       createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
       updatedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
     },

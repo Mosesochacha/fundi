@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import { Op } from 'sequelize';
 import { AuthenticatedRequest } from '../types';
 import db from '../models';
 import { sendSuccess, sendError, asyncHandler } from '../utils/helpers';
@@ -38,14 +39,19 @@ function buildPostIncludes(profileId?: string) {
 
 class PostController {
   createPost = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-    const { content, postType, images } = req.body;
+    const { content, postType, images, scheduledAt } = req.body;
     if (!content?.trim()) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Post content is required');
+
+    const isScheduled = scheduledAt && new Date(scheduledAt) > new Date();
+    const status = isScheduled ? 'SCHEDULED' : 'PUBLISHED';
 
     const post: any = await db.Post.create({
       content: content.trim(),
       postType: postType || 'SHOWCASE',
       images: Array.isArray(images) ? images : [],
       authorId: req.user!.profileId,
+      status,
+      scheduledAt: isScheduled ? new Date(scheduledAt) : null,
     } as any);
 
     const slug = generateSlug(post.content, post.id);
@@ -56,21 +62,57 @@ class PostController {
     });
 
     const p = full!.get({ plain: true });
-    typesenseService.upsertPost({
-      id:         p.id,
-      content:    p.content,
-      postType:   p.postType,
-      authorId:   p.authorId,
-      authorName: p.author?.fullName   || '',
-      profession: p.author?.profession || '',
-      location:   p.author?.location   || '',
-      images:     p.images             || [],
-      likesCount: p.likesCount         || 0,
-      status:     'PUBLISHED',
-      createdAt:  new Date(p.createdAt).getTime(),
-    }).catch(() => {});
 
-    return sendSuccess(res, 'Post created', p);
+    if (status === 'PUBLISHED') {
+      typesenseService.upsertPost({
+        id:         p.id,
+        content:    p.content,
+        postType:   p.postType,
+        authorId:   p.authorId,
+        authorName: p.author?.fullName   || '',
+        profession: p.author?.profession || '',
+        location:   p.author?.location   || '',
+        images:     p.images             || [],
+        likesCount: p.likesCount         || 0,
+        status:     'PUBLISHED',
+        createdAt:  new Date(p.createdAt).getTime(),
+      }).catch(() => {});
+    }
+
+    return sendSuccess(res, isScheduled ? 'Post scheduled' : 'Post created', p);
+  });
+
+  getScheduledPosts = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const posts: any[] = await db.Post.findAll({
+      where: { authorId: req.user!.profileId, status: 'SCHEDULED' },
+      order: [['scheduledAt', 'ASC']],
+    });
+    return sendSuccess(res, 'Scheduled posts', posts.map((p: any) => p.get({ plain: true })));
+  });
+
+  reschedulePost = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const post: any = await db.Post.findByPk(req.params.id);
+    if (!post) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Post not found');
+    if (post.authorId !== req.user!.profileId) return sendError(res, HTTP_STATUS.FORBIDDEN, 'Not your post');
+    if (post.status !== 'SCHEDULED') return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Post is not scheduled');
+
+    const { scheduledAt } = req.body;
+    if (!scheduledAt || new Date(scheduledAt) <= new Date()) {
+      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'scheduledAt must be a future datetime');
+    }
+
+    await post.update({ scheduledAt: new Date(scheduledAt) });
+    return sendSuccess(res, 'Post rescheduled', post.get({ plain: true }));
+  });
+
+  cancelScheduledPost = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const post: any = await db.Post.findByPk(req.params.id);
+    if (!post) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Post not found');
+    if (post.authorId !== req.user!.profileId) return sendError(res, HTTP_STATUS.FORBIDDEN, 'Not your post');
+    if (post.status !== 'SCHEDULED') return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Post is not scheduled');
+
+    await post.destroy();
+    return sendSuccess(res, 'Scheduled post cancelled', { deleted: true });
   });
 
   getPost = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {

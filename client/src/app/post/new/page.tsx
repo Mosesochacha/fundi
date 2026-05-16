@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Hammer, Lightbulb, HelpCircle, Briefcase, Sparkles, X } from "lucide-react";
+import { ArrowLeft, Hammer, Lightbulb, HelpCircle, Briefcase, Sparkles, X, Clock } from "lucide-react";
+import posthog from "posthog-js";
 import { useAppSelector } from "@/store/hooks";
 import { useCreatePostMutation, usePolishPostMutation } from "@/store/apiSlice";
 import { useToastContext } from "@/context/ToastContext";
@@ -65,7 +66,9 @@ export default function NewPostPage() {
   const [content, setContent] = useState("");
   const [images, setImages] = useState<string[]>([]);
   const [imageInput, setImageInput] = useState("");
-  const { error: toastError, warning } = useToastContext();
+  const [scheduleEnabled, setScheduleEnabled] = useState(false);
+  const [scheduledAt, setScheduledAt] = useState("");
+  const { error: toastError, warning, success: toastSuccess } = useToastContext();
 
   if (!isLoggedIn) {
     return (
@@ -97,13 +100,32 @@ export default function NewPostPage() {
 
   const handleSubmit = async () => {
     if (!content.trim()) { warning("Write something first.", 4000); return; }
+    if (scheduleEnabled && !scheduledAt) { warning("Pick a date and time to schedule.", 4000); return; }
+    if (scheduleEnabled && new Date(scheduledAt) <= new Date()) { warning("Scheduled time must be in the future.", 4000); return; }
+
     try {
-      const res = await createPost({ content, postType, images }).unwrap();
-      router.push(`/post/${(res as { data: { id: string } }).data.id}`);
+      const payload = { content, postType, images, ...(scheduleEnabled && scheduledAt ? { scheduledAt: new Date(scheduledAt).toISOString() } : {}) };
+
+      const res = await createPost(payload).unwrap();
+      const data = (res as { data: { id: string; status: string } }).data;
+
+      posthog.capture("post_created", { postType, scheduled: data.status === "SCHEDULED", hasImages: images.length > 0 });
+
+      if (data.status === 'SCHEDULED') {
+        toastSuccess("Post scheduled!");
+        router.push("/feed");
+      } else {
+        router.push(`/post/${data.id}`);
+      }
     } catch (err) {
       toastError((err as { data?: { error?: string } })?.data?.error || "Failed to publish post.");
     }
   };
+
+  // Min datetime: 5 minutes from now (ISO string for datetime-local input)
+  const minDatetime = new Date(Date.now() + 5 * 60 * 1000)
+    .toISOString()
+    .slice(0, 16);
 
   return (
     <div className="max-w-lg mx-auto px-4 py-6 space-y-5">
@@ -216,13 +238,36 @@ export default function NewPostPage() {
         </div>
       )}
 
+      {/* Schedule toggle */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
+        <button
+          onClick={() => setScheduleEnabled(!scheduleEnabled)}
+          className="flex items-center gap-2 w-full text-sm font-medium text-gray-700"
+        >
+          <div className={`w-9 h-5 rounded-full transition-colors flex items-center ${scheduleEnabled ? "bg-primary" : "bg-gray-200"}`}>
+            <div className={`w-4 h-4 rounded-full bg-white shadow mx-0.5 transition-transform ${scheduleEnabled ? "translate-x-4" : ""}`} />
+          </div>
+          <Clock className="w-4 h-4 text-gray-400" />
+          Schedule for later
+        </button>
+        {scheduleEnabled && (
+          <input
+            type="datetime-local"
+            value={scheduledAt}
+            min={minDatetime}
+            onChange={(e) => setScheduledAt(e.target.value)}
+            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+          />
+        )}
+      </div>
+
       {/* Submit */}
       <button
         onClick={handleSubmit}
         disabled={creating || !content.trim()}
         className="w-full bg-primary text-white py-3 rounded-xl font-semibold text-sm disabled:opacity-50 hover:bg-primaryDark transition-colors shadow-sm"
       >
-        {creating ? "Publishing..." : "Publish"}
+        {creating ? (scheduleEnabled ? "Scheduling..." : "Publishing...") : scheduleEnabled ? "Schedule Post" : "Publish"}
       </button>
     </div>
   );

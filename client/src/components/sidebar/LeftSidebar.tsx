@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, PenSquare, User, Settings } from "lucide-react";
+import { Home, PenSquare, User, Settings, Clock } from "lucide-react";
 import { useAppSelector } from "@/store/hooks";
 
 export default function LeftSidebar() {
@@ -13,8 +13,9 @@ export default function LeftSidebar() {
 
   const navLinks = [
     { href: "/feed",                         label: "Feed",        icon: Home },
-    { href: "/post/new",                     label: "Create Post", icon: PenSquare },
-    { href: `/profile/${profile.username}`,  label: "My Profile",  icon: User },
+    { href: "/post/new",                     label: "Create Post",     icon: PenSquare },
+    { href: "/post/scheduled",               label: "Scheduled Posts", icon: Clock },
+    { href: `/profile/${profile.username}`,  label: "My Profile",      icon: User },
     { href: "/settings",                     label: "Settings",    icon: Settings },
   ];
 
@@ -62,7 +63,7 @@ export default function LeftSidebar() {
       {/* Navigation */}
       <nav className="p-2 space-y-0.5">
         {navLinks.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href || (href === "/settings" && pathname.startsWith("/settings"));
+          const active = pathname === href || (href === "/settings" && pathname.startsWith("/settings")) || (href === "/post/scheduled" && pathname.startsWith("/post/scheduled"));
           return (
             <Link
               key={href}

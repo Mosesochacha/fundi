@@ -306,7 +306,7 @@ export const {
 // Types
 interface ApiResponse { success: boolean; data: unknown; message?: string }
 interface RegisterInput { email: string; password: string; username: string; firstName: string; lastName: string; profession: string; location: string; termsAccepted: boolean; ageConfirmed: boolean }
-interface CreatePostInput { content: string; postType: string; images?: string[] }
+interface CreatePostInput { content: string; postType: string; images?: string[]; scheduledAt?: string }
 interface UpdateProfileInput {
   fullName?: string; username?: string; profession?: string; location?: string;
   bio?: string; tagline?: string; phone?: string; whatsapp?: string;
