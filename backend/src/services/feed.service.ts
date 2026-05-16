@@ -1,3 +1,4 @@
+import { Op } from 'sequelize';
 import db from '../models';
 import typesenseService from './typesense.service';
 
@@ -19,41 +20,64 @@ export class FeedService {
       type, page, limit, profession, location,
     });
 
-    if (ids.length === 0) return { posts: [], hasMore: false, nextPage: null };
-
     const includePostLikes = profileId
       ? [{ model: db.PostLike, as: 'likes', where: { profileId }, required: false, attributes: ['id'] }]
       : [];
 
-    const rows: any[] = await db.Post.findAll({
-      where: { id: ids },
-      include: [
-        { model: db.Profile, as: 'author', attributes: AUTHOR_ATTRS },
-        ...includePostLikes,
-      ],
-    });
+    let rows: any[];
+    let hasMore: boolean;
 
-    // Preserve Typesense sort order
-    const byId: Record<string, any> = Object.fromEntries(rows.map((r: any) => [r.id, r]));
-    let ordered: any[] = ids.map((id) => byId[id]).filter(Boolean);
+    if (ids.length > 0) {
+      rows = await db.Post.findAll({
+        where: { id: ids },
+        include: [
+          { model: db.Profile, as: 'author', attributes: AUTHOR_ATTRS },
+          ...includePostLikes,
+        ],
+      });
 
-    // Float followed profiles' posts to the top
-    if (profileId && ordered.length > 0) {
+      // Preserve Typesense sort order
+      const byId: Record<string, any> = Object.fromEntries(rows.map((r: any) => [r.id, r]));
+      rows = ids.map((id) => byId[id]).filter(Boolean);
+      hasMore = page * limit < total;
+    } else {
+      // Typesense unavailable or empty — fall back to direct DB query
+      const where: Record<string, any> = { status: 'PUBLISHED' };
+      if (type && type !== 'all') where.postType = type.toUpperCase();
+      if (profession && profession !== 'all') where['$author.profession$'] = profession;
+      if (location?.trim()) where['$author.location$'] = { [Op.iLike]: `%${location.trim()}%` };
+
+      const { count, rows: dbRows } = await (db.Post as any).findAndCountAll({
+        where,
+        include: [
+          { model: db.Profile, as: 'author', attributes: AUTHOR_ATTRS },
+          ...includePostLikes,
+        ],
+        order: [['createdAt', 'DESC']],
+        limit,
+        offset: (page - 1) * limit,
+        subQuery: false,
+      });
+
+      rows = dbRows;
+      hasMore = page * limit < count;
+    }
+
+    // Float followed profiles' posts to the top (only makes sense with a full page)
+    if (profileId && rows.length > 0) {
       const follows = await db.Follow.findAll({
         where: { followerId: profileId },
         attributes: ['followingId'],
       });
       const followingSet = new Set(follows.map((f: any) => f.followingId));
-      ordered = [
-        ...ordered.filter((p: any) => followingSet.has(p.get('authorId'))),
-        ...ordered.filter((p: any) => !followingSet.has(p.get('authorId'))),
+      rows = [
+        ...rows.filter((p: any) => followingSet.has(p.get('authorId'))),
+        ...rows.filter((p: any) => !followingSet.has(p.get('authorId'))),
       ];
     }
 
-    const hasMore = page * limit < total;
-
     return {
-      posts: ordered.map((post: any) => {
+      posts: rows.map((post: any) => {
         const p = post.get({ plain: true });
         return {
           id:            p.id,
