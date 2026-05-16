@@ -19,7 +19,7 @@ const BADGE_LABEL: Record<string, string> = {
 
 interface Post {
   id: string;
-  slug?: string;
+  slug: string;
   content: string;
   postType: string;
   images: string[];
@@ -53,7 +53,7 @@ export default function PostCard({ post: initial }: { post: Post }) {
   const [toggleLike] = useToggleLikeMutation();
   const [post, setPost] = useState(initial);
 
-  const postHref = `/post/${post.slug ?? post.id}`;
+  const postHref = `/post/${post.slug}`;
 
   const handleLike = async () => {
     if (!isLoggedIn) { router.push("/login"); return; }

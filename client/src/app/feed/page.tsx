@@ -11,6 +11,7 @@ const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:9000/api/v1";
 
 interface Post {
   id: string;
+  slug: string;
   content: string;
   postType: string;
   images: string[];

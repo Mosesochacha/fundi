@@ -5,21 +5,10 @@ import db from '../models';
 import { sendSuccess, sendError, asyncHandler } from '../utils/helpers';
 import { HTTP_STATUS } from '../utils/constants';
 import typesenseService from '../services/typesense.service';
+import { generateSlug } from '../utils/slugify';
 
 const AUTHOR_ATTRS = ['id', 'fullName', 'profession', 'location', 'avatarUrl', 'username'];
 const COMMENTER_ATTRS = ['id', 'fullName', 'avatarUrl', 'username'];
-
-function generateSlug(content: string, id: string): string {
-  const words = content
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 6)
-    .join('-');
-  const prefix = id.split('-')[0];
-  return `${words}-${prefix}`;
-}
 
 function buildPostIncludes(profileId?: string) {
   return [

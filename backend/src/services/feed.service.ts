@@ -1,6 +1,7 @@
 import { Op } from 'sequelize';
 import db from '../models';
 import typesenseService from './typesense.service';
+import { generateSlug } from '../utils/slugify';
 
 const AUTHOR_ATTRS = ['id', 'fullName', 'profession', 'location', 'avatarUrl', 'username'];
 
@@ -79,8 +80,10 @@ export class FeedService {
     return {
       posts: rows.map((post: any) => {
         const p = post.get({ plain: true });
+        const slug = p.slug || generateSlug(p.content, p.id);
         return {
           id:            p.id,
+          slug,
           content:       p.content,
           postType:      p.postType,
           images:        p.images        || [],

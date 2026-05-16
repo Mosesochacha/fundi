@@ -362,11 +362,11 @@ class ProfileController {
       }),
       ...(likes as any[]).map((l: any) => {
         const p = l.get({ plain: true });
-        return { type: 'like', message: `${p.profile?.fullName ?? 'Someone'} appreciated your post`, actor: p.profile, postSlug: p.post?.slug ?? p.post?.id, createdAt: l.createdAt };
+        return { type: 'like', message: `${p.profile?.fullName ?? 'Someone'} appreciated your post`, actor: p.profile, postSlug: p.post?.slug, createdAt: l.createdAt };
       }),
       ...(comments as any[]).map((c: any) => {
         const p = c.get({ plain: true });
-        return { type: 'comment', message: `${p.author?.fullName ?? 'Someone'} commented on your post`, actor: p.author, postSlug: p.post?.slug ?? p.post?.id, createdAt: c.createdAt };
+        return { type: 'comment', message: `${p.author?.fullName ?? 'Someone'} commented on your post`, actor: p.author, postSlug: p.post?.slug, createdAt: c.createdAt };
       }),
     ];
 
