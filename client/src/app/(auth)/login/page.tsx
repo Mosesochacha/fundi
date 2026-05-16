@@ -68,8 +68,8 @@ export default function LoginPage() {
       if (!user.isOnboarded) {
         router.push("/setup");
       } else {
-        success("Welcome back! Taking you to your dashboard...");
-        router.push("/dashboard");
+        success("Welcome back! Taking you to your feed...");
+        router.push("/feed");
       }
     } catch (err) {
       const status = (err as { status?: number })?.status;

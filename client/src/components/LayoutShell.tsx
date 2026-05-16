@@ -46,7 +46,7 @@ function OnboardingGuard() {
       router.replace("/setup");
     } else if (user?.isOnboarded && pathname === "/setup") {
       // Only redirect from the choice screen, not from mid-flow or complete pages
-      router.replace("/dashboard");
+      router.replace("/feed");
     }
   }, [isLoggedIn, user?.isOnboarded, isSetup, isAuth, pathname, router]);
 
