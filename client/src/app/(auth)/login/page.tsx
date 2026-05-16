@@ -130,85 +130,114 @@ export default function LoginPage() {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: "easeOut" }}
-      className="space-y-7"
     >
-      <PageHeader title="Welcome back" subtitle="Sign in to your Fundi account" />
-
-      {lockSecondsLeft > 0 && (
-        <div className="bg-coral-lt border border-coral/30 rounded-xl px-4 py-3 text-sm text-gray-700 font-dm-sans">
-          Account locked. Try again in{" "}
-          <span className="font-semibold text-coral">{formatLock(lockSecondsLeft)}</span>
-        </div>
-      )}
-
-      {unverifiedEmail && (
-        <div className="rounded-xl bg-orange-50 border border-orange-200 px-4 py-4 space-y-2">
-          <p className="text-[13px] font-semibold text-orange-700 font-dm-sans">Email not verified</p>
-          <p className="text-[13px] text-orange-600 font-dm-sans leading-relaxed">
-            Check your inbox for the 6-digit verification code we sent when you registered.
-          </p>
-          <Link
-            href={`/verify-email?email=${encodeURIComponent(unverifiedEmail)}`}
-            className="inline-block text-[13px] font-semibold font-dm-sans underline underline-offset-2"
-            style={{ color: "var(--orange-500)" }}
-          >
-            Enter verification code →
-          </Link>
-        </div>
-      )}
-
-      <motion.form
-        onSubmit={handleSubmit(onSubmit)}
-        animate={hasError ? { x: [0, -8, 8, -4, 4, 0] } : {}}
-        transition={{ duration: 0.4 }}
-        className="space-y-4"
-        noValidate
+      {/* White card */}
+      <div
+        className="bg-white border border-gray-100 rounded-2xl p-8 space-y-6"
+        style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}
       >
-        <FormInput
-          label="Email address"
-          type="email"
-          autoComplete="email"
-          inputMode="email"
-          enterKeyHint="next"
-          placeholder="you@example.com"
-          error={errors.email?.message}
-          disabled={lockSecondsLeft > 0}
-          {...register("email")}
-        />
+        <PageHeader title="Welcome back" subtitle="Sign in to your Fundi account" />
 
-        <div className="space-y-1">
-          <PasswordInput
-            label="Password"
-            autoComplete="current-password"
-            placeholder="••••••••"
-            error={errors.password?.message}
-            disabled={lockSecondsLeft > 0}
-            watchValue={watch("password")}
-            {...register("password")}
-          />
-          <div className="flex justify-end">
+        {lockSecondsLeft > 0 && (
+          <div className="bg-coral-lt border border-coral/30 rounded-xl px-4 py-3 text-sm text-gray-700 font-dm-sans">
+            Account locked. Try again in{" "}
+            <span className="font-semibold text-coral">{formatLock(lockSecondsLeft)}</span>
+          </div>
+        )}
+
+        {unverifiedEmail && (
+          <div className="rounded-xl bg-orange-50 border border-orange-200 px-4 py-4 space-y-2">
+            <p className="text-[13px] font-semibold text-orange-700 font-dm-sans">Email not verified</p>
+            <p className="text-[13px] text-orange-600 font-dm-sans leading-relaxed">
+              Check your inbox for the 6-digit verification code we sent when you registered.
+            </p>
             <Link
-              href="/forgot-password"
-              className="text-[13px] font-dm-sans font-medium"
+              href={`/verify-email?email=${encodeURIComponent(unverifiedEmail)}`}
+              className="inline-block text-[13px] font-semibold font-dm-sans underline underline-offset-2"
               style={{ color: "var(--orange-500)" }}
             >
-              Forgot password?
+              Enter verification code →
             </Link>
           </div>
+        )}
+
+        <motion.form
+          onSubmit={handleSubmit(onSubmit)}
+          animate={hasError ? { x: [0, -8, 8, -4, 4, 0] } : {}}
+          transition={{ duration: 0.4 }}
+          className="space-y-4"
+          noValidate
+        >
+          <FormInput
+            label="Email address"
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            enterKeyHint="next"
+            placeholder="you@example.com"
+            error={errors.email?.message}
+            disabled={lockSecondsLeft > 0}
+            {...register("email")}
+          />
+
+          <div className="space-y-1">
+            <PasswordInput
+              label="Password"
+              autoComplete="current-password"
+              placeholder="••••••••"
+              error={errors.password?.message}
+              disabled={lockSecondsLeft > 0}
+              watchValue={watch("password")}
+              {...register("password")}
+            />
+            <div className="flex justify-end">
+              <Link
+                href="/forgot-password"
+                className="text-[13px] font-dm-sans font-medium"
+                style={{ color: "var(--orange-500)" }}
+              >
+                Forgot password?
+              </Link>
+            </div>
+          </div>
+
+          <Button
+            type="submit"
+            variant="primary"
+            fullWidth
+            loading={isLoading}
+            disabled={lockSecondsLeft > 0}
+          >
+            Sign in
+          </Button>
+        </motion.form>
+
+        {/* Divider */}
+        <div className="flex items-center gap-3">
+          <div className="flex-1 h-px bg-gray-200" />
+          <span className="font-dm-sans text-xs text-gray-400">or</span>
+          <div className="flex-1 h-px bg-gray-200" />
         </div>
 
-        <Button
-          type="submit"
-          variant="primary"
-          fullWidth
-          loading={isLoading}
-          disabled={lockSecondsLeft > 0}
+        {/* Magic link — placeholder, no backend endpoint yet */}
+        <button
+          type="button"
+          disabled
+          className="w-full h-12 rounded-xl border border-gray-200 bg-white font-dm-sans text-sm font-medium flex items-center justify-center gap-2 cursor-not-allowed opacity-50 text-gray-400"
         >
-          Sign in
-        </Button>
-      </motion.form>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M1 5l7 5 7-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Continue with magic link
+          <span className="text-xs text-gray-300">(coming soon)</span>
+        </button>
+      </div>
 
-      <AuthLink question="Don't have an account?" linkText="Create one free" href="/register" />
+      {/* AuthLink outside the card */}
+      <div className="mt-5">
+        <AuthLink question="Don't have an account?" linkText="Create one free" href="/register" />
+      </div>
     </motion.div>
   );
 }

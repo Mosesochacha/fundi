@@ -1,22 +1,33 @@
-import SocialProof from "@/components/auth/SocialProof";
+import Link from "next/link";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex flex-col md:flex-row">
-      {/* Left panel — desktop only */}
-      <div
-        className="hidden md:flex md:w-[40%] relative overflow-hidden"
-        style={{ background: "var(--orange-950)" }}
-      >
-        <SocialProof />
+    <div className="min-h-screen bg-[#FDFAF6] flex flex-col items-center justify-center px-4 py-12">
+      {/* Logo */}
+      <div className="mb-8 text-center">
+        <Link
+          href="/"
+          className="font-playfair text-2xl font-bold text-gray-900 hover:opacity-80 transition-opacity"
+        >
+          Fundi
+        </Link>
+        <p className="font-dm-sans text-sm text-gray-400 mt-1">
+          The professional identity platform
+        </p>
       </div>
 
-      {/* Right panel — form area */}
-      <div
-        className="flex-1 flex flex-col px-6 py-12 md:px-12 md:items-center md:justify-center min-h-screen md:min-h-0"
-        style={{ background: "var(--cream)" }}
-      >
-        <div className="w-full max-w-[440px] mx-auto">{children}</div>
+      {/* Page content — each page renders its own white card */}
+      <div className="w-full max-w-[420px]">{children}</div>
+
+      {/* Footer */}
+      <div className="mt-8 flex items-center justify-center gap-3 font-dm-sans text-xs text-gray-300">
+        <span>© 2026 Fundi</span>
+        <Link href="/privacy" className="hover:text-gray-500 transition-colors">
+          Privacy
+        </Link>
+        <Link href="/terms" className="hover:text-gray-500 transition-colors">
+          Terms
+        </Link>
       </div>
     </div>
   );

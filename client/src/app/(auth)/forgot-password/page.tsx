@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState, useRef, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -16,31 +17,66 @@ const schema = z.object({
 });
 type FormValues = z.infer<typeof schema>;
 
-const EnvelopeIcon = () => (
-  <svg width="80" height="80" viewBox="0 0 80 80" fill="none" aria-hidden="true">
-    <rect width="80" height="80" rx="20" fill="#fff7ed" />
+const CheckIcon = () => (
+  <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+    <rect width="48" height="48" rx="12" fill="#fff7ed" />
     <path
-      d="M16 28C16 25.8 17.8 24 20 24H60C62.2 24 64 25.8 64 28V52C64 54.2 62.2 56 60 56H20C17.8 56 16 54.2 16 52V28Z"
-      stroke="#f97316" strokeWidth="2.5" strokeLinejoin="round"
+      d="M14 24l8 8 12-16"
+      stroke="#f97316"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
-    <path d="M16 28L40 44L64 28" stroke="#f97316" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
 export default function ForgotPasswordPage() {
-  const [forgotPassword, { isLoading, isSuccess }] = useForgotPasswordMutation();
+  const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
   const { error: toastError } = useToastContext();
+
+  const [sent, setSent] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState("");
+  const [countdown, setCountdown] = useState(45);
+  const [canResend, setCanResend] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const {
     register,
     handleSubmit,
-    getValues,
     formState: { errors },
   } = useForm<FormValues>({ resolver: zodResolver(schema) });
+
+  const startCountdown = useCallback(() => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    setCountdown(45);
+    setCanResend(false);
+    intervalRef.current = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(intervalRef.current!);
+          setCanResend(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }, []);
 
   const onSubmit = async (data: FormValues) => {
     try {
       await forgotPassword({ email: data.email.trim().toLowerCase() }).unwrap();
+      setSubmittedEmail(data.email.trim());
+      setSent(true);
+      startCountdown();
+    } catch {
+      toastError("Something went wrong. Please try again.");
+    }
+  };
+
+  const handleResend = async () => {
+    try {
+      await forgotPassword({ email: submittedEmail.trim().toLowerCase() }).unwrap();
+      startCountdown();
     } catch {
       toastError("Something went wrong. Please try again.");
     }
@@ -52,78 +88,107 @@ export default function ForgotPasswordPage() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: "easeOut" }}
     >
-      <AnimatePresence mode="wait">
-        {!isSuccess ? (
-          <motion.div
-            key="form"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="space-y-7"
-          >
-            <PageHeader
-              title="Reset your password"
-              subtitle="Enter your email and we'll send you a reset link"
-            />
-
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
-              <FormInput
-                label="Email address"
-                type="email"
-                inputMode="email"
-                autoComplete="email"
-                placeholder="you@example.com"
-                error={errors.email?.message}
-                {...register("email")}
-              />
-              <Button type="submit" variant="primary" fullWidth loading={isLoading}>
-                Send reset link
-              </Button>
-            </form>
-
-            <p className="text-center text-[14px] font-dm-sans">
-              <Link href="/login" className="text-gray-500 hover:text-gray-700 transition-colors">
-                ← Back to login
-              </Link>
-            </p>
-          </motion.div>
-        ) : (
-          <motion.div
-            key="sent"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35 }}
-            className="space-y-6 text-center"
-          >
+      {/* White card */}
+      <div
+        className="bg-white border border-gray-100 rounded-2xl p-8"
+        style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}
+      >
+        <AnimatePresence mode="wait">
+          {!sent ? (
             <motion.div
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              className="flex justify-center"
+              key="form"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="space-y-6"
             >
-              <EnvelopeIcon />
-            </motion.div>
-            <div>
-              <h1 className="text-[28px] font-bold text-gray-900 font-playfair leading-tight">
-                Check your email
-              </h1>
-              <p className="text-[15px] text-gray-600 mt-3 font-dm-sans leading-relaxed">
-                We sent a reset link to{" "}
-                <span className="font-semibold text-gray-800">{getValues("email")}</span>.
-                Click the link in the email to set a new password.
-              </p>
-            </div>
-            <p className="text-[13px] text-gray-400 italic font-dm-sans">
-              Check your spam folder if you don't see it within 2 minutes.
-            </p>
-            <p className="text-[13px] text-gray-500 font-dm-sans">
-              <Link href="/login" className="hover:text-gray-600 transition-colors">
-                ← Back to login
+              <Link
+                href="/login"
+                className="inline-block font-dm-sans text-sm text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                ← Back to sign in
               </Link>
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
+              <PageHeader
+                title="Reset your password"
+                subtitle="Enter your email and we'll send you a reset link"
+              />
+
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+                <FormInput
+                  label="Email address"
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  error={errors.email?.message}
+                  {...register("email")}
+                />
+                <Button type="submit" variant="primary" fullWidth loading={isLoading}>
+                  Send reset link
+                </Button>
+              </form>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="sent"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35 }}
+              className="space-y-6 text-center"
+            >
+              <motion.div
+                initial={{ scale: 0.8 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className="flex justify-center"
+              >
+                <CheckIcon />
+              </motion.div>
+
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 font-playfair leading-tight">
+                  Check your email
+                </h1>
+                <p className="text-sm text-gray-500 mt-2 font-dm-sans leading-relaxed">
+                  We sent a reset link to{" "}
+                  <span className="font-semibold text-gray-700">{submittedEmail}</span>.
+                  <br />
+                  Click the link to reset your password.
+                </p>
+              </div>
+
+              <div className="font-dm-sans text-sm text-center">
+                {canResend ? (
+                  <button
+                    type="button"
+                    onClick={handleResend}
+                    className="text-orange-500 hover:text-orange-600 font-medium transition-colors"
+                  >
+                    Resend email
+                  </button>
+                ) : (
+                  <span className="text-gray-400">Resend in {countdown}s</span>
+                )}
+              </div>
+
+              <Link
+                href="/login"
+                className="block font-dm-sans text-sm text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                ← Back to sign in
+              </Link>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Note below card */}
+      {sent && (
+        <p className="mt-4 text-center font-dm-sans text-xs text-gray-300 italic">
+          Check your spam folder if you don't see it within 2 minutes.
+        </p>
+      )}
     </motion.div>
   );
 }

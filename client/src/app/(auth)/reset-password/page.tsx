@@ -53,74 +53,76 @@ export default function ResetPasswordPage() {
     }
   };
 
-  if (!token) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, ease: "easeOut" }}
-        className="space-y-6 text-center"
-      >
-        <PageHeader
-          title="Invalid link"
-          subtitle="This password reset link is missing or malformed."
-        />
-        <Link
-          href="/forgot-password"
-          className="block w-full h-[52px] rounded-[10px] bg-[#f97316] text-white text-[15px] font-semibold font-dm-sans flex items-center justify-center"
-        >
-          Request a new link
-        </Link>
-      </motion.div>
-    );
-  }
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: "easeOut" }}
-      className="space-y-7"
     >
-      <PageHeader
-        title="Set new password"
-        subtitle="Choose a strong password for your account"
-      />
+      {/* White card */}
+      <div
+        className="bg-white border border-gray-100 rounded-2xl p-8"
+        style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}
+      >
+        {!token ? (
+          <div className="space-y-6 text-center">
+            <div className="bg-orange-50 border border-orange-200 rounded-xl p-6 space-y-3">
+              <h1 className="text-xl font-bold text-gray-900 font-playfair">Link expired</h1>
+              <p className="text-sm text-gray-500 font-dm-sans">
+                This reset link has expired or already been used.
+              </p>
+            </div>
+            <Link
+              href="/forgot-password"
+              className="block w-full h-12 rounded-xl border border-orange-300 text-orange-500 hover:bg-orange-50 font-dm-sans text-sm font-medium flex items-center justify-center transition-colors"
+            >
+              Request a new link →
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <PageHeader
+              title="Set new password"
+              subtitle="Choose a strong password for your account"
+            />
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
-        <PasswordInput
-          label="New password"
-          autoComplete="new-password"
-          placeholder="••••••••"
-          showStrength
-          watchValue={watch("newPassword")}
-          error={errors.newPassword?.message}
-          {...register("newPassword")}
-        />
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+              <PasswordInput
+                label="New password"
+                autoComplete="new-password"
+                placeholder="••••••••"
+                showStrength
+                watchValue={watch("newPassword")}
+                error={errors.newPassword?.message}
+                {...register("newPassword")}
+              />
 
-        <PasswordInput
-          label="Confirm new password"
-          autoComplete="new-password"
-          placeholder="••••••••"
-          isSuccess={
-            !errors.confirmPassword &&
-            !!watch("confirmPassword") &&
-            watch("newPassword") === watch("confirmPassword")
-          }
-          error={errors.confirmPassword?.message}
-          {...register("confirmPassword")}
-        />
+              <PasswordInput
+                label="Confirm new password"
+                autoComplete="new-password"
+                placeholder="••••••••"
+                isSuccess={
+                  !errors.confirmPassword &&
+                  !!watch("confirmPassword") &&
+                  watch("newPassword") === watch("confirmPassword")
+                }
+                error={errors.confirmPassword?.message}
+                {...register("confirmPassword")}
+              />
 
-        <Button type="submit" variant="primary" fullWidth loading={isLoading}>
-          Reset password
-        </Button>
-      </form>
+              <Button type="submit" variant="primary" fullWidth loading={isLoading}>
+                Update password
+              </Button>
+            </form>
 
-      <p className="text-center text-[13px] text-gray-400 font-dm-sans">
-        <Link href="/login" className="hover:text-gray-600 transition-colors">
-          ← Back to login
-        </Link>
-      </p>
+            <p className="text-center font-dm-sans text-sm text-gray-400">
+              <Link href="/login" className="hover:text-gray-600 transition-colors">
+                ← Back to sign in
+              </Link>
+            </p>
+          </div>
+        )}
+      </div>
     </motion.div>
   );
 }
