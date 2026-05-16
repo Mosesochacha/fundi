@@ -38,7 +38,7 @@ const baseQueryWithReauth: typeof baseQuery = async (args, api, extra) => {
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["User", "Profile", "Feed", "Post", "Comments", "Sessions", "Settings"],
+  tagTypes: ["User", "Profile", "Feed", "Post", "Comments", "CommentLikes", "Sessions", "Settings"],
   endpoints: (builder) => ({
     // Auth
     register: builder.mutation<ApiResponse, RegisterInput>({
@@ -79,6 +79,10 @@ export const apiSlice = createApi({
       query: (id) => `/posts/${id}`,
       providesTags: (_r, _e, id) => [{ type: "Post", id }],
     }),
+    getPostBySlug: builder.query<ApiResponse, string>({
+      query: (slug) => `/posts/by-slug/${slug}`,
+      providesTags: (_r, _e, slug) => [{ type: "Post", id: slug }],
+    }),
     createPost: builder.mutation<ApiResponse, CreatePostInput>({
       query: (data) => ({ url: "/posts", method: "POST", body: data }),
       invalidatesTags: ["Feed"],
@@ -95,13 +99,54 @@ export const apiSlice = createApi({
       query: (postId) => `/posts/${postId}/comments`,
       providesTags: (_r, _e, postId) => [{ type: "Comments", id: postId }],
     }),
-    addComment: builder.mutation<ApiResponse, { postId: string; content: string }>({
-      query: ({ postId, content }) => ({
+    addComment: builder.mutation<ApiResponse, { postId: string; content: string; parentCommentId?: string }>({
+      query: ({ postId, content, parentCommentId }) => ({
         url: `/posts/${postId}/comments`,
         method: "POST",
-        body: { content },
+        body: { content, ...(parentCommentId ? { parentCommentId } : {}) },
+      }),
+      async onQueryStarted({ postId, content, parentCommentId }, { dispatch, queryFulfilled, getState }) {
+        const me = (getState() as import("./index").RootState).auth.profile;
+        if (!me) return;
+        const optimistic = {
+          id: `optimistic-${Date.now()}`,
+          postId,
+          content,
+          parentCommentId: parentCommentId ?? null,
+          likesCount: 0,
+          likedByMe: false,
+          createdAt: new Date().toISOString(),
+          author: { id: me.id, fullName: me.fullName, avatarUrl: me.avatarUrl, username: me.username },
+          replies: [],
+        };
+        const patch = dispatch(
+          apiSlice.util.updateQueryData("getComments", postId, (draft: any) => {
+            const list: any[] = draft.data ?? [];
+            if (parentCommentId) {
+              const parent = list.find((c: any) => c.id === parentCommentId);
+              if (parent) parent.replies = [...(parent.replies ?? []), optimistic];
+            } else {
+              list.push(optimistic);
+            }
+          })
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patch.undo();
+        }
+        dispatch(apiSlice.util.invalidateTags([{ type: "Comments", id: postId }]));
+      },
+    }),
+    toggleCommentLike: builder.mutation<ApiResponse, { postId: string; commentId: string }>({
+      query: ({ postId, commentId }) => ({
+        url: `/posts/${postId}/comments/${commentId}/like`,
+        method: "POST",
       }),
       invalidatesTags: (_r, _e, { postId }) => [{ type: "Comments", id: postId }],
+    }),
+    searchProfiles: builder.query<ApiResponse, string>({
+      query: (q) => `/profiles/search?q=${encodeURIComponent(q)}`,
     }),
     polishPost: builder.mutation<ApiResponse, { roughText: string; profession?: string; postType?: string }>({
       query: (data) => ({ url: "/ai/polish-post", method: "POST", body: data }),
@@ -199,6 +244,18 @@ export const apiSlice = createApi({
     getLoginHistory: builder.query<ApiResponse, number | void>({
       query: (limit = 5) => `/auth/login-history?limit=${limit}`,
     }),
+
+    // Browse
+    browseProfiles: builder.query<ApiResponse, { profession?: string; location?: string; page?: number; limit?: number }>({
+      query: ({ profession, location, page = 1, limit = 20 } = {}) => {
+        const params = new URLSearchParams();
+        if (profession) params.set('profession', profession);
+        if (location) params.set('location', location);
+        params.set('page', String(page));
+        params.set('limit', String(limit));
+        return `/profiles/browse?${params.toString()}`;
+      },
+    }),
   }),
 });
 
@@ -213,11 +270,14 @@ export const {
   useResetPasswordMutation,
   useGetFeedQuery,
   useGetPostQuery,
+  useGetPostBySlugQuery,
   useCreatePostMutation,
   useDeletePostMutation,
   useToggleLikeMutation,
   useGetCommentsQuery,
   useAddCommentMutation,
+  useToggleCommentLikeMutation,
+  useSearchProfilesQuery,
   usePolishPostMutation,
   useGetProfileQuery,
   useGetProfilePostsQuery,
@@ -240,6 +300,7 @@ export const {
   useRevokeSessionMutation,
   useRevokeAllSessionsMutation,
   useGetLoginHistoryQuery,
+  useBrowseProfilesQuery,
 } = apiSlice;
 
 // Types

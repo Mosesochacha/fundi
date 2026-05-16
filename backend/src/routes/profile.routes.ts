@@ -8,6 +8,8 @@ const router = Router();
 
 // Must be before /profiles/:username to avoid param capture
 router.get('/profiles/check-username', verifyJWT, SettingsController.checkUsername);
+router.get('/profiles/browse', optionalAuth, ProfileController.browseProfiles);
+router.get('/profiles/search', optionalAuth, ProfileController.searchProfiles);
 router.get('/public/check-username', ProfileController.checkUsernamePublic);
 
 router.get('/profiles/:username', optionalAuth, ProfileController.getProfile);

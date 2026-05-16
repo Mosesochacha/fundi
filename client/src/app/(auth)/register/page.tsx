@@ -15,12 +15,7 @@ import Button from "@/components/ui/Button";
 import PageHeader from "@/components/ui/PageHeader";
 import AuthLink from "@/components/ui/AuthLink";
 import FieldError from "@/components/ui/FieldError";
-
-const PROFESSIONS = [
-  "Plumber", "Electrician", "Carpenter", "Painter", "Mason",
-  "Welder", "Mechanic", "Tailor", "Chef", "Cleaner",
-  "Landscaper", "Tiler", "Roofing", "AC Tech", "Other",
-];
+import { PROFESSIONS } from "@/lib/professions";
 
 const STEP1_FIELDS = ["firstName", "lastName", "email", "password", "confirmPassword"] as const;
 const STEP2_FIELDS = ["username", "location", "profession", "termsAccepted", "ageConfirmed"] as const;

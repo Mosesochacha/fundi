@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import { Op } from 'sequelize';
 import { AuthenticatedRequest } from '../middleware/verifyJWT';
 import db from '../models';
 import { sendSuccess, sendError, asyncHandler, paginate } from '../utils/helpers';
@@ -121,6 +122,61 @@ class ProfileController {
       profileUrl: `${BASE}/${profile.username}`,
       profile: profile.get({ plain: true }),
     });
+  });
+
+  browseProfiles = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const profession = ((req.query.profession as string) || '').trim();
+    const location = ((req.query.location as string) || '').trim();
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string) || 20));
+    const { skip } = paginate(page, limit);
+
+    const where: any = { profilePublic: true, appearInSearch: true };
+    if (profession) where.profession = { [Op.iLike]: `%${profession}%` };
+    if (location) where.location = { [Op.iLike]: `%${location}%` };
+
+    const followersSubquery = db.sequelize.literal(
+      '(SELECT COUNT(*) FROM "Follows" WHERE "followingId" = "Profile"."id")'
+    );
+
+    const { count: total, rows } = await db.Profile.findAndCountAll({
+      where,
+      attributes: {
+        include: [[followersSubquery, 'followersCount']],
+      },
+      order: [
+        [db.sequelize.literal('(SELECT COUNT(*) FROM "Follows" WHERE "followingId" = "Profile"."id")'), 'DESC'],
+        ['views', 'DESC'],
+      ],
+      offset: skip,
+      limit,
+    });
+
+    return sendSuccess(res, 'Profiles found', {
+      profiles: rows.map((p: any) => p.get({ plain: true })),
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    });
+  });
+
+  searchProfiles = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const q = ((req.query.q as string) || '').trim();
+    if (q.length < 2) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Query too short');
+
+    const profiles = await db.Profile.findAll({
+      where: {
+        [Op.or]: [
+          { username: { [Op.iLike]: `%${q}%` } },
+          { fullName: { [Op.iLike]: `%${q}%` } },
+        ],
+        profilePublic: true,
+      },
+      attributes: ['username', 'fullName', 'avatarUrl'],
+      limit: 8,
+    });
+
+    return sendSuccess(res, 'Profiles found', profiles.map((p: any) => p.get({ plain: true })));
   });
 
   checkUsernamePublic = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {

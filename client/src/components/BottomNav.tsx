@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, PenSquare, User, Settings } from "lucide-react";
+import { Home, PenSquare, User, Settings, Compass } from "lucide-react";
 import { useAppSelector } from "@/store/hooks";
 
 export default function BottomNav() {
@@ -26,6 +26,17 @@ export default function BottomNav() {
         >
           <Home className={`w-5 h-5 ${isActive("/feed") ? "stroke-[2.5]" : "stroke-2"}`} />
           <span>Feed</span>
+        </Link>
+
+        {/* Browse */}
+        <Link
+          href="/browse"
+          className={`flex-1 flex flex-col items-center justify-center gap-1 pt-2 text-xs font-medium transition-colors ${
+            isActive("/browse") ? "text-primary" : "text-gray-400 hover:text-gray-600"
+          }`}
+        >
+          <Compass className={`w-5 h-5 ${isActive("/browse") ? "stroke-[2.5]" : "stroke-2"}`} />
+          <span>Browse</span>
         </Link>
 
         {/* Create — raised FAB */}
