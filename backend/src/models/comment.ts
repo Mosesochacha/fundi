@@ -15,12 +15,17 @@ export class Comment extends Model<
   declare postId: string;
   declare authorId: string;
   declare content: string;
+  declare parentCommentId: CreationOptional<string | null>;
+  declare likesCount: CreationOptional<number>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 
   static associate(models: any) {
     Comment.belongsTo(models.Post, { foreignKey: 'postId', as: 'post' });
     Comment.belongsTo(models.Profile, { foreignKey: 'authorId', as: 'author' });
+    Comment.hasMany(models.Comment, { foreignKey: 'parentCommentId', as: 'replies' });
+    Comment.belongsTo(models.Comment, { foreignKey: 'parentCommentId', as: 'parent' });
+    Comment.hasMany(models.CommentLike, { foreignKey: 'commentId', as: 'commentLikes' });
   }
 }
 
@@ -44,6 +49,13 @@ export function initModel(sequelize: Sequelize): typeof Comment {
         references: { model: 'Profiles', key: 'id' },
       } as any,
       content: { type: DataTypes.TEXT, allowNull: false },
+      parentCommentId: {
+        type: DataTypes.UUID,
+        allowNull: true,
+        references: { model: 'Comments', key: 'id' },
+        onDelete: 'CASCADE',
+      } as any,
+      likesCount: { type: DataTypes.INTEGER, defaultValue: 0 },
       createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
       updatedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
     },

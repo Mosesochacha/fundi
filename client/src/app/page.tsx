@@ -47,7 +47,7 @@ function IconBolt() {
 
 function IconCamera() {
   return (
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+    <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
       <rect x="3" y="9" width="26" height="17" rx="3" stroke="currentColor" strokeWidth="2" />
       <circle cx="16" cy="17" r="5" stroke="currentColor" strokeWidth="2" />
       <path d="M12 9l2-4h4l2 4" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
@@ -57,7 +57,7 @@ function IconCamera() {
 
 function IconUsers() {
   return (
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+    <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
       <circle cx="12" cy="11" r="4" stroke="currentColor" strokeWidth="2" />
       <circle cx="22" cy="11" r="4" stroke="currentColor" strokeWidth="2" />
       <path d="M2 27c0-5 4-8 10-8s10 3 10 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -68,7 +68,7 @@ function IconUsers() {
 
 function IconChat() {
   return (
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+    <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
       <path d="M5 5h22a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H10l-7 5V7a2 2 0 0 1 2-2z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
     </svg>
   );
@@ -256,7 +256,7 @@ export default function LandingPage() {
               <div className="grid md:grid-cols-3 gap-6">
                 {/* Step 1 */}
                 <div className="relative bg-white border border-gray-100 rounded-2xl p-8 shadow-[0_1px_3px_rgba(0,0,0,0.06)] z-10">
-                  <p className="font-playfair text-[48px] font-bold text-orange-100 leading-none mb-5">01</p>
+                  <p className="font-playfair text-6xl md:text-7xl font-bold text-orange-100 leading-none mb-5">01</p>
                   <h3 className="font-dm-sans text-lg font-semibold text-brand-dark mb-3">Tell us about yourself</h3>
                   <p className="font-dm-sans text-[15px] text-gray-500 leading-relaxed mb-5">
                     Answer three simple questions about your profession, location, and what makes you stand out. Takes under two minutes.
@@ -268,7 +268,7 @@ export default function LandingPage() {
 
                 {/* Step 2 */}
                 <div className="relative bg-white border border-gray-100 rounded-2xl p-8 shadow-[0_1px_3px_rgba(0,0,0,0.06)] z-10">
-                  <p className="font-playfair text-[48px] font-bold text-orange-100 leading-none mb-5">02</p>
+                  <p className="font-playfair text-6xl md:text-7xl font-bold text-orange-100 leading-none mb-5">02</p>
                   <h3 className="font-dm-sans text-lg font-semibold text-brand-dark mb-3">Your profile goes live</h3>
                   <p className="font-dm-sans text-[15px] text-gray-500 leading-relaxed mb-5">
                     Our AI writes your bio, tagline, and service list instantly. Your profile is live and shareable the moment you publish.
@@ -280,7 +280,7 @@ export default function LandingPage() {
 
                 {/* Step 3 */}
                 <div className="relative bg-white border border-gray-100 rounded-2xl p-8 shadow-[0_1px_3px_rgba(0,0,0,0.06)] z-10">
-                  <p className="font-playfair text-[48px] font-bold text-orange-100 leading-none mb-5">03</p>
+                  <p className="font-playfair text-6xl md:text-7xl font-bold text-orange-100 leading-none mb-5">03</p>
                   <h3 className="font-dm-sans text-lg font-semibold text-brand-dark mb-3">Clients find you</h3>
                   <p className="font-dm-sans text-[15px] text-gray-500 leading-relaxed mb-5">
                     Share your profile link anywhere. Get discovered through our global search. Build your reputation through community posts and reviews.
@@ -396,7 +396,7 @@ export default function LandingPage() {
             <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
               {/* Left — search mockup */}
               <div className="flex justify-center md:justify-start">
-                <div className="w-full max-w-[400px] bg-white border border-gray-200 rounded-xl shadow-[0_4px_16px_rgba(0,0,0,0.08)] overflow-hidden">
+                <div className="w-full max-w-md bg-white border border-gray-200 rounded-xl shadow-[0_4px_16px_rgba(0,0,0,0.08)] overflow-hidden">
                   {/* Search bar */}
                   <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
                     <span className="text-gray-400 flex-shrink-0"><IconSearch /></span>
@@ -410,12 +410,12 @@ export default function LandingPage() {
                     { initials: "SP", bg: "bg-orange-700", name: "Sara P.", role: "Plumber", city: "Birmingham", rating: 56 },
                   ].map((r, i) => (
                     <div key={i} className="flex items-center gap-3 px-5 py-3 border-b border-gray-50 last:border-0">
-                      <div className={`w-9 h-9 rounded-full ${r.bg} flex items-center justify-center text-white font-dm-sans text-xs font-semibold flex-shrink-0`}>
+                      <div className={`w-10 h-10 rounded-full ${r.bg} flex items-center justify-center text-white font-dm-sans text-sm font-semibold flex-shrink-0`}>
                         {r.initials}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-dm-sans text-sm font-semibold text-gray-900">{r.name}</p>
-                        <p className="font-dm-sans text-xs text-gray-400">{r.role} · {r.city}</p>
+                        <p className="font-dm-sans text-xs text-gray-500">{r.role} · {r.city}</p>
                       </div>
                       <div className="text-right flex-shrink-0">
                         <p className="text-amber-400 text-xs leading-none">★★★★★</p>
@@ -511,7 +511,9 @@ export default function LandingPage() {
                 },
               ].map(({ icon, title, desc }) => (
                 <div key={title} className="bg-white border border-gray-100 rounded-2xl p-8 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-                  <div className="text-orange-500 mb-5">{icon}</div>
+                  <div className="w-14 h-14 rounded-full bg-orange-50 flex items-center justify-center text-orange-500 mb-4">
+                    {icon}
+                  </div>
                   <h3 className="font-dm-sans text-lg font-semibold text-brand-dark mb-3">{title}</h3>
                   <p className="font-dm-sans text-[15px] text-gray-500 leading-relaxed">{desc}</p>
                 </div>
@@ -609,7 +611,7 @@ export default function LandingPage() {
               </Link>
               <Link
                 href="/browse"
-                className="inline-flex w-full sm:w-auto items-center justify-center h-14 px-9 font-dm-sans text-base font-semibold text-orange-500 bg-white border-[1.5px] border-orange-500 rounded-xl hover:bg-orange-50 transition-colors no-underline"
+                className="inline-flex w-full sm:w-auto items-center justify-center h-14 px-9 font-dm-sans text-base font-semibold text-orange-600 bg-white border-2 border-orange-500 rounded-xl hover:bg-orange-50 transition-colors duration-200 no-underline"
               >
                 Browse professionals
               </Link>
@@ -623,21 +625,25 @@ export default function LandingPage() {
       </main>
 
       {/* ── SECTION 11: FOOTER ──────────────────────────────────────── */}
-      <footer aria-label="Site footer" className="bg-brand-dark pt-12 md:pt-16 pb-8 px-6">
+      <footer aria-label="Site footer" className="bg-gray-50 border-t border-gray-200 pt-16 pb-8 px-6">
         <div className="max-w-[1100px] mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-10 mb-10 md:mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10 lg:gap-12">
             {/* Brand */}
-            <div className="col-span-2 md:col-span-1 pb-2 md:pb-0 border-b border-white/10 md:border-0">
-              <p className="font-playfair text-[22px] font-bold text-white mb-2">Fundi</p>
-              <p className="font-dm-sans text-sm text-white/60 leading-relaxed">
+            <div>
+              <p className="font-playfair text-xl font-bold text-gray-900">Fundi</p>
+              <p className="font-dm-sans text-sm text-gray-500 leading-relaxed mt-2 max-w-[180px]">
                 The professional identity platform.
               </p>
+              <div className="flex gap-4 mt-4">
+                <a href="#" className="font-dm-sans text-sm text-gray-400 hover:text-orange-500 transition-colors no-underline">Twitter</a>
+                <a href="#" className="font-dm-sans text-sm text-gray-400 hover:text-orange-500 transition-colors no-underline">LinkedIn</a>
+              </div>
             </div>
 
             {/* Platform */}
             <div>
-              <p className="font-dm-sans text-[13px] text-white/50 uppercase tracking-[0.08em] mb-4">Platform</p>
-              <ul className="space-y-2">
+              <p className="font-dm-sans text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Platform</p>
+              <ul>
                 {[
                   { label: "How it works", href: "#how-it-works" },
                   { label: "Browse professionals", href: "/browse" },
@@ -645,7 +651,7 @@ export default function LandingPage() {
                   { label: "Pricing", href: "#" },
                 ].map(({ label, href }) => (
                   <li key={label}>
-                    <a href={href} className="font-dm-sans text-sm text-white/75 hover:text-white transition-colors no-underline leading-loose">
+                    <a href={href} className="font-dm-sans text-sm text-gray-600 hover:text-orange-500 transition-colors block leading-loose no-underline">
                       {label}
                     </a>
                   </li>
@@ -655,11 +661,11 @@ export default function LandingPage() {
 
             {/* Company */}
             <div>
-              <p className="font-dm-sans text-[13px] text-white/50 uppercase tracking-[0.08em] mb-4">Company</p>
-              <ul className="space-y-2">
+              <p className="font-dm-sans text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Company</p>
+              <ul>
                 {["About", "Blog", "Careers", "Press"].map((link) => (
                   <li key={link}>
-                    <a href="#" className="font-dm-sans text-sm text-white/75 hover:text-white transition-colors no-underline leading-loose">
+                    <a href="#" className="font-dm-sans text-sm text-gray-600 hover:text-orange-500 transition-colors block leading-loose no-underline">
                       {link}
                     </a>
                   </li>
@@ -669,11 +675,11 @@ export default function LandingPage() {
 
             {/* Legal */}
             <div>
-              <p className="font-dm-sans text-[13px] text-white/50 uppercase tracking-[0.08em] mb-4">Legal</p>
-              <ul className="space-y-2">
+              <p className="font-dm-sans text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Legal</p>
+              <ul>
                 {["Privacy Policy", "Terms of Service", "Cookie Policy"].map((link) => (
                   <li key={link}>
-                    <a href="#" className="font-dm-sans text-sm text-white/75 hover:text-white transition-colors no-underline leading-loose">
+                    <a href="#" className="font-dm-sans text-sm text-gray-600 hover:text-orange-500 transition-colors block leading-loose no-underline">
                       {link}
                     </a>
                   </li>
@@ -682,20 +688,9 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="font-dm-sans text-[13px] text-white/50">
-              &copy; 2026 Fundi. All rights reserved.
-            </p>
-            <div className="flex items-center gap-4">
-              {["Twitter", "LinkedIn", "Instagram"].map((platform, i) => (
-                <span key={platform} className="flex items-center gap-4">
-                  {i > 0 && <span className="text-white/20 -ml-2">·</span>}
-                  <a href="#" className="font-dm-sans text-[13px] text-white/50 hover:text-white/80 transition-colors no-underline">
-                    {platform}
-                  </a>
-                </span>
-              ))}
-            </div>
+          <div className="border-t border-gray-200 mt-12 pt-6 flex flex-col md:flex-row justify-between items-center gap-2">
+            <p className="font-dm-sans text-sm text-gray-400">&copy; 2026 Fundi. All rights reserved.</p>
+            <p className="font-dm-sans text-sm text-gray-400">Made for professionals worldwide.</p>
           </div>
         </div>
       </footer>

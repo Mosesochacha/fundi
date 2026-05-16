@@ -24,7 +24,7 @@ export default function NavScroll() {
           Fundi
         </Link>
 
-        <nav className="hidden md:flex items-center gap-8" aria-label="Main navigation">
+        <nav className="hidden md:flex items-center gap-6" aria-label="Main navigation">
           <a
             href="#how-it-works"
             className="font-dm-sans text-sm text-gray-600 hover:text-orange-500 transition-colors no-underline"
