@@ -69,7 +69,7 @@ export default function LoginPage() {
         router.push("/setup");
       } else {
         success("Welcome back! Taking you to your dashboard...");
-        router.push("/feed");
+        router.push("/dashboard");
       }
     } catch (err) {
       const status = (err as { status?: number })?.status;
