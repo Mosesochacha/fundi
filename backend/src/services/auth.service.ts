@@ -98,77 +98,34 @@ class AuthService {
   }> {
     const { email, password } = loginData;
 
-    logger.info(`AuthService: Starting login process for email: ${email}`, {
-      ipAddress,
-      userAgent,
-      timestamp: new Date().toISOString()
-    });
-
     try {
-      // Find user by email
-      logger.info(`AuthService: Looking up user with email: ${email}`);
       const user = await db.User.findOne({ where: { email } });
-      
+
       if (!user) {
-        logger.warn(`AuthService: User not found for email: ${email}`, {
-          ipAddress,
-          userAgent
-        });
+        logger.warn('Login failed: user not found', { email, ipAddress });
         throw new Error("Invalid credentials");
       }
 
-      logger.info(`AuthService: User found - ID: ${user.id}, Email: ${user.email}`, {
-        userId: user.id,
-        emailVerified: user.emailVerified,
-        isActive: user.isActive
-      });
-
-      // Check if email is verified
       if (!user.emailVerified) {
-        logger.warn(`AuthService: Email not verified for user: ${email}`, {
-          userId: user.id,
-          ipAddress,
-          userAgent
-        });
+        logger.warn('Login failed: email not verified', { userId: user.id, ipAddress });
         throw new Error("Email not verified");
       }
 
-      // Check if user is active
       if (!user.isActive) {
-        logger.warn(`AuthService: Inactive user attempted login: ${email}`, {
-          userId: user.id,
-          ipAddress,
-          userAgent
-        });
+        logger.warn('Login failed: account deactivated', { userId: user.id, ipAddress });
         throw new Error("Account is deactivated");
       }
 
-      // Verify password
-      logger.info(`AuthService: Verifying password for user: ${email}`);
       const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-      
       if (!isPasswordValid) {
-        logger.warn(`AuthService: Invalid password for user: ${email}`, {
-          userId: user.id,
-          ipAddress,
-          userAgent
-        });
+        logger.warn('Login failed: invalid password', { userId: user.id, ipAddress });
         throw new Error("Invalid credentials");
       }
 
-      logger.info(`AuthService: Password verified for user: ${email}`);
-
-      // Generate tokens
-      logger.info(`AuthService: Generating tokens for user: ${email}`);
       const tokens = await this.generateTokens(user, ipAddress, userAgent);
-      logger.info(`AuthService: Tokens generated successfully for user: ${email}`);
 
-      // Update last login
-      logger.info(`AuthService: Updating last login for user: ${email}`);
       await user.update({ lastLoginAt: new Date() });
-      logger.info(`AuthService: Last login updated for user: ${email}`);
 
-      // Record successful login history
       try {
         await db.LoginHistory.create({
           userId: user.id,
@@ -180,11 +137,7 @@ class AuthService {
         logger.warn('Failed to record login history', { error: historyErr.message });
       }
 
-      logger.info(`AuthService: Login successful for user: ${email}`, {
-        userId: user.id,
-        ipAddress,
-        userAgent
-      });
+      logger.info('Login successful', { userId: user.id, ipAddress });
 
       const profile = await db.Profile.findOne({ where: { userId: user.id } });
 
@@ -194,13 +147,9 @@ class AuthService {
         tokens,
       };
     } catch (error: any) {
-      logger.error(`AuthService: Login failed for email: ${email}`, {
-        error: error.message,
-        stack: error.stack,
-        ipAddress,
-        userAgent,
-        timestamp: new Date().toISOString()
-      });
+      if (!['Invalid credentials', 'Email not verified', 'Account is deactivated'].includes(error.message)) {
+        logger.error('Login error', { email, error: error.message, ipAddress });
+      }
       throw error;
     }
   }
@@ -213,97 +162,40 @@ class AuthService {
     ipAddress: string,
     userAgent: string
   ): Promise<AuthTokens> {
-    logger.info(`AuthService: Starting token generation for user: ${user.email}`, {
-      userId: user.id,
-      ipAddress,
-      userAgent
-    });
-
     try {
-      logger.info(`AuthService: Generating JWT payload for user: ${user.email}`);
       const jti = uuidv4();
       const payload = generateJWTPayload(user);
-      logger.info(`AuthService: JWT payload generated for user: ${user.email}`, {
-        userId: user.id,
-        jti,
-        payloadKeys: Object.keys(payload)
-      });
 
-      // Generate access token
-      logger.info(`AuthService: Generating access token for user: ${user.email}`);
       const accessToken = jwt.sign(
-        {
-          ...payload,
-          jti,
-          ipAddress,
-          userAgent,
-        },
+        { ...payload, jti, ipAddress, userAgent },
         JWT_CONFIG.SECRET,
-        {
-          algorithm: "HS256",
-          expiresIn: JWT_CONFIG.ACCESS_EXPIRES,
-        } as jwt.SignOptions
+        { algorithm: "HS256", expiresIn: JWT_CONFIG.ACCESS_EXPIRES } as jwt.SignOptions
       );
-      logger.info(`AuthService: Access token generated for user: ${user.email}`);
 
-      // Generate refresh token
-      logger.info(`AuthService: Generating refresh token for user: ${user.email}`);
       const refreshToken = jwt.sign(
         { email: user.email, id: user.id },
         JWT_CONFIG.REFRESH_SECRET,
-        {
-          algorithm: "HS256",
-          expiresIn: `${JWT_CONFIG.REFRESH_EXPIRES_DAYS}d`,
-        } as jwt.SignOptions
+        { algorithm: "HS256", expiresIn: `${JWT_CONFIG.REFRESH_EXPIRES_DAYS}d` } as jwt.SignOptions
       );
-      logger.info(`AuthService: Refresh token generated for user: ${user.email}`);
 
-      // Decode the token to get the exact expiry date that JWT library calculated
-      // This ensures database expiry matches JWT expiry exactly
       const decoded = jwt.decode(refreshToken) as any;
       if (!decoded || !decoded.exp) {
         throw new Error("Failed to decode refresh token to get expiry");
       }
-      const tokenExpiresAt = new Date(decoded.exp * 1000); // JWT exp is in seconds, convert to milliseconds
-      
-      logger.info(`AuthService: Refresh token expiry calculated`, {
-        userId: user.id,
-        jwtExpiry: decoded.exp,
-        expiresAt: tokenExpiresAt.toISOString(),
-        expiresInDays: JWT_CONFIG.REFRESH_EXPIRES_DAYS
-      });
+      const tokenExpiresAt = new Date(decoded.exp * 1000);
 
-      // Store refresh token in database (hash the token for security)
-      logger.info(`AuthService: Storing refresh token in database for user: ${user.email}`);
       const hashedToken = hashString(refreshToken);
       await db.RefreshToken.create({
         userId: user.id,
-        tokenHash: hashedToken, // Store hashed token for security
+        tokenHash: hashedToken,
         ipAddress,
         userAgent,
-        expiresAt: tokenExpiresAt, // Use the exact expiry from JWT token
-      });
-      logger.info(`AuthService: Refresh token stored in database for user: ${user.email}`);
-
-      logger.info(`AuthService: Token generation completed for user: ${user.email}`, {
-        userId: user.id,
-        accessTokenLength: accessToken.length,
-        refreshTokenLength: refreshToken.length
+        expiresAt: tokenExpiresAt,
       });
 
-      return {
-        accessToken,
-        refreshToken: refreshToken,
-      };
+      return { accessToken, refreshToken };
     } catch (error: any) {
-      logger.error(`AuthService: Token generation failed for user: ${user.email}`, {
-        userId: user.id,
-        error: error.message,
-        stack: error.stack,
-        ipAddress,
-        userAgent,
-        timestamp: new Date().toISOString()
-      });
+      logger.error('Token generation failed', { userId: user.id, error: error.message });
       throw error;
     }
   }

@@ -43,11 +43,10 @@ const createRateLimit = (windowMs: number, max: number, message: string) => {
   });
 };
 
-// 🛡️ Single Very Permissive Rate Limiter - Allows Many Requests Per Second
-const permissiveLimiter = createRateLimit(
-  1000, // 1 second window
-  1000, // 1000 requests per second (very generous)
-  "Too many requests, please slow down slightly."
+const generalApiLimiter = createRateLimit(
+  60 * 1000, // 1 minute window
+  300, // 300 requests per minute per IP
+  "Too many requests, please slow down."
 );
 
 // Cache for organization domains to avoid repeated DB queries
@@ -420,8 +419,8 @@ export function applySecurityMiddleware(app: express.Express): void {
   // IP filtering
   app.use(ipFilter);
   
-  // Rate limiting - Single very permissive limiter for all routes
-  app.use(permissiveLimiter);
+  // Global rate limit — auth routes get a tighter limit via rateLimiter.ts
+  app.use(generalApiLimiter);
   
   // Compression (after rate limiting)
   app.use(compression({
