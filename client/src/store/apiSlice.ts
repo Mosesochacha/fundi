@@ -245,6 +245,17 @@ export const apiSlice = createApi({
       query: (limit = 5) => `/auth/login-history?limit=${limit}`,
     }),
 
+    // Dashboard
+    getProfileStats: builder.query<ApiResponse, void>({
+      query: () => '/profile/stats',
+    }),
+    getProfileActivity: builder.query<ApiResponse, void>({
+      query: () => '/profile/activity',
+    }),
+    getAnalytics: builder.query<ApiResponse, void>({
+      query: () => '/profile/analytics',
+    }),
+
     // Browse
     browseProfiles: builder.query<ApiResponse, { profession?: string; location?: string; page?: number; limit?: number }>({
       query: ({ profession, location, page = 1, limit = 20 } = {}) => {
@@ -301,6 +312,9 @@ export const {
   useRevokeAllSessionsMutation,
   useGetLoginHistoryQuery,
   useBrowseProfilesQuery,
+  useGetProfileStatsQuery,
+  useGetProfileActivityQuery,
+  useGetAnalyticsQuery,
 } = apiSlice;
 
 // Types

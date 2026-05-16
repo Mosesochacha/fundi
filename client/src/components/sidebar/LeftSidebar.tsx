@@ -2,21 +2,24 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, PenSquare, User, Settings, Clock } from "lucide-react";
+import { Home, Compass, User, MessageCircle, Settings2 } from "lucide-react";
 import { useAppSelector } from "@/store/hooks";
+import { useGetProfileQuery } from "@/store/apiSlice";
 
 export default function LeftSidebar() {
   const pathname = usePathname();
   const { profile, user } = useAppSelector((s) => s.auth);
+  const { data: profileData } = useGetProfileQuery(profile?.username ?? '', { skip: !profile?.username });
+  const stats = (profileData as any)?.data;
 
   if (!profile || !user) return null;
 
   const navLinks = [
-    { href: "/feed",                         label: "Feed",        icon: Home },
-    { href: "/post/new",                     label: "Create Post",     icon: PenSquare },
-    { href: "/post/scheduled",               label: "Scheduled Posts", icon: Clock },
-    { href: `/profile/${profile.username}`,  label: "My Profile",      icon: User },
-    { href: "/settings",                     label: "Settings",    icon: Settings },
+    { href: "/feed",                        label: "Home",       icon: Home },
+    { href: "/browse",                      label: "Browse",     icon: Compass },
+    { href: `/profile/${profile.username}`, label: "My Profile", icon: User },
+    { href: "/messages",                    label: "Messages",   icon: MessageCircle },
+    { href: "/settings",                    label: "Settings",   icon: Settings2 },
   ];
 
   return (
@@ -63,7 +66,11 @@ export default function LeftSidebar() {
       {/* Navigation */}
       <nav className="p-2 space-y-0.5">
         {navLinks.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href || (href === "/settings" && pathname.startsWith("/settings")) || (href === "/post/scheduled" && pathname.startsWith("/post/scheduled"));
+          const active =
+            pathname === href ||
+            (href === "/settings" && pathname.startsWith("/settings")) ||
+            (href === "/messages" && pathname.startsWith("/messages")) ||
+            (href.startsWith("/profile/") && pathname.startsWith("/profile/") && pathname.includes(profile.username));
           return (
             <Link
               key={href}
@@ -81,7 +88,20 @@ export default function LeftSidebar() {
         })}
       </nav>
 
-      <div className="h-2" />
+      {/* Stats row */}
+      <div className="border-t border-gray-100 mx-4 mt-1" />
+      <div className="grid grid-cols-3 text-center px-2 py-3 gap-1">
+        {[
+          { label: 'Posts',     value: stats?.postsCount ?? 0 },
+          { label: 'Followers', value: stats?.followersCount ?? 0 },
+          { label: 'Following', value: stats?.followingCount ?? 0 },
+        ].map(({ label, value }) => (
+          <div key={label} className="py-1">
+            <p className="font-dm-sans text-sm font-semibold text-gray-900">{Number(value).toLocaleString()}</p>
+            <p className="font-dm-sans text-[10px] text-gray-400 mt-0.5">{label}</p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

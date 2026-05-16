@@ -3,12 +3,23 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Hammer, MessageCircle, ArrowUpRight } from "lucide-react";
 import { useAppSelector } from "@/store/hooks";
 import { useToggleLikeMutation } from "@/store/apiSlice";
 
+const BADGE: Record<string, string> = {
+  SHOWCASE: 'bg-orange-50 text-orange-700 border-orange-200',
+  TIP:      'bg-blue-50 text-blue-700 border-blue-200',
+  QUESTION: 'bg-violet-50 text-violet-700 border-violet-200',
+  HIRING:   'bg-green-50 text-green-700 border-green-200',
+};
+
+const BADGE_LABEL: Record<string, string> = {
+  SHOWCASE: 'Showcase', TIP: 'Pro Tip', QUESTION: 'Question', HIRING: 'Hiring',
+};
+
 interface Post {
   id: string;
+  slug?: string;
   content: string;
   postType: string;
   images: string[];
@@ -42,6 +53,8 @@ export default function PostCard({ post: initial }: { post: Post }) {
   const [toggleLike] = useToggleLikeMutation();
   const [post, setPost] = useState(initial);
 
+  const postHref = `/post/${post.slug ?? post.id}`;
+
   const handleLike = async () => {
     if (!isLoggedIn) { router.push("/login"); return; }
     setPost((p) => ({ ...p, likedByMe: !p.likedByMe, likesCount: p.likesCount + (p.likedByMe ? -1 : 1) }));
@@ -55,7 +68,7 @@ export default function PostCard({ post: initial }: { post: Post }) {
   };
 
   const handleShare = () => {
-    const url = `${window.location.origin}/post/${post.id}`;
+    const url = `${window.location.origin}${postHref}`;
     if (navigator.share) {
       navigator.share({ title: post.author.fullName, url });
     } else {
@@ -91,24 +104,41 @@ export default function PostCard({ post: initial }: { post: Post }) {
           <span className="text-xs text-gray-400 tabular-nums shrink-0">{timeAgo(post.createdAt)}</span>
         </div>
 
+        {/* Post type badge */}
+        {BADGE[post.postType] && (
+          <span className={`inline-block text-[10px] font-semibold px-2.5 py-0.5 rounded-full border ${BADGE[post.postType]}`}>
+            {BADGE_LABEL[post.postType]}
+          </span>
+        )}
+
         {/* Content */}
-        <Link href={`/post/${post.id}`} className="block group">
-          <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed group-hover:text-gray-900 transition-colors line-clamp-5">
+        <Link href={postHref} className="block group">
+          <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed group-hover:text-gray-900 transition-colors line-clamp-3">
             {post.content}
           </p>
         </Link>
-
-        {/* Images */}
-        {post.images?.length > 0 && (
-          <Link href={`/post/${post.id}`}>
-            <div className={`grid gap-1 rounded-xl overflow-hidden ${post.images.length > 1 ? "grid-cols-2" : ""}`}>
-              {post.images.slice(0, 4).map((url, i) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img key={i} src={url} alt="" className="w-full h-52 object-cover" />
-              ))}
-            </div>
+        {post.content.length > 200 && (
+          <Link href={postHref} className="text-xs text-orange-500 font-medium hover:underline -mt-2 block">
+            Read more
           </Link>
         )}
+
+        {/* Images */}
+        {post.images?.length > 0 && (() => {
+          const imgs = post.images.slice(0, 4);
+          const gridClass = imgs.length > 1 ? 'grid grid-cols-2 gap-1' : '';
+          const imgH = imgs.length === 1 ? 'h-64' : imgs.length <= 2 ? 'h-52' : 'h-40';
+          return (
+            <Link href={postHref}>
+              <div className={`${gridClass} rounded-xl overflow-hidden`}>
+                {imgs.map((url, i) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img key={i} src={url} alt="" className={`w-full ${imgH} object-cover`} />
+                ))}
+              </div>
+            </Link>
+          );
+        })()}
 
         {/* Action bar */}
         <div className="flex items-center pt-1 border-t border-gray-100 -mx-1">
@@ -120,16 +150,21 @@ export default function PostCard({ post: initial }: { post: Post }) {
                 : "text-gray-400 hover:text-primary hover:bg-orange-50"
             }`}
           >
-            <Hammer className={`w-[15px] h-[15px] transition-transform ${post.likedByMe ? "scale-110" : ""}`} />
+            <svg width="15" height="15" viewBox="0 0 24 24" fill={post.likedByMe ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${post.likedByMe ? 'scale-110' : ''}`}>
+              <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z" />
+              <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+            </svg>
             {post.likesCount > 0 && <span className="tabular-nums">{post.likesCount}</span>}
             <span className="hidden sm:inline">{post.likedByMe ? "Appreciated" : "Appreciate"}</span>
           </button>
 
           <Link
-            href={`/post/${post.id}`}
-            className="flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-xl text-gray-400 hover:text-gray-700 hover:bg-gray-50 transition-all"
+            href={postHref}
+            className="flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-xl text-gray-400 hover:text-orange-500 hover:bg-orange-50 transition-all"
           >
-            <MessageCircle className="w-[15px] h-[15px]" />
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
             {post.commentsCount > 0 && <span className="tabular-nums">{post.commentsCount}</span>}
             <span className="hidden sm:inline">Comment</span>
           </Link>
@@ -138,7 +173,11 @@ export default function PostCard({ post: initial }: { post: Post }) {
             onClick={handleShare}
             className="flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-xl text-gray-400 hover:text-gray-700 hover:bg-gray-50 transition-all ml-auto"
           >
-            <ArrowUpRight className="w-[15px] h-[15px]" />
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+              <polyline points="16 6 12 2 8 6" />
+              <line x1="12" y1="2" x2="12" y2="15" />
+            </svg>
             <span className="hidden sm:inline">Share</span>
           </button>
         </div>

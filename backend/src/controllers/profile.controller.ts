@@ -272,6 +272,109 @@ class ProfileController {
     });
   });
 
+  getStats = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const userId = req.user?.id;
+    if (!userId) return sendError(res, HTTP_STATUS.UNAUTHORIZED, 'Unauthorized');
+
+    const profileRow: any = await db.Profile.findOne({
+      where: { userId },
+      attributes: ['id', 'views', 'avatarUrl', 'bio', 'phone', 'yearsExperience', 'services'],
+    });
+    if (!profileRow) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Profile not found');
+
+    const profileId = profileRow.id;
+    const weekStart = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    const [followersCount, followingCount, postsCount, weeklyViews] = await Promise.all([
+      db.Follow.count({ where: { followingId: profileId } }),
+      db.Follow.count({ where: { followerId: profileId } }),
+      db.Post.count({ where: { authorId: profileId } }),
+      (db as any).ProfileView?.count({ where: { profileId, createdAt: { [Op.gte]: weekStart } } }).catch(() => 0) ?? 0,
+    ]);
+
+    const p = profileRow.get({ plain: true });
+    let profileScore = 0;
+    if (p.avatarUrl)             profileScore += 20;
+    if (p.bio)                   profileScore += 20;
+    if (p.phone)                 profileScore += 15;
+    if (p.yearsExperience)       profileScore += 15;
+    if (p.services?.length > 0)  profileScore += 15;
+    if (weeklyViews > 0)         profileScore += 15;
+
+    return sendSuccess(res, 'Stats retrieved', {
+      totalViews: p.views ?? 0,
+      weeklyViews,
+      followersCount,
+      followingCount,
+      postsCount,
+      profileScore,
+    });
+  });
+
+  getActivity = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const userId = req.user?.id;
+    if (!userId) return sendError(res, HTTP_STATUS.UNAUTHORIZED, 'Unauthorized');
+
+    const profileRow: any = await db.Profile.findOne({ where: { userId }, attributes: ['id'] });
+    if (!profileRow) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Profile not found');
+
+    const profileId = profileRow.id;
+
+    const [views, follows, likes, comments] = await Promise.all([
+      (db as any).ProfileView?.findAll({
+        where: { profileId },
+        order: [['createdAt', 'DESC']],
+        limit: 10,
+        attributes: ['id', 'createdAt'],
+      }).catch(() => []) ?? [],
+
+      db.Follow.findAll({
+        where: { followingId: profileId },
+        order: [['createdAt', 'DESC']],
+        limit: 10,
+        include: [{ model: db.Profile, as: 'follower', attributes: ['fullName', 'username', 'avatarUrl'] }],
+      }),
+
+      db.PostLike.findAll({
+        order: [['createdAt', 'DESC']],
+        limit: 10,
+        include: [
+          { model: db.Post, as: 'post', where: { authorId: profileId }, required: true, attributes: ['id', 'slug'] },
+          { model: db.Profile, as: 'profile', attributes: ['fullName', 'username', 'avatarUrl'] },
+        ],
+      }),
+
+      db.Comment.findAll({
+        order: [['createdAt', 'DESC']],
+        limit: 10,
+        include: [
+          { model: db.Post, as: 'post', where: { authorId: profileId }, required: true, attributes: ['id', 'slug'] },
+          { model: db.Profile, as: 'author', attributes: ['fullName', 'username', 'avatarUrl'] },
+        ],
+      }),
+    ]);
+
+    const events: any[] = [
+      ...(views as any[]).map((v: any) => ({ type: 'view', message: 'Someone viewed your profile', createdAt: v.createdAt })),
+      ...(follows as any[]).map((f: any) => {
+        const actor = f.get({ plain: true }).follower;
+        return { type: 'follow', message: `${actor?.fullName ?? 'Someone'} started following you`, actor, createdAt: f.createdAt };
+      }),
+      ...(likes as any[]).map((l: any) => {
+        const p = l.get({ plain: true });
+        return { type: 'like', message: `${p.profile?.fullName ?? 'Someone'} appreciated your post`, actor: p.profile, postSlug: p.post?.slug ?? p.post?.id, createdAt: l.createdAt };
+      }),
+      ...(comments as any[]).map((c: any) => {
+        const p = c.get({ plain: true });
+        return { type: 'comment', message: `${p.author?.fullName ?? 'Someone'} commented on your post`, actor: p.author, postSlug: p.post?.slug ?? p.post?.id, createdAt: c.createdAt };
+      }),
+    ];
+
+    events.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    return sendSuccess(res, 'Activity retrieved', events.slice(0, 10));
+  });
+
   checkUsernamePublic = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const u = ((req.query.u as string) || '').trim().toLowerCase();
     if (!u || u.length < 3) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Username too short');

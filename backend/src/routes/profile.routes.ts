@@ -18,5 +18,7 @@ router.get('/profiles/:username/posts', optionalAuth, ProfileController.getProfi
 router.patch('/profile', verifyJWT, profileUpdateRateLimit, ProfileController.updateMyProfile);
 router.post('/profile/publish', verifyJWT, ProfileController.publishProfile);
 router.get('/profile/analytics', verifyJWT, ProfileController.getAnalytics);
+router.get('/profile/stats',    verifyJWT, ProfileController.getStats);
+router.get('/profile/activity', verifyJWT, ProfileController.getActivity);
 
 export default router;
