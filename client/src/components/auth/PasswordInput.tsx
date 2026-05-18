@@ -29,7 +29,7 @@ const strengthConfig = [
   { label: "Weak",   color: "#DC2626" },
   { label: "Fair",   color: "#D97706" },
   { label: "Good",   color: "#65A30D" },
-  { label: "Strong", color: "#f97316" },
+  { label: "Strong", color: "#16A34A" },
 ] as const;
 
 const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
