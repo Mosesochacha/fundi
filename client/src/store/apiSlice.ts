@@ -257,9 +257,10 @@ export const apiSlice = createApi({
     }),
 
     // Browse
-    browseProfiles: builder.query<ApiResponse, { profession?: string; location?: string; page?: number; limit?: number }>({
-      query: ({ profession, location, page = 1, limit = 20 } = {}) => {
+    browseProfiles: builder.query<ApiResponse, { q?: string; profession?: string; location?: string; page?: number; limit?: number }>({
+      query: ({ q, profession, location, page = 1, limit = 20 } = {}) => {
         const params = new URLSearchParams();
+        if (q) params.set('q', q);
         if (profession) params.set('profession', profession);
         if (location) params.set('location', location);
         params.set('page', String(page));
