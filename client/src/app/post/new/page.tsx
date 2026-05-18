@@ -282,7 +282,7 @@ export default function NewPostPage() {
               onInput={(e) => autoResize(e.currentTarget)}
               placeholder="Share what you've been working on..."
               className="w-full text-[16px] text-gray-800 placeholder-gray-400 resize-none focus:outline-none leading-relaxed font-dm-sans bg-transparent"
-              style={{ minHeight: 120 }}
+              style={{ minHeight: 180 }}
             />
           </div>
 
@@ -478,7 +478,7 @@ export default function NewPostPage() {
               <button
                 onClick={handleSubmit}
                 disabled={!canPost || isPosting || charCount > 3000}
-                className="h-9 px-6 bg-primary text-white text-[14px] font-semibold rounded-xl hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-dm-sans flex items-center gap-2"
+                className="h-9 px-6 bg-primary text-white text-[14px] font-semibold rounded-xl hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors font-dm-sans flex items-center gap-2"
               >
                 {isPosting ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Posting...</> : scheduledAt ? "Schedule" : "Post"}
               </button>
@@ -531,9 +531,11 @@ export default function NewPostPage() {
             )}
           </div>
           {recentPosts.length === 0 ? (
-            <p className="text-[13px] text-gray-400 text-center py-3 font-dm-sans">
-              You haven&apos;t posted yet. Share your first post!
-            </p>
+            <div className="flex items-center justify-center h-20">
+              <p className="text-[13px] text-gray-400 text-center font-dm-sans">
+                You haven&apos;t posted yet. Share your first post!
+              </p>
+            </div>
           ) : (
             <div className="space-y-3">
               {recentPosts.map((p: any) => (
