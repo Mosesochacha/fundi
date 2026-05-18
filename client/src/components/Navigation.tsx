@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { Bell, Search, PenSquare, Hammer, ChevronDown, Compass, MessageCircle } from "lucide-react";
+import { Bell, Search, PenSquare, Hammer, ChevronDown, MessageCircle } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { logOut } from "@/store/authSlice";
 import { apiSlice, useLogoutMutation } from "@/store/apiSlice";
@@ -54,20 +54,7 @@ export default function Navigation() {
           </div>
         </div>
 
-        {/* Browse link */}
-        <Link
-          href="/browse"
-          className={`hidden md:flex items-center gap-1.5 text-[13px] font-semibold px-3 py-1.5 rounded-lg transition-all ${
-            pathname.startsWith("/browse")
-              ? "text-primary bg-orange-100 ring-1 ring-orange-200/60"
-              : "text-[color:var(--ink-soft)] hover:text-[color:var(--ink)] hover:bg-[color:var(--line-soft)]"
-          }`}
-        >
-          <Compass className="w-4 h-4" />
-          Browse
-        </Link>
-
-        <div className="flex items-center gap-1.5 ml-auto">
+<div className="flex items-center gap-1.5 ml-auto">
           {isLoggedIn && profile ? (
             <>
               {/* Messages */}
