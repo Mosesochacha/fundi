@@ -172,7 +172,7 @@ export default function PostCard({ post: initial }: { post: Post }) {
 
           <div className="flex items-center gap-2 shrink-0">
             {meta && (
-              <span className={`inline-flex items-center gap-1 text-[10.5px] font-semibold uppercase tracking-wider px-2 py-1 rounded-full border ${meta.chipBg} ${meta.chipText}`} style={{ borderColor: "currentColor", opacity: 1 }}>
+              <span className={`inline-flex items-center gap-1 text-[10.5px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full ${meta.chipBg} ${meta.chipText}`}>
                 <meta.Icon className="w-3 h-3" strokeWidth={2.5} />
                 {meta.label}
               </span>

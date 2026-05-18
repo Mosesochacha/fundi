@@ -9,7 +9,10 @@ import { useGetProfileQuery } from "@/store/apiSlice";
 export default function LeftSidebar() {
   const pathname = usePathname();
   const { profile, user } = useAppSelector((s) => s.auth);
-  const { data: profileData } = useGetProfileQuery(profile?.username ?? '', { skip: !profile?.username });
+  const { data: profileData } = useGetProfileQuery(profile?.username ?? '', {
+    skip: !profile?.username,
+    refetchOnMountOrArgChange: true,
+  });
   const stats = (profileData as any)?.data;
 
   if (!profile || !user) return null;
