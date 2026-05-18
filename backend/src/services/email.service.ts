@@ -1,7 +1,11 @@
 import { Resend } from 'resend';
 import logger from '../utils/logger';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resend: Resend | null = null;
+function getResend(): Resend {
+  if (!resend) resend = new Resend(process.env.RESEND_API_KEY!);
+  return resend;
+}
 
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'noreply@fundi.app';
 const FROM_DISPLAY = `Fundi <${FROM_EMAIL}>`;
@@ -28,7 +32,7 @@ class EmailService {
     const html = this.buildVerificationEmail(name, code, email);
 
     try {
-      const { error } = await resend.emails.send({ from: FROM_DISPLAY, to: email, subject, html });
+      const { error } = await getResend().emails.send({ from: FROM_DISPLAY, to: email, subject, html });
       if (error) {
         logger.error('[EmailService] Resend error', { email, purpose, error });
         return false;
@@ -51,7 +55,7 @@ class EmailService {
     const html = this.buildResetEmail(name, token, email);
 
     try {
-      const { error } = await resend.emails.send({
+      const { error } = await getResend().emails.send({
         from: FROM_DISPLAY,
         to: email,
         subject: 'Reset your Fundi password',
@@ -79,7 +83,7 @@ class EmailService {
     const html = this.buildWelcomeEmail(name, email);
 
     try {
-      const { error } = await resend.emails.send({
+      const { error } = await getResend().emails.send({
         from: FROM_DISPLAY,
         to: email,
         subject: 'Welcome to Fundi — your profile awaits',
