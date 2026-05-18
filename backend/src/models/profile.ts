@@ -28,6 +28,8 @@ export class Profile extends Model<
   declare whatsapp: CreationOptional<string | null>;
   declare views: CreationOptional<number>;
   declare workPhotos: CreationOptional<string[] | null>;
+  declare education: CreationOptional<object[] | null>;
+  declare experience: CreationOptional<object[] | null>;
   // Notification preferences
   declare emailProfileViewed: CreationOptional<boolean>;
   declare emailNewFollower: CreationOptional<boolean>;
@@ -97,6 +99,8 @@ export function initModel(sequelize: Sequelize): typeof Profile {
       whatsapp: { type: DataTypes.STRING(30), allowNull: true },
       views: { type: DataTypes.INTEGER, defaultValue: 0 },
       workPhotos: { type: DataTypes.JSON, allowNull: true, defaultValue: [] },
+      education:  { type: DataTypes.JSON, allowNull: true, defaultValue: [] },
+      experience: { type: DataTypes.JSON, allowNull: true, defaultValue: [] },
       // Notification preferences
       emailProfileViewed: { type: DataTypes.BOOLEAN, defaultValue: true },
       emailNewFollower: { type: DataTypes.BOOLEAN, defaultValue: true },
