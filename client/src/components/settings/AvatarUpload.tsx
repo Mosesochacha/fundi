@@ -2,7 +2,8 @@
 
 import { useRef, useState } from "react";
 import { useToastContext } from "@/context/ToastContext";
-import { useAppSelector } from "@/store/hooks";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import { setCredentials } from "@/store/authSlice";
 import Spinner from "@/components/ui/Spinner";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:9000/api/v1";
@@ -18,7 +19,8 @@ export default function AvatarUpload({ avatarUrl, fullName, onSuccess, onRemove 
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [removing, setRemoving] = useState(false);
-  const { accessToken } = useAppSelector((s) => s.auth);
+  const { accessToken, user, profile } = useAppSelector((s) => s.auth);
+  const dispatch = useAppDispatch();
   const { success, error } = useToastContext();
 
   const initials = fullName
@@ -48,6 +50,9 @@ export default function AvatarUpload({ avatarUrl, fullName, onSuccess, onRemove 
       const data = await res.json();
       if (!data.success) throw new Error(data.message);
       onSuccess(data.data.avatarUrl);
+      if (user && profile) {
+        dispatch(setCredentials({ user, profile: { ...profile, avatarUrl: data.data.avatarUrl }, accessToken: accessToken ?? undefined }));
+      }
       success("Profile photo updated");
     } catch {
       error("Failed to upload photo. Please try again.");
@@ -67,6 +72,9 @@ export default function AvatarUpload({ avatarUrl, fullName, onSuccess, onRemove 
       const data = await res.json();
       if (!data.success) throw new Error(data.message);
       onRemove?.();
+      if (user && profile) {
+        dispatch(setCredentials({ user, profile: { ...profile, avatarUrl: null }, accessToken: accessToken ?? undefined }));
+      }
       success("Profile photo removed");
     } catch {
       error("Failed to remove photo");

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { Bell, Search, PenSquare, Hammer, ChevronDown, Compass, MessageCircle } from "lucide-react";
+import { Bell, Search, PenSquare, Hammer, ChevronDown, MessageCircle } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { logOut } from "@/store/authSlice";
 import { apiSlice, useLogoutMutation } from "@/store/apiSlice";
@@ -54,20 +54,7 @@ export default function Navigation() {
           </div>
         </div>
 
-        {/* Browse link */}
-        <Link
-          href="/browse"
-          className={`hidden md:flex items-center gap-1.5 text-[13px] font-semibold px-3 py-1.5 rounded-lg transition-all ${
-            pathname.startsWith("/browse")
-              ? "text-primary bg-orange-100 ring-1 ring-orange-200/60"
-              : "text-[color:var(--ink-soft)] hover:text-[color:var(--ink)] hover:bg-[color:var(--line-soft)]"
-          }`}
-        >
-          <Compass className="w-4 h-4" />
-          Browse
-        </Link>
-
-        <div className="flex items-center gap-1.5 ml-auto">
+<div className="flex items-center gap-1.5 ml-auto">
           {isLoggedIn && profile ? (
             <>
               {/* Messages */}
@@ -102,7 +89,7 @@ export default function Navigation() {
                   onClick={() => setMenuOpen(!menuOpen)}
                   className="flex items-center gap-1.5 pl-1 pr-2 py-1 rounded-xl hover:bg-[color:var(--line-soft)] transition-colors"
                 >
-                  <div className="w-7 h-7 rounded-lg bg-orange-100 flex items-center justify-center text-primary font-bold text-xs overflow-hidden ring-2 ring-[color:var(--line)] hover:ring-orange-200 transition-all">
+                  <div className="w-7 h-7 rounded-full bg-orange-100 flex items-center justify-center text-primary font-bold text-xs overflow-hidden ring-2 ring-[color:var(--line)] hover:ring-orange-200 transition-all">
                     {profile.avatarUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={profile.avatarUrl} alt={profile.fullName} className="w-full h-full object-cover" />
@@ -120,7 +107,7 @@ export default function Navigation() {
                       {/* User info header */}
                       <div className="px-4 py-3 border-b border-[color:var(--line)]">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-9 h-9 rounded-xl bg-orange-100 flex items-center justify-center text-primary font-bold text-sm overflow-hidden shrink-0 ring-2 ring-[color:var(--line)]">
+                          <div className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center text-primary font-bold text-sm overflow-hidden shrink-0 ring-2 ring-[color:var(--line)]">
                             {profile.avatarUrl ? (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img src={profile.avatarUrl} alt="" className="w-full h-full object-cover" />
