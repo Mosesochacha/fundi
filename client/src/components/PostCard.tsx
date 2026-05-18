@@ -129,13 +129,29 @@ export default function PostCard({ post: initial }: { post: Post }) {
 
   const handleShare = async () => {
     const url = `${window.location.origin}${postHref}`;
-    if (navigator.share) {
-      navigator.share({ title: post.author.fullName, url });
-    } else {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: post.author.fullName, url });
+        return;
+      }
+    } catch {
+      // share cancelled or not supported — fall through to clipboard
     }
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      // clipboard API unavailable — fallback
+      const el = document.createElement("textarea");
+      el.value = url;
+      el.style.position = "fixed";
+      el.style.opacity = "0";
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
