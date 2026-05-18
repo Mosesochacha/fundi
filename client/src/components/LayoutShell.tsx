@@ -85,7 +85,7 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
         <OnboardingGuard />
         <SocketInit />
         <Navigation />
-        <div className="min-h-screen" style={{ background: "var(--orange-25)" }}>
+        <div className="min-h-screen bg-paper">
           <main className="pb-16 lg:pb-0">{children}</main>
         </div>
         <BottomNav />
@@ -99,7 +99,7 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
       <OnboardingGuard />
       <SocketInit />
       <Navigation />
-      <div className="min-h-screen" style={{ background: "var(--orange-25)" }}>
+      <div className="min-h-screen bg-paper">
         {isLoggedIn ? (
           <div className="max-w-7xl mx-auto px-4 py-6">
             <div className="flex gap-6 items-start">

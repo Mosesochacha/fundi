@@ -58,6 +58,7 @@ export default function PostPage({ params }: { params: Promise<{ slug: string }>
   const [likedByMe, setLikedByMe] = useState<boolean | null>(null);
   const [likesCount, setLikesCount] = useState<number | null>(null);
   const [replyingTo, setReplyingTo] = useState<{ commentId: string; authorUsername: string } | null>(null);
+  const [copied, setCopied] = useState(false);
 
   // Redirect UUID → clean slug URL once post loads
   useEffect(() => {
@@ -99,10 +100,15 @@ export default function PostPage({ params }: { params: Promise<{ slug: string }>
     }
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
     const url = window.location.href;
-    if (navigator.share) navigator.share({ title: author.fullName, url });
-    else navigator.clipboard.writeText(url);
+    if (navigator.share) {
+      navigator.share({ title: author.fullName, url });
+    } else {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   return (
@@ -173,10 +179,14 @@ export default function PostPage({ params }: { params: Promise<{ slug: string }>
               </span>
               <button
                 onClick={handleShare}
-                className="flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-xl text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-all ml-auto"
+                className={`flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-xl transition-all ml-auto ${
+                  copied
+                    ? "text-emerald-600 bg-emerald-50"
+                    : "text-gray-500 hover:text-gray-800 hover:bg-gray-100"
+                }`}
               >
                 <ArrowUpRight className="w-4 h-4" />
-                <span className="hidden sm:inline">Share</span>
+                <span className="hidden sm:inline">{copied ? "Copied!" : "Share"}</span>
               </button>
             </div>
           </div>
