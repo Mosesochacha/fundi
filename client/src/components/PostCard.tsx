@@ -171,12 +171,6 @@ export default function PostCard({ post: initial }: { post: Post }) {
           </Link>
 
           <div className="flex items-center gap-2 shrink-0">
-            {meta && (
-              <span className={`inline-flex items-center gap-1 text-[10.5px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full ${meta.chipBg} ${meta.chipText}`}>
-                <meta.Icon className="w-3 h-3" strokeWidth={2.5} />
-                {meta.label}
-              </span>
-            )}
             <span className="text-[11px] text-gray-400 tabular-nums font-medium">{timeAgo(post.createdAt)}</span>
             {!isOwnPost && (
               <button
