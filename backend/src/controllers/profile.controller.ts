@@ -96,7 +96,7 @@ class ProfileController {
     const ALLOWED = [
       'fullName', 'username', 'profession', 'location', 'bio', 'tagline',
       'phone', 'whatsapp', 'yearsExperience', 'services', 'theme',
-      'displayNameFormat', 'profileLayout',
+      'displayNameFormat', 'profileLayout', 'education', 'experience',
     ];
 
     const updates: Record<string, any> = {};

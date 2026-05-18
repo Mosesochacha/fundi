@@ -6,6 +6,18 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setCredentials } from "@/store/authSlice";
 import { useGenerateProfileMutation, usePublishProfileMutation, useUpdateProfileMutation, useCheckUsernamePublicQuery } from "@/store/apiSlice";
 
+export interface EducationItem {
+  degree: string;
+  institution: string;
+  year?: string;
+}
+
+export interface ExperienceItem {
+  title: string;
+  company: string;
+  duration?: string;
+}
+
 export interface SetupState {
   path: "ai" | "manual" | null;
   phase: "questions" | "generating" | "editing" | "complete";
@@ -24,6 +36,10 @@ export interface SetupState {
   username: string;
   theme: string;
   photos: string[];
+  avatarUrl: string;
+  bannerUrl: string;
+  education: EducationItem[];
+  experience: ExperienceItem[];
   isGenerating: boolean;
   isPublishing: boolean;
   usernameAvailable: boolean | null;
@@ -49,6 +65,10 @@ const DEFAULT_STATE: SetupState = {
   username: "",
   theme: "orange",
   photos: [],
+  avatarUrl: "",
+  bannerUrl: "",
+  education: [],
+  experience: [],
   isGenerating: false,
   isPublishing: false,
   usernameAvailable: null,
@@ -170,6 +190,8 @@ export function useProfileSetup() {
     if (state.username) body.username = state.username;
     if (state.theme) body.theme = state.theme;
     if (state.yearsExperience > 0) body.yearsExperience = state.yearsExperience;
+    if (state.education.length) body.education = state.education;
+    if (state.experience.length) body.experience = state.experience;
     await updateProfileMutation(body as Parameters<typeof updateProfileMutation>[0]).unwrap();
   }, [state, updateProfileMutation]);
 
