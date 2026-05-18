@@ -19,6 +19,7 @@ export interface AuthProfile {
   profession: string;
   location: string;
   avatarUrl: string | null;
+  bannerUrl: string | null;
   whatsapp: string | null;
 }
 

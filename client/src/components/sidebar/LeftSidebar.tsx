@@ -28,18 +28,20 @@ export default function LeftSidebar() {
       {/* Banner + avatar overlap */}
       <div className="relative">
         {/* Banner */}
-        <div className="relative h-24 overflow-hidden grain grain-wood">
-          <div className="absolute inset-0" style={{
-            background: "linear-gradient(135deg, #9a3412 0%, #c2410c 40%, #f97316 75%, #fdba74 100%)",
-          }} />
-          {/* Diagonal stripes */}
-          <div className="absolute inset-0 opacity-10" style={{
-            backgroundImage: "repeating-linear-gradient(45deg, rgba(255,255,255,0.5) 0 1px, transparent 1px 14px)",
-          }} />
-          {/* Top shine */}
-          <div className="absolute inset-x-0 top-0 h-1/2" style={{
-            background: "linear-gradient(180deg, rgba(255,255,255,0.2), transparent)",
-          }} />
+        <div className="relative h-24 overflow-hidden">
+          {stats?.bannerUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={stats.bannerUrl} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <>
+              <div className="absolute inset-0" style={{
+                background: "linear-gradient(135deg, #9a3412 0%, #c2410c 40%, #f97316 75%, #fdba74 100%)",
+              }} />
+              <div className="absolute inset-0 opacity-10" style={{
+                backgroundImage: "repeating-linear-gradient(45deg, rgba(255,255,255,0.5) 0 1px, transparent 1px 14px)",
+              }} />
+            </>
+          )}
           {/* Bottom fade */}
           <div className="absolute inset-x-0 bottom-0 h-8" style={{
             background: "linear-gradient(0deg, rgba(28,20,16,0.15), transparent)",
@@ -50,9 +52,9 @@ export default function LeftSidebar() {
         <div className="absolute left-4 bottom-0 translate-y-1/2">
           <Link href={`/profile/${profile.username}`}>
             <div className="w-16 h-16 rounded-2xl bg-orange-100 flex items-center justify-center text-[color:var(--orange-700)] font-bold text-2xl overflow-hidden ring-4 ring-white shadow-[0_4px_14px_rgba(40,20,5,0.15)] hover:scale-105 hover:ring-orange-100 transition-all duration-300">
-              {profile.avatarUrl ? (
+              {(stats?.avatarUrl ?? profile.avatarUrl) ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={profile.avatarUrl} alt={profile.fullName} className="w-full h-full object-cover" />
+                <img src={stats?.avatarUrl ?? profile.avatarUrl} alt={profile.fullName} className="w-full h-full object-cover" />
               ) : (
                 <span className="font-playfair">{profile.fullName?.[0]?.toUpperCase()}</span>
               )}

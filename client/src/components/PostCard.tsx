@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Hammer, Lightbulb, HelpCircle, Briefcase, MessageCircle, Share2, MoreHorizontal } from "lucide-react";
+import { Hammer, Lightbulb, HelpCircle, Briefcase, MessageCircle, Share2, MoreHorizontal, Heart } from "lucide-react";
 import { useAppSelector } from "@/store/hooks";
 import { useToggleLikeMutation, useToggleFollowMutation } from "@/store/apiSlice";
 
@@ -172,7 +172,7 @@ export default function PostCard({ post: initial }: { post: Post }) {
 
           <div className="flex items-center gap-2 shrink-0">
             {meta && (
-              <span className={`inline-flex items-center gap-1 text-[10.5px] font-semibold uppercase tracking-wider px-2 py-1 rounded-full ring-1 ring-inset stamp ${meta.chipBg} ${meta.chipText} ${meta.chipRing}`}>
+              <span className={`inline-flex items-center gap-1 text-[10.5px] font-semibold uppercase tracking-wider px-2 py-1 rounded-full border ${meta.chipBg} ${meta.chipText}`} style={{ borderColor: "currentColor", opacity: 1 }}>
                 <meta.Icon className="w-3 h-3" strokeWidth={2.5} />
                 {meta.label}
               </span>
@@ -252,39 +252,37 @@ export default function PostCard({ post: initial }: { post: Post }) {
           <button
             onClick={handleLike}
             aria-label={post.likedByMe ? "Remove appreciation" : "Appreciate this post"}
-            className={`flex items-center gap-1.5 text-[12px] font-semibold px-3 py-2 rounded-lg transition-all duration-200 ${
+            className={`flex items-center gap-1.5 text-[13px] font-semibold px-3 py-2 rounded-lg transition-all duration-200 ${
               post.likedByMe
-                ? "text-white bg-primary shadow-[0_2px_8px_-2px_rgba(249,115,22,0.5)]"
-                : "text-gray-500 hover:text-primary hover:bg-orange-50"
+                ? "text-rose-500"
+                : "text-gray-400 hover:text-rose-400 hover:bg-rose-50"
             }`}
           >
-            <Hammer
-              className={`w-[15px] h-[15px] ${post.likedByMe ? "fill-current" : ""} ${burst ? "like-burst" : ""}`}
-              strokeWidth={2.2}
+            <Heart
+              className={`w-[16px] h-[16px] ${post.likedByMe ? "fill-current" : ""} ${burst ? "like-burst" : ""}`}
+              strokeWidth={2}
             />
-            <span className="tabular-nums">{post.likesCount > 0 ? post.likesCount : ""}</span>
-            <span className="hidden sm:inline">{post.likedByMe ? "Appreciated" : "Appreciate"}</span>
+            {post.likesCount > 0 && <span className="tabular-nums text-[12px]">{post.likesCount}</span>}
           </button>
 
           <Link
             href={postHref}
-            className="flex items-center gap-1.5 text-[12px] font-semibold px-3 py-2 rounded-lg text-gray-500 hover:text-[color:var(--ink)] hover:bg-[color:var(--line-soft)] transition-all duration-200"
+            className="flex items-center gap-1.5 text-[13px] font-semibold px-3 py-2 rounded-lg text-gray-400 hover:text-[color:var(--ink)] hover:bg-[color:var(--line-soft)] transition-all duration-200"
           >
-            <MessageCircle className="w-[15px] h-[15px]" strokeWidth={2.2} />
-            <span className="tabular-nums">{post.commentsCount > 0 ? post.commentsCount : ""}</span>
-            <span className="hidden sm:inline">Comment</span>
+            <MessageCircle className="w-[16px] h-[16px]" strokeWidth={2} />
+            {post.commentsCount > 0 && <span className="tabular-nums text-[12px]">{post.commentsCount}</span>}
           </Link>
 
           <button
             onClick={handleShare}
-            className={`flex items-center gap-1.5 text-[12px] font-semibold px-3 py-2 rounded-lg transition-all duration-200 ml-auto ${
+            aria-label={copied ? "Link copied" : "Share"}
+            className={`flex items-center gap-1.5 text-[13px] font-semibold px-3 py-2 rounded-lg transition-all duration-200 ml-auto ${
               copied
-                ? "text-emerald-600 bg-emerald-50"
-                : "text-gray-500 hover:text-[color:var(--ink)] hover:bg-[color:var(--line-soft)]"
+                ? "text-emerald-500 bg-emerald-50"
+                : "text-gray-400 hover:text-[color:var(--ink)] hover:bg-[color:var(--line-soft)]"
             }`}
           >
-            <Share2 className="w-[15px] h-[15px]" strokeWidth={2.2} />
-            <span className="hidden sm:inline">{copied ? "Copied!" : "Share"}</span>
+            <Share2 className="w-[16px] h-[16px]" strokeWidth={2} />
           </button>
 
           <button
