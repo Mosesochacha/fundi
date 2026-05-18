@@ -84,23 +84,10 @@ export default function FeedPage() {
     return () => observer.disconnect();
   }, [hasMore, fetchPosts]);
 
-  const today = new Date().toLocaleDateString("en", { weekday: "long", month: "long", day: "numeric" });
-
   return (
     <div className="flex gap-6 items-start">
       {/* Center feed */}
       <div className="flex-1 min-w-0 space-y-5">
-        {/* Editorial date header */}
-        <div className="hidden sm:block px-1 pb-3 border-b border-[color:var(--line)]">
-          <div className="flex items-baseline justify-between">
-            <h1 className="font-playfair text-[28px] font-bold text-[color:var(--ink)] leading-none tracking-tight">
-              Today on Fundi
-            </h1>
-            <span className="text-[11px] uppercase tracking-[0.18em] text-gray-400 font-medium tabular-nums">
-              {today}
-            </span>
-          </div>
-        </div>
 
         {/* Create post bar */}
         {isLoggedIn && (
