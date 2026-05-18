@@ -44,7 +44,8 @@ const EnvelopeIcon = () => (
 export default function VerifyEmailPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const email = searchParams.get("email") ?? "";
+  const emailFromUrl = searchParams.get("email");
+  const email = emailFromUrl ?? (typeof window !== "undefined" ? sessionStorage.getItem("pendingVerifyEmail") ?? "" : "");
 
   const [verifyEmail, { isLoading }] = useVerifyEmailMutation();
   const [resendVerification, { isLoading: isResending }] = useResendVerificationMutation();
@@ -173,21 +174,7 @@ export default function VerifyEmailPage() {
           )}
         </div>
 
-        {/* Info box */}
-        <div className="rounded-xl bg-orange-50 border border-orange-100 px-4 py-4 space-y-2">
-          <p className="text-[13px] font-semibold text-orange-700 font-dm-sans">
-            This code expires in 10 minutes
-          </p>
-          <p className="text-[13px] text-orange-600 font-dm-sans leading-relaxed">
-            If the code expires before you use it, go back to register and sign up again to receive a fresh code. Make sure to check your spam or junk folder — sometimes verification emails land there.
-          </p>
-        </div>
       </div>
-
-      {/* Below card */}
-      <p className="mt-4 text-center font-dm-sans text-xs text-gray-300 italic">
-        Check your spam folder if you don't see it.
-      </p>
       <div className="mt-3 text-center font-dm-sans text-sm text-gray-400">
         <Link href="/register" className="hover:text-gray-600 transition-colors">
           ← Wrong email? Back to register

@@ -155,7 +155,7 @@ class EmailService {
   }
 
   private buildVerificationEmail(name: string, code: string, email: string): string {
-    const verifyUrl = `${APP_URL}/verify-email?email=${encodeURIComponent(email)}`;
+    const verifyUrl = `${APP_URL}/verify-email`;
     const content = `
       <p style="margin:0 0 8px;font-size:24px;font-weight:700;color:#1c1917;">Hi ${name},</p>
       <p style="margin:0 0 32px;font-size:15px;color:#78716c;line-height:1.7;">

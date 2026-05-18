@@ -67,8 +67,9 @@ export default function RegisterPage() {
       }).unwrap();
 
       posthog.capture("user_registered", { profession: data.profession, location: data.location });
+      sessionStorage.setItem("pendingVerifyEmail", data.email.trim().toLowerCase());
       success("Account created! Please verify your email.");
-      router.push(`/verify-email?email=${encodeURIComponent(data.email.trim().toLowerCase())}`);
+      router.push("/verify-email");
     } catch (err: any) {
       shake();
       toastError(err?.data?.message || "Registration failed. Please try again.");
