@@ -84,7 +84,7 @@ function timeAgo(date: string) {
   return new Date(date).toLocaleDateString("en", { month: "short", day: "numeric" });
 }
 
-export default function PostCard({ post: initial }: { post: Post }) {
+export default function PostCard({ post: initial, full = false }: { post: Post; full?: boolean }) {
   const { isLoggedIn, profile } = useAppSelector((s) => s.auth);
   const router = useRouter();
   const [toggleLike] = useToggleLikeMutation();
@@ -205,10 +205,10 @@ export default function PostCard({ post: initial }: { post: Post }) {
 
         {/* Content */}
         <Link href={postHref} className="block group/content">
-          <p className="text-[15px] text-[color:var(--ink)]/90 whitespace-pre-line leading-[1.65] line-clamp-4 font-dm-sans group-hover/content:text-[color:var(--ink)] transition-colors">
+          <p className={`text-[15px] text-[color:var(--ink)]/90 whitespace-pre-line leading-[1.65] font-dm-sans group-hover/content:text-[color:var(--ink)] transition-colors ${full ? "" : "line-clamp-4"}`}>
             {post.content}
           </p>
-          {post.content.length > 240 && (
+          {!full && post.content.length > 240 && (
             <span className="inline-block mt-2 text-[12px] text-primary font-semibold tracking-wide hover:underline underline-offset-2 decoration-2">
               Continue reading →
             </span>
