@@ -54,7 +54,7 @@ export default function LeftSidebar() {
         {/* Avatar — overlapping banner */}
         <div className="absolute left-4 bottom-0 translate-y-1/2">
           <Link href={`/profile/${profile.username}`}>
-            <div className="w-16 h-16 rounded-2xl bg-orange-100 flex items-center justify-center text-[color:var(--orange-700)] font-bold text-2xl overflow-hidden ring-4 ring-white shadow-[0_4px_14px_rgba(40,20,5,0.15)] hover:scale-105 hover:ring-orange-100 transition-all duration-300">
+            <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center text-[color:var(--orange-700)] font-bold text-2xl overflow-hidden ring-4 ring-white shadow-[0_4px_14px_rgba(40,20,5,0.15)] hover:scale-105 hover:ring-orange-100 transition-all duration-300">
               {(stats?.avatarUrl ?? profile.avatarUrl) ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={stats?.avatarUrl ?? profile.avatarUrl} alt={profile.fullName} className="w-full h-full object-cover" />
