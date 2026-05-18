@@ -146,11 +146,6 @@ export default function LandingPage() {
           className="min-h-[90vh] bg-cream flex items-center justify-center px-6 py-14 md:py-20"
         >
           <div className="max-w-[860px] mx-auto text-center w-full">
-            {/* Pill label */}
-            <div className="inline-flex items-center px-[14px] py-1 bg-orange-50 text-orange-700 border border-orange-200 rounded-full font-dm-sans text-xs font-medium tracking-[0.04em] mb-8">
-              The professional identity platform
-            </div>
-
             {/* Headline */}
             <h1 className="font-playfair text-[72px] max-md:text-[42px] leading-[1.1] text-brand-dark font-bold mb-6">
               Show your work.<br />

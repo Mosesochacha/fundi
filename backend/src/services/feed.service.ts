@@ -65,12 +65,13 @@ export class FeedService {
     }
 
     // Float followed profiles' posts to the top (only makes sense with a full page)
+    let followingSet = new Set<string>();
     if (profileId && rows.length > 0) {
       const follows = await db.Follow.findAll({
         where: { followerId: profileId },
         attributes: ['followingId'],
       });
-      const followingSet = new Set(follows.map((f: any) => f.followingId));
+      followingSet = new Set(follows.map((f: any) => f.followingId));
       rows = [
         ...rows.filter((p: any) => followingSet.has(p.get('authorId'))),
         ...rows.filter((p: any) => !followingSet.has(p.get('authorId'))),
@@ -92,6 +93,7 @@ export class FeedService {
           createdAt:     p.createdAt,
           author:        p.author,
           likedByMe:     profileId ? (p.likes?.length ?? 0) > 0 : false,
+          followedByMe:  profileId ? followingSet.has(p.authorId) : false,
         };
       }),
       hasMore,

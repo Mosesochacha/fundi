@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Hammer, Lightbulb, HelpCircle, Briefcase, MessageCircle, Share2, MoreHorizontal } from "lucide-react";
 import { useAppSelector } from "@/store/hooks";
-import { useToggleLikeMutation } from "@/store/apiSlice";
+import { useToggleLikeMutation, useToggleFollowMutation } from "@/store/apiSlice";
 
 type PostTypeKey = "SHOWCASE" | "TIP" | "QUESTION" | "HIRING";
 
@@ -60,8 +60,10 @@ interface Post {
   likesCount: number;
   commentsCount: number;
   likedByMe: boolean;
+  followedByMe: boolean;
   createdAt: string;
   author: {
+    id: string;
     username: string;
     fullName: string;
     profession: string;
@@ -83,15 +85,18 @@ function timeAgo(date: string) {
 }
 
 export default function PostCard({ post: initial }: { post: Post }) {
-  const { isLoggedIn } = useAppSelector((s) => s.auth);
+  const { isLoggedIn, profile } = useAppSelector((s) => s.auth);
   const router = useRouter();
   const [toggleLike] = useToggleLikeMutation();
+  const [toggleFollow] = useToggleFollowMutation();
   const [post, setPost] = useState(initial);
   const [burst, setBurst] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(initial.followedByMe);
 
   const postHref = `/post/${post.slug}`;
   const meta = TYPE_META[post.postType as PostTypeKey];
+  const isOwnPost = profile?.username === post.author.username;
 
   const handleLike = async () => {
     if (!isLoggedIn) { router.push("/login"); return; }
@@ -107,6 +112,18 @@ export default function PostCard({ post: initial }: { post: Post }) {
       setPost((p) => ({ ...p, likedByMe: data.liked, likesCount: data.likesCount }));
     } catch {
       setPost(initial);
+    }
+  };
+
+  const handleFollow = async () => {
+    if (!isLoggedIn) { router.push("/login"); return; }
+    setIsFollowing((f) => !f);
+    try {
+      const res = await toggleFollow(post.author.id).unwrap();
+      const data = (res as { data: { following: boolean } }).data;
+      setIsFollowing(data.following);
+    } catch {
+      setIsFollowing(initial.followedByMe);
     }
   };
 
@@ -161,6 +178,18 @@ export default function PostCard({ post: initial }: { post: Post }) {
               </span>
             )}
             <span className="text-[11px] text-gray-400 tabular-nums font-medium">{timeAgo(post.createdAt)}</span>
+            {!isOwnPost && (
+              <button
+                onClick={handleFollow}
+                className={`text-xs font-medium px-3 py-1 rounded-full border transition-all ${
+                  isFollowing
+                    ? "border-orange-300 text-orange-500 bg-orange-50"
+                    : "border-orange-400 text-orange-500 hover:bg-orange-50"
+                }`}
+              >
+                {isFollowing ? "Following" : "Follow"}
+              </button>
+            )}
           </div>
         </header>
 

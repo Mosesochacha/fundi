@@ -19,8 +19,9 @@ interface Post {
   likesCount: number;
   commentsCount: number;
   likedByMe: boolean;
+  followedByMe: boolean;
   createdAt: string;
-  author: { username: string; fullName: string; profession: string; location: string; avatarUrl?: string };
+  author: { id: string; username: string; fullName: string; profession: string; location: string; avatarUrl?: string };
 }
 
 export default function FeedPage() {
