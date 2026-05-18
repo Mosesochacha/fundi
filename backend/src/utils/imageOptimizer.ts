@@ -40,6 +40,10 @@ export async function optimizeImage(
       fs.mkdirSync(outputDir, { recursive: true });
     }
 
+    // Sharp cannot read and write the same file; use a temp path when they match
+    const isSamePath = path.resolve(inputPath) === path.resolve(outputPath);
+    const writePath = isSamePath ? outputPath + '.tmp' : outputPath;
+
     // Optimize image based on format
     let sharpInstance = sharp(inputPath)
       .resize(maxWidth, maxHeight, {
@@ -52,14 +56,18 @@ export async function optimizeImage(
     } else if (format === 'avif') {
       sharpInstance = sharpInstance.avif({ quality });
     } else {
-      sharpInstance = sharpInstance.jpeg({ 
+      sharpInstance = sharpInstance.jpeg({
         quality,
-        mozjpeg: true, // Better compression
-        progressive: true // Progressive JPEG for better perceived performance
+        mozjpeg: true,
+        progressive: true
       });
     }
 
-    await sharpInstance.toFile(outputPath);
+    await sharpInstance.toFile(writePath);
+
+    if (isSamePath) {
+      fs.renameSync(writePath, outputPath);
+    }
 
     // Get optimized file size
     const optimizedStats = fs.statSync(outputPath);
