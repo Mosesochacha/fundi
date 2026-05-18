@@ -151,7 +151,7 @@ export default function RightSidebar() {
       )}
 
       {/* Footer */}
-      <div className="px-2 pt-2 text-[10px] text-gray-400 font-dm-sans leading-relaxed">
+      <div className="px-2 pt-2 text-xs text-gray-400 font-dm-sans leading-relaxed">
         <p>Fundi · Built for skilled workers</p>
       </div>
     </div>
