@@ -23,48 +23,78 @@ export default function LeftSidebar() {
   ];
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-2xl border border-[color:var(--line)] shadow-[0_2px_8px_-4px_rgba(40,20,5,0.1)] overflow-hidden">
 
       {/* Banner + avatar overlap */}
       <div className="relative">
         {/* Banner */}
-        <div className="h-20 bg-gradient-to-r from-orange-500 to-primaryDark" />
+        <div className="relative h-24 overflow-hidden grain grain-wood">
+          <div className="absolute inset-0" style={{
+            background: "linear-gradient(135deg, #9a3412 0%, #c2410c 40%, #f97316 75%, #fdba74 100%)",
+          }} />
+          {/* Diagonal stripes */}
+          <div className="absolute inset-0 opacity-10" style={{
+            backgroundImage: "repeating-linear-gradient(45deg, rgba(255,255,255,0.5) 0 1px, transparent 1px 14px)",
+          }} />
+          {/* Top shine */}
+          <div className="absolute inset-x-0 top-0 h-1/2" style={{
+            background: "linear-gradient(180deg, rgba(255,255,255,0.2), transparent)",
+          }} />
+          {/* Bottom fade */}
+          <div className="absolute inset-x-0 bottom-0 h-8" style={{
+            background: "linear-gradient(0deg, rgba(28,20,16,0.15), transparent)",
+          }} />
+        </div>
 
-        {/* Avatar — bottom-left, overlapping banner */}
+        {/* Avatar — overlapping banner */}
         <div className="absolute left-4 bottom-0 translate-y-1/2">
           <Link href={`/profile/${profile.username}`}>
-            <div className="w-14 h-14 rounded-full bg-orange-100 flex items-center justify-center text-primary font-bold text-xl overflow-hidden ring-4 ring-white shadow-sm hover:ring-orange-100 transition-all">
-              {profile.avatarUrl
+            <div className="w-16 h-16 rounded-2xl bg-orange-100 flex items-center justify-center text-[color:var(--orange-700)] font-bold text-2xl overflow-hidden ring-4 ring-white shadow-[0_4px_14px_rgba(40,20,5,0.15)] hover:scale-105 hover:ring-orange-100 transition-all duration-300">
+              {profile.avatarUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                ? <img src={profile.avatarUrl} alt={profile.fullName} className="w-full h-full object-cover" />
-                : profile.fullName?.[0]?.toUpperCase()}
+                <img src={profile.avatarUrl} alt={profile.fullName} className="w-full h-full object-cover" />
+              ) : (
+                <span className="font-playfair">{profile.fullName?.[0]?.toUpperCase()}</span>
+              )}
             </div>
           </Link>
         </div>
       </div>
 
-      {/* Profile info — pt accounts for avatar overflow (h-14/2 = 28px → pt-8) */}
-      <div className="px-4 pt-10 pb-4">
+      {/* Profile info */}
+      <div className="px-4 pt-12 pb-4">
         <Link href={`/profile/${profile.username}`} className="group block">
-          <p className="font-playfair font-bold text-base text-gray-900 leading-tight group-hover:text-primary transition-colors">
+          <p className="font-playfair font-bold text-[17px] text-[color:var(--ink)] leading-tight group-hover:text-primary transition-colors">
             {profile.fullName}
           </p>
+          <p className="text-[11px] text-gray-400 mt-0.5">@{profile.username}</p>
           {profile.profession && (
-            <span className="mt-1.5 inline-block text-xs bg-orange-50 text-primary border border-orange-100 px-2.5 py-0.5 rounded-full font-medium">
+            <span className="mt-2 inline-flex items-center text-[10.5px] bg-orange-50 text-[color:var(--orange-700)] border border-orange-100 px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wide">
               {profile.profession}
             </span>
           )}
           {profile.location && (
-            <p className="text-xs text-gray-400 mt-1">{profile.location}</p>
+            <p className="text-[11px] text-[color:var(--ink-soft)] mt-1.5">{profile.location}</p>
           )}
         </Link>
       </div>
 
-      {/* Divider */}
-      <div className="border-t border-gray-100 mx-3" />
+      {/* Stats row */}
+      <div className="border-t border-[color:var(--line)] grid grid-cols-3 text-center">
+        {[
+          { label: 'Posts',     value: stats?.postsCount ?? 0 },
+          { label: 'Followers', value: stats?.followersCount ?? 0 },
+          { label: 'Following', value: stats?.followingCount ?? 0 },
+        ].map(({ label, value }, i) => (
+          <div key={label} className={`py-3.5 ${i > 0 ? 'border-l border-[color:var(--line)]' : ''}`}>
+            <p className="font-playfair text-[18px] font-bold text-[color:var(--ink)] leading-none">{Number(value).toLocaleString()}</p>
+            <p className="font-dm-sans text-[10px] text-gray-400 mt-1.5 uppercase tracking-wider">{label}</p>
+          </div>
+        ))}
+      </div>
 
       {/* Navigation */}
-      <nav className="p-2 space-y-0.5">
+      <nav className="p-2 space-y-0.5 border-t border-[color:var(--line)]">
         {navLinks.map(({ href, label, icon: Icon }) => {
           const active =
             pathname === href ||
@@ -75,33 +105,19 @@ export default function LeftSidebar() {
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+              className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-200 ${
                 active
                   ? "bg-orange-50 text-primary"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  : "text-[color:var(--ink-soft)] hover:bg-[color:var(--line-soft)] hover:text-[color:var(--ink)]"
               }`}
             >
-              <Icon className={`w-4 h-4 shrink-0 ${active ? "stroke-[2.5]" : "stroke-[1.8]"}`} />
+              {active && <span className="absolute left-0 top-0 bottom-0 w-[4px] rounded-r-full bg-primary" />}
+              <Icon className={`w-[17px] h-[17px] shrink-0 ${active ? "stroke-[2.4]" : "stroke-[1.8]"}`} />
               {label}
             </Link>
           );
         })}
       </nav>
-
-      {/* Stats row */}
-      <div className="border-t border-gray-100 mx-4 mt-1" />
-      <div className="grid grid-cols-3 text-center px-2 py-3 gap-1">
-        {[
-          { label: 'Posts',     value: stats?.postsCount ?? 0 },
-          { label: 'Followers', value: stats?.followersCount ?? 0 },
-          { label: 'Following', value: stats?.followingCount ?? 0 },
-        ].map(({ label, value }) => (
-          <div key={label} className="py-1">
-            <p className="font-dm-sans text-sm font-semibold text-gray-900">{Number(value).toLocaleString()}</p>
-            <p className="font-dm-sans text-[10px] text-gray-400 mt-0.5">{label}</p>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
