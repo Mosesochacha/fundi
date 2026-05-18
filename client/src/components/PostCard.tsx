@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppSelector } from "@/store/hooks";
-import { useToggleLikeMutation } from "@/store/apiSlice";
+import { useToggleLikeMutation, useToggleFollowMutation } from "@/store/apiSlice";
 
 const BADGE: Record<string, string> = {
   SHOWCASE: 'bg-orange-50 text-orange-700 border-orange-200',
@@ -26,8 +26,10 @@ interface Post {
   likesCount: number;
   commentsCount: number;
   likedByMe: boolean;
+  followedByMe: boolean;
   createdAt: string;
   author: {
+    id: string;
     username: string;
     fullName: string;
     profession: string;
@@ -41,19 +43,22 @@ function timeAgo(date: string) {
   const s = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
   if (s < 60) return "just now";
   const m = Math.floor(s / 60);
-  if (m < 60) return `${m}m ago`;
+  if (m < 60) return `${m} min`;
   const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.floor(h / 24)}d ago`;
+  if (h < 24) return `${h}h`;
+  return `${Math.floor(h / 24)}d`;
 }
 
 export default function PostCard({ post: initial }: { post: Post }) {
-  const { isLoggedIn } = useAppSelector((s) => s.auth);
+  const { isLoggedIn, profile } = useAppSelector((s) => s.auth);
   const router = useRouter();
   const [toggleLike] = useToggleLikeMutation();
+  const [toggleFollow] = useToggleFollowMutation();
   const [post, setPost] = useState(initial);
+  const [isFollowing, setIsFollowing] = useState(initial.followedByMe);
 
   const postHref = `/post/${post.slug}`;
+  const isOwnPost = profile?.username === post.author.username;
 
   const handleLike = async () => {
     if (!isLoggedIn) { router.push("/login"); return; }
@@ -64,6 +69,18 @@ export default function PostCard({ post: initial }: { post: Post }) {
       setPost((p) => ({ ...p, likedByMe: data.liked, likesCount: data.likesCount }));
     } catch {
       setPost(initial);
+    }
+  };
+
+  const handleFollow = async () => {
+    if (!isLoggedIn) { router.push("/login"); return; }
+    setIsFollowing((f) => !f);
+    try {
+      const res = await toggleFollow(post.author.id).unwrap();
+      const data = (res as { data: { following: boolean } }).data;
+      setIsFollowing(data.following);
+    } catch {
+      setIsFollowing(initial.followedByMe);
     }
   };
 
@@ -101,7 +118,21 @@ export default function PostCard({ post: initial }: { post: Post }) {
             </div>
           </Link>
 
-          <span className="text-xs text-gray-400 tabular-nums shrink-0">{timeAgo(post.createdAt)}</span>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-xs text-gray-400 tabular-nums">{timeAgo(post.createdAt)}</span>
+            {!isOwnPost && (
+              <button
+                onClick={handleFollow}
+                className={`text-xs font-medium px-3 py-1 rounded-full border transition-all ${
+                  isFollowing
+                    ? "border-orange-300 text-orange-500 bg-orange-50"
+                    : "border-orange-400 text-orange-500 hover:bg-orange-50"
+                }`}
+              >
+                {isFollowing ? "Following" : "Follow"}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Post type badge */}
@@ -155,7 +186,6 @@ export default function PostCard({ post: initial }: { post: Post }) {
               <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
             </svg>
             {post.likesCount > 0 && <span className="tabular-nums">{post.likesCount}</span>}
-            <span className="hidden sm:inline">{post.likedByMe ? "Appreciated" : "Appreciate"}</span>
           </button>
 
           <Link
@@ -166,7 +196,6 @@ export default function PostCard({ post: initial }: { post: Post }) {
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
             {post.commentsCount > 0 && <span className="tabular-nums">{post.commentsCount}</span>}
-            <span className="hidden sm:inline">Comment</span>
           </Link>
 
           <button
@@ -178,7 +207,6 @@ export default function PostCard({ post: initial }: { post: Post }) {
               <polyline points="16 6 12 2 8 6" />
               <line x1="12" y1="2" x2="12" y2="15" />
             </svg>
-            <span className="hidden sm:inline">Share</span>
           </button>
         </div>
       </div>
