@@ -11,7 +11,10 @@ export default function PostCardSkeleton() {
               <div className="h-3 w-40 bg-gray-100 rounded-full animate-pulse" />
             </div>
           </div>
-          <div className="h-3 w-12 bg-gray-100 rounded-full animate-pulse shrink-0" />
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="h-3 w-10 bg-gray-100 rounded-full animate-pulse" />
+            <div className="h-6 w-16 bg-gray-100 rounded-full animate-pulse" />
+          </div>
         </div>
 
         {/* Content lines */}
