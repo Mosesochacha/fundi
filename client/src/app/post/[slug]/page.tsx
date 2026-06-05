@@ -2,12 +2,8 @@
 
 import { useState, use, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { use as useParams } from "react";
-import { useAppSelector } from "@/store/hooks";
-import {
-  useGetPostQuery,
-  useGetPostBySlugQuery,
-} from "@/store/apiSlice";
+import { useAuth } from "@/features/auth";
+import { useGetPost, useGetPostBySlug } from "@/features/posts";
 import RightSidebar from "@/components/sidebar/RightSidebar";
 import PostDetailSkeleton from "@/components/post/PostDetailSkeleton";
 import CommentList from "@/components/post/CommentList";
@@ -19,20 +15,20 @@ const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-
 export default function PostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const router = useRouter();
-  const { isLoggedIn, profile: me } = useAppSelector((s) => s.auth);
+  const { isLoggedIn, profile: me } = useAuth();
 
   const isUUID = UUID_REGEX.test(slug);
 
-  const { data: byIdRes, isLoading: loadingById } = useGetPostQuery(slug, { skip: !isUUID });
-  const { data: bySlugRes, isLoading: loadingBySlug } = useGetPostBySlugQuery(slug, { skip: isUUID });
+  const { data: byId, isLoading: loadingById } = useGetPost(isUUID ? slug : undefined);
+  const { data: bySlug, isLoading: loadingBySlug } = useGetPostBySlug(isUUID ? undefined : slug);
 
-  const postRes = isUUID ? byIdRes : bySlugRes;
+  const postRes = isUUID ? byId : bySlug;
   const isLoading = isUUID ? loadingById : loadingBySlug;
 
   const [replyingTo, setReplyingTo] = useState<{ commentId: string; authorUsername: string } | null>(null);
 
   useEffect(() => {
-    const post = (postRes as any)?.data;
+    const post = postRes as any;
     if (isUUID && post?.slug) {
       router.replace(`/post/${post.slug}`);
     }
@@ -40,7 +36,7 @@ export default function PostPage({ params }: { params: Promise<{ slug: string }>
 
   if (isLoading) return <PostDetailSkeleton />;
 
-  const raw = (postRes as any)?.data;
+  const raw = postRes as any;
   if (!raw) {
     return <div className="flex-1 text-center py-20 text-gray-500">Post not found.</div>;
   }

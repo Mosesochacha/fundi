@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { MessageCircle } from "lucide-react";
-import { useGetCommentsQuery } from "@/store/apiSlice";
+import { useGetComments } from "@/features/posts";
 import CommentItem, { type CommentData } from "./CommentItem";
-import type { AuthProfile } from "@/store/authSlice";
+import type { AuthProfile } from "@/features/auth";
 
 interface Props {
   postId: string;
@@ -15,8 +14,8 @@ interface Props {
 }
 
 export default function CommentList({ postId, isLoggedIn, replyingTo, onReplyClick }: Props) {
-  const { data: commentsRes, isLoading } = useGetCommentsQuery(postId);
-  const comments: CommentData[] = ((commentsRes as any)?.data ?? []);
+  const { data: commentsRes, isLoading } = useGetComments(postId);
+  const comments: CommentData[] = ((commentsRes as any) ?? []);
 
   if (isLoading) {
     return (

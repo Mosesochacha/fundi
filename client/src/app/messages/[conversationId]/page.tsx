@@ -3,10 +3,9 @@
 import { use, useEffect, useRef, useState, useCallback } from "react";
 import { ArrowLeft, Send } from "lucide-react";
 import Link from "next/link";
-import { useAppSelector } from "@/store/hooks";
+import client from "@/lib/axios";
+import { useAuth } from "@/features/auth";
 import { useSocket } from "@/hooks/useSocket";
-
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:9000/api/v1";
 
 interface Message {
   id: string;
@@ -19,7 +18,7 @@ interface Message {
 
 export default function ConversationPage({ params }: { params: Promise<{ conversationId: string }> }) {
   const { conversationId } = use(params);
-  const { accessToken, profile } = useAppSelector((s) => s.auth);
+  const { profile } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [other, setOther] = useState<{ fullName: string; avatarUrl?: string; userId?: string } | null>(null);
@@ -32,11 +31,8 @@ export default function ConversationPage({ params }: { params: Promise<{ convers
 
   const fetchMessages = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/messages/${conversationId}`, {
-        credentials: "include",
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-      const json = await res.json();
+      const res = await client.get(`/messages/${conversationId}`);
+      const json = res.data;
       if (Array.isArray(json?.data)) {
         setMessages(json.data);
         // Extract "other" from first message not sent by me
@@ -45,7 +41,7 @@ export default function ConversationPage({ params }: { params: Promise<{ convers
       }
     } catch {}
     setLoading(false);
-  }, [conversationId, accessToken, profile?.id]);
+  }, [conversationId, profile?.id]);
 
   useEffect(() => { fetchMessages(); }, [fetchMessages]);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
@@ -57,10 +53,7 @@ export default function ConversationPage({ params }: { params: Promise<{ convers
       if (cid !== conversationId) return;
       setMessages((prev) => [...prev, message]);
       // Mark read immediately
-      fetch(`${API}/messages/${conversationId}/read`, {
-        method: "POST", credentials: "include",
-        headers: { Authorization: `Bearer ${accessToken}` },
-      }).catch(() => {});
+      client.post(`/messages/${conversationId}/read`).catch(() => {});
     };
     const handleTyping = ({ isTyping }: { isTyping: boolean }) => {
       setOtherTyping(isTyping);
@@ -71,7 +64,7 @@ export default function ConversationPage({ params }: { params: Promise<{ convers
       socket.off("new_message", handleNewMessage);
       socket.off("typing", handleTyping);
     };
-  }, [socket, conversationId, accessToken]);
+  }, [socket, conversationId]);
 
   const emitTyping = (value: boolean) => {
     if (!socket || !other?.userId) return;
@@ -93,13 +86,8 @@ export default function ConversationPage({ params }: { params: Promise<{ convers
     emitTyping(false);
     clearTimeout(typingTimer.current);
     try {
-      const res = await fetch(`${API}/messages`, {
-        method: "POST",
-        credentials: "include",
-        headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ conversationId, content: trimmed }),
-      });
-      const json = await res.json();
+      const res = await client.post("/messages", { conversationId, content: trimmed });
+      const json = res.data;
       if (json?.data?.message) {
         setMessages((prev) => [...prev, json.data.message]);
       }

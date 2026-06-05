@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Heart, MessageCircle, ChevronDown } from "lucide-react";
-import { useToggleCommentLikeMutation } from "@/store/apiSlice";
+import { useToggleCommentLike } from "@/features/posts";
 
 export interface CommentData {
   id: string;
@@ -50,15 +50,15 @@ export default function CommentItem({ comment, postId, isLoggedIn, depth = 0, on
   const [liked, setLiked] = useState(comment.likedByMe);
   const [likesCount, setLikesCount] = useState(comment.likesCount);
   const [showAllReplies, setShowAllReplies] = useState(false);
-  const [toggleCommentLike] = useToggleCommentLikeMutation();
+  const toggleCommentLike = useToggleCommentLike();
 
   const handleLike = async () => {
     if (!isLoggedIn) return;
     setLiked((p) => !p);
     setLikesCount((p) => p + (liked ? -1 : 1));
     try {
-      const res = await toggleCommentLike({ postId, commentId: comment.id }).unwrap();
-      const data = (res as { data: { liked: boolean; likesCount: number } }).data;
+      const res = await toggleCommentLike.mutateAsync({ postId, commentId: comment.id });
+      const data = (res.data as { data: { liked: boolean; likesCount: number } }).data;
       setLiked(data.liked);
       setLikesCount(data.likesCount);
     } catch {

@@ -1,12 +1,10 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useToastContext } from "@/context/ToastContext";
-import { useAppSelector, useAppDispatch } from "@/store/hooks";
-import { setCredentials } from "@/store/authSlice";
+import client from "@/lib/axios";
 import Spinner from "@/components/ui/Spinner";
-
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:9000/api/v1";
 
 interface AvatarUploadProps {
   avatarUrl?: string | null;
@@ -19,8 +17,7 @@ export default function AvatarUpload({ avatarUrl, fullName, onSuccess, onRemove 
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [removing, setRemoving] = useState(false);
-  const { accessToken, user, profile } = useAppSelector((s) => s.auth);
-  const dispatch = useAppDispatch();
+  const qc = useQueryClient();
   const { success, error } = useToastContext();
 
   const initials = fullName
@@ -41,18 +38,11 @@ export default function AvatarUpload({ avatarUrl, fullName, onSuccess, onRemove 
     try {
       const formData = new FormData();
       formData.append("avatar", file);
-      const res = await fetch(`${API}/photos/avatar`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${accessToken}` },
-        credentials: "include",
-        body: formData,
-      });
-      const data = await res.json();
+      const res = await client.post("/photos/avatar", formData);
+      const data = res.data;
       if (!data.success) throw new Error(data.message);
       onSuccess(data.data.avatarUrl);
-      if (user && profile) {
-        dispatch(setCredentials({ user, profile: { ...profile, avatarUrl: data.data.avatarUrl }, accessToken: accessToken ?? undefined }));
-      }
+      qc.invalidateQueries({ queryKey: ["auth", "me"] });
       success("Profile photo updated");
     } catch {
       error("Failed to upload photo. Please try again.");
@@ -64,17 +54,11 @@ export default function AvatarUpload({ avatarUrl, fullName, onSuccess, onRemove 
   const handleRemove = async () => {
     setRemoving(true);
     try {
-      const res = await fetch(`${API}/photos/avatar`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${accessToken}` },
-        credentials: "include",
-      });
-      const data = await res.json();
+      const res = await client.delete("/photos/avatar");
+      const data = res.data;
       if (!data.success) throw new Error(data.message);
       onRemove?.();
-      if (user && profile) {
-        dispatch(setCredentials({ user, profile: { ...profile, avatarUrl: null }, accessToken: accessToken ?? undefined }));
-      }
+      qc.invalidateQueries({ queryKey: ["auth", "me"] });
       success("Profile photo removed");
     } catch {
       error("Failed to remove photo");

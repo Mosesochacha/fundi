@@ -1,6 +1,5 @@
-import crypto from 'crypto';
 import { Request, Response } from 'express';
-import AuthService from '../services/auth.service';
+import AuthService, { normalizePhone } from '../services/auth.service';
 import OTPService from '../services/otp.service';
 import { sendSuccess, sendError, asyncHandler, formatUserResponse, hashString } from '../utils/helpers';
 import { HTTP_STATUS, RESPONSE_MESSAGES } from '../utils/constants';
@@ -9,19 +8,38 @@ import { setAuthCookie, clearAuthCookies } from '../utils/authCookies';
 import db from '../models';
 import logger from '../utils/logger';
 import emailService from '../services/email.service';
+import { OAuth2Client } from 'google-auth-library';
 
 const REFRESH_COOKIE = 'lot_r1';
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
+
+/** Look up a user by an identifier that may be an email or a phone number. */
+async function findUserByIdentifier(identifier: string) {
+  const id = String(identifier).trim();
+  if (id.includes('@')) {
+    return db.User.findOne({ where: { email: id.toLowerCase() } });
+  }
+  return db.User.findOne({ where: { phoneNumber: normalizePhone(id) } });
+}
 
 class AuthController {
   register = asyncHandler(async (req: Request, res: Response) => {
-    const { email, password, username, firstName, lastName, profession, location, termsAccepted, ageConfirmed } = req.body;
+    const {
+      email, password, firstName, lastName, location, accountType,
+      phoneNumber, trade, interestedTrades, dailyRate, agreedToTerms,
+    } = req.body;
 
-    if (!email || !password || !username || !firstName || !lastName || !profession || !location) {
-      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'firstName, lastName, email, password, username, profession, and location are required');
+    if (!email || !password || !firstName || !lastName || !location || !accountType) {
+      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'firstName, lastName, email, password, location, and accountType are required');
     }
 
-    if (!termsAccepted || !ageConfirmed) {
-      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'You must accept the terms and confirm your age');
+    if (accountType !== 'employer' && accountType !== 'worker') {
+      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'accountType must be either "employer" or "worker"');
+    }
+
+    if (!agreedToTerms) {
+      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'You must agree to the Terms & Conditions and Privacy Policy');
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -31,11 +49,6 @@ class AuthController {
 
     if (password.length < 8) {
       return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Password must be at least 8 characters');
-    }
-
-    const usernameRegex = /^[a-zA-Z0-9_]{3,30}$/;
-    if (!usernameRegex.test(username)) {
-      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Username must be 3-30 characters (alphanumeric and underscore only)');
     }
 
     if (firstName.trim().length < 2 || firstName.trim().length > 50) {
@@ -50,17 +63,35 @@ class AuthController {
       return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Location must be 2-150 characters');
     }
 
+    if (!phoneNumber || String(phoneNumber).replace(/\D/g, '').length < 7) {
+      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'A valid phone number is required for verification');
+    }
+
+    if (accountType === 'worker' && (!trade || !String(trade).trim())) {
+      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Please select your main trade');
+    }
+
+    const parsedRate =
+      dailyRate === undefined || dailyRate === null || dailyRate === ''
+        ? undefined
+        : Number(String(dailyRate).replace(/[^0-9]/g, ''));
+    if (parsedRate !== undefined && (Number.isNaN(parsedRate) || parsedRate < 0)) {
+      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Daily rate must be a positive number');
+    }
+
     try {
       const result = await AuthService.register({
         email: email.toLowerCase().trim(),
         password,
-        username: username.trim(),
         firstName: firstName.trim(),
         lastName: lastName.trim(),
-        profession: profession.trim(),
         location: location.trim(),
-        termsAccepted: !!termsAccepted,
-        ageConfirmed: !!ageConfirmed,
+        accountType,
+        phoneNumber: String(phoneNumber).trim(),
+        trade: trade ? String(trade).trim() : undefined,
+        interestedTrades: Array.isArray(interestedTrades) ? interestedTrades : [],
+        dailyRate: parsedRate,
+        agreedToTerms: !!agreedToTerms,
       });
 
       // Send verification OTP (non-blocking — registration succeeds regardless)
@@ -87,20 +118,28 @@ class AuthController {
   });
 
   login = asyncHandler(async (req: Request, res: Response) => {
-    const { email, password } = req.body;
+    // `identifier` may be an email or a phone number. `email` kept for back-compat.
+    const identifier: string = req.body.identifier ?? req.body.email;
+    const { password } = req.body;
 
-    if (!email || !password) {
-      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Email and password are required');
+    if (!identifier || !password) {
+      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Email or phone number and password are required');
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Please provide a valid email address');
+    const id = String(identifier).trim();
+    const isEmail = id.includes('@');
+    if (isEmail) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(id)) {
+        return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Please provide a valid email address');
+      }
+    } else if (id.replace(/\D/g, '').length < 7) {
+      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Please provide a valid email or phone number');
     }
 
     try {
       const result = await AuthService.login(
-        { email: email.toLowerCase().trim(), password },
+        { identifier: id, password },
         req.ip || '',
         req.get('user-agent') || ''
       );
@@ -125,42 +164,117 @@ class AuthController {
     }
   });
 
+  // Sign in / sign up with a Google ID token. Verifies the token against the
+  // configured Google client, then issues the same { user, profile, tokens }
+  // shape as /auth/login (refresh token also set as the lot_r1 cookie).
+  googleLogin = asyncHandler(async (req: Request, res: Response) => {
+    const idToken: string = req.body.idToken ?? req.body.credential;
+    if (!idToken) {
+      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'A Google idToken is required');
+    }
+    if (!GOOGLE_CLIENT_ID) {
+      return sendError(res, HTTP_STATUS.INTERNAL_SERVER_ERROR, 'Google sign-in is not configured');
+    }
+
+    let payload: import('google-auth-library').TokenPayload | undefined;
+    try {
+      const ticket = await googleClient.verifyIdToken({
+        idToken,
+        audience: GOOGLE_CLIENT_ID,
+      });
+      payload = ticket.getPayload();
+    } catch (err) {
+      logger.warn('Google token verification failed', { err });
+      return sendError(res, HTTP_STATUS.UNAUTHORIZED, 'Invalid Google sign-in.');
+    }
+
+    if (!payload?.email || !payload.email_verified) {
+      return sendError(res, HTTP_STATUS.UNAUTHORIZED, 'Your Google email is not verified.');
+    }
+
+    try {
+      const result = await AuthService.loginWithGoogle(
+        {
+          email: payload.email,
+          firstName: payload.given_name ?? '',
+          lastName: payload.family_name ?? '',
+          avatarUrl: payload.picture ?? null,
+        },
+        req.ip || '',
+        req.get('user-agent') || ''
+      );
+      setAuthCookie(res, 'lot_r1', result.tokens.refreshToken, req);
+      return sendSuccess(res, RESPONSE_MESSAGES.LOGIN_SUCCESS, result);
+    } catch (err: any) {
+      if (err?.message === 'Account is deactivated') {
+        return sendError(res, HTTP_STATUS.FORBIDDEN, 'Your account has been deactivated.');
+      }
+      logger.error('Google login error', { error: err?.message });
+      return sendError(res, HTTP_STATUS.INTERNAL_SERVER_ERROR, RESPONSE_MESSAGES.SERVER_ERROR);
+    }
+  });
+
+  // Sends a short-lived OTP to start a password reset. `identifier` may be an
+  // email or phone number. The OTP is always delivered to the account's email
+  // (no SMS provider yet), even when a phone number was entered.
   forgotPassword = asyncHandler(async (req: Request, res: Response) => {
-    const { email } = req.body;
+    const identifier: string = req.body.identifier ?? req.body.email;
 
-    if (!email) {
-      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Email is required');
+    if (!identifier) {
+      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Email or phone number is required');
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Please provide a valid email address');
-    }
+    // Always return the same message — don't reveal whether the account exists.
+    const message = 'If an account matches, a reset code has been sent.';
 
-    // Always return the same message — don't reveal whether the email exists
-    const message = 'If an account with that email exists, a reset link has been sent.';
-
-    const normalizedEmail = email.toLowerCase().trim();
-    const user = await db.User.findOne({ where: { email: normalizedEmail } });
+    const user = await findUserByIdentifier(identifier);
     if (!user) return sendSuccess(res, message);
 
-    // Invalidate existing unused tokens
-    await (db.PasswordResetToken as any).update(
-      { isUsed: true },
-      { where: { userId: user.id, isUsed: false } }
-    );
-
-    const rawToken = crypto.randomBytes(32).toString('hex');
-    const tokenHash = hashString(rawToken);
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
-
-    await (db.PasswordResetToken as any).create({ userId: user.id, tokenHash, expiresAt, isUsed: false });
-
-    emailService.sendPasswordResetEmail(normalizedEmail, rawToken, user.firstName ?? undefined).catch((err: any) => {
-      logger.warn('[Auth] Failed to send password reset email', { email: normalizedEmail, err });
-    });
+    const result = await OTPService.generateOTP(user.email, 'reset');
+    if (!result.success) {
+      logger.warn('[Auth] Failed to send reset OTP', { userId: user.id, msg: result.message });
+    }
 
     return sendSuccess(res, message);
+  });
+
+  // Resends the reset OTP. Same generic response as forgot-password.
+  resendOtp = asyncHandler(async (req: Request, res: Response) => {
+    const identifier: string = req.body.identifier ?? req.body.email;
+
+    if (!identifier) {
+      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Email or phone number is required');
+    }
+
+    const message = 'If an account matches, a new code has been sent.';
+
+    const user = await findUserByIdentifier(identifier);
+    if (!user) return sendSuccess(res, message);
+
+    await OTPService.generateOTP(user.email, 'reset');
+    return sendSuccess(res, message);
+  });
+
+  // Validates a reset OTP WITHOUT consuming it, so the user can advance to the
+  // "set new password" step before the code is finally spent on reset.
+  verifyOtp = asyncHandler(async (req: Request, res: Response) => {
+    const { identifier, otp } = req.body;
+
+    if (!identifier || !otp) {
+      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Identifier and code are required');
+    }
+
+    const user = await findUserByIdentifier(identifier);
+    if (!user) {
+      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Invalid code. Please try again.');
+    }
+
+    const result = await OTPService.peekOTP(user.email, String(otp).trim(), 'reset');
+    if (!result.success) {
+      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Invalid code. Please try again.');
+    }
+
+    return sendSuccess(res, 'Code verified.');
   });
 
   logout = asyncHandler(async (req: Request, res: Response) => {
@@ -268,14 +382,30 @@ class AuthController {
   });
 
   resetPassword = asyncHandler(async (req: Request, res: Response) => {
-    const { token, newPassword } = req.body;
+    const { token, otp, identifier, newPassword } = req.body;
 
-    if (!token || !newPassword) {
-      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Token and newPassword are required');
+    if (!newPassword || newPassword.length < 8) {
+      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Password must be at least 8 characters');
     }
 
-    if (newPassword.length < 8) {
-      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Password must be at least 8 characters');
+    // OTP-based reset (current forgot-password flow).
+    if (otp && identifier) {
+      const user = await findUserByIdentifier(identifier);
+      if (!user) {
+        return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Invalid or expired code. Please request a new one.');
+      }
+      // verifyOTP consumes the code on success.
+      const result = await OTPService.verifyOTP(user.email, String(otp).trim(), 'reset');
+      if (!result.success) {
+        return sendError(res, HTTP_STATUS.BAD_REQUEST, result.message || 'Invalid or expired code.');
+      }
+      await AuthService.resetPasswordByUserId(user.id, newPassword);
+      return sendSuccess(res, 'Password reset successfully. You can now log in with your new password.');
+    }
+
+    // Legacy token-based reset (email reset links).
+    if (!token) {
+      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'A reset code or token is required');
     }
 
     const tokenHash = hashString(token);

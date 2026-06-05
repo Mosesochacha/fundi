@@ -8,6 +8,12 @@ export class User extends Model {
   declare email: string;
   declare passwordHash: string;
   declare role: "user" | "admin" | "moderator";
+  declare accountType: "employer" | "worker" | null;
+  declare phoneNumber: string | null;
+  declare isPhoneVerified: boolean;
+  declare isProfileComplete: boolean;
+  declare interestedTrades: string[] | null;
+  declare dailyRate: number | null;
   declare status: "active" | "inactive" | "suspended";
   declare emailVerified: boolean;
   declare organizationId: string | null;
@@ -17,8 +23,6 @@ export class User extends Model {
   declare isActive: boolean;
   declare termsAccepted: boolean;
   declare termsAcceptedAt: Date | null;
-  declare ageConfirmed: boolean;
-  declare ageConfirmedAt: Date | null;
   declare loginAttempts: number;
   declare lockedUntil: Date | null;
 
@@ -66,6 +70,37 @@ export function initModel(sequelize: Sequelize): typeof User {
         allowNull: false,
         defaultValue: "user",
       },
+      accountType: {
+        type: DataTypes.ENUM("employer", "worker"),
+        allowNull: true,
+        comment: 'Whether this account hires fundis (employer) or is a fundi (worker)',
+      },
+      phoneNumber: {
+        type: DataTypes.STRING(30),
+        allowNull: true,
+        comment: 'For identity verification — never shown publicly',
+      },
+      isPhoneVerified: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      isProfileComplete: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      interestedTrades: {
+        type: DataTypes.JSON,
+        allowNull: true,
+        defaultValue: [],
+        comment: 'Trades an employer is interested in hiring',
+      },
+      dailyRate: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        comment: 'Worker daily rate (optional, in KSh)',
+      },
       status: {
         type: DataTypes.ENUM("active", "inactive", "suspended"),
         allowNull: false,
@@ -108,17 +143,6 @@ export function initModel(sequelize: Sequelize): typeof User {
         type: DataTypes.DATE,
         allowNull: true,
         comment: 'Timestamp when the user accepted the Terms & Conditions and Privacy Policy'
-      },
-      ageConfirmed: {
-        type: DataTypes.BOOLEAN,
-        allowNull: true,
-        defaultValue: false,
-        comment: 'Whether the user has confirmed they are 18+'
-      },
-      ageConfirmedAt: {
-        type: DataTypes.DATE,
-        allowNull: true,
-        comment: 'Timestamp when the user confirmed their age'
       },
       organizationId: {
         type: DataTypes.UUID,

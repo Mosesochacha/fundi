@@ -2,9 +2,9 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { setCredentials } from "@/store/authSlice";
-import { useGenerateProfileMutation, usePublishProfileMutation, useUpdateProfileMutation, useCheckUsernamePublicQuery } from "@/store/apiSlice";
+import { useAuth } from "@/features/auth";
+import { useGenerateProfile, usePublishProfile, useUpdateProfile } from "@/features/settings";
+import { useCheckUsernamePublic } from "@/features/profiles";
 
 export interface EducationItem {
   degree: string;
@@ -77,9 +77,8 @@ const DEFAULT_STATE: SetupState = {
 };
 
 export function useProfileSetup() {
-  const dispatch = useAppDispatch();
   const router = useRouter();
-  const { user, profile, accessToken } = useAppSelector((s) => s.auth);
+  const { user, profile } = useAuth();
 
   const storageKey = user?.id ? `fundi_setup_${user.id}` : null;
 
@@ -98,15 +97,16 @@ export function useProfileSetup() {
   });
 
   const [usernameQuery, setUsernameQuery] = useState("");
-  const usernameCheckResult = useCheckUsernamePublicQuery(usernameQuery, {
-    skip: !usernameQuery || usernameQuery.length < 3,
-  });
+  const usernameCheckResult = useCheckUsernamePublic(
+    usernameQuery,
+    !!usernameQuery && usernameQuery.length >= 3,
+  );
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [generateProfileMutation] = useGenerateProfileMutation();
-  const [publishProfileMutation] = usePublishProfileMutation();
-  const [updateProfileMutation] = useUpdateProfileMutation();
+  const generateProfileMutation = useGenerateProfile();
+  const publishProfileMutation = usePublishProfile();
+  const updateProfileMutation = useUpdateProfile();
 
   // Persist to localStorage on every state change
   useEffect(() => {
@@ -122,8 +122,8 @@ export function useProfileSetup() {
       setState((s) => ({ ...s, usernameChecking: true }));
       return;
     }
-    if (usernameCheckResult.data?.success) {
-      const d = usernameCheckResult.data.data as { available: boolean; suggestion: string | null };
+    if (usernameCheckResult.data) {
+      const d = usernameCheckResult.data as { available: boolean; suggestion: string | null };
       setState((s) => ({
         ...s,
         usernameAvailable: d.available,
@@ -154,14 +154,14 @@ export function useProfileSetup() {
   const generateProfile = useCallback(async () => {
     setState((s) => ({ ...s, isGenerating: true, phase: "generating" }));
     try {
-      const result = await generateProfileMutation({
+      const result = await generateProfileMutation.mutateAsync({
         fullName: state.fullName,
         profession: state.profession,
         location: state.location,
         yearsExperience: state.yearsExperience,
         differentiator: state.differentiator,
-      }).unwrap();
-      const d = result.data as { tagline: string; bio: string; services: string[]; callToAction: string };
+      });
+      const d = result.data.data as { tagline: string; bio: string; services: string[]; callToAction: string };
       setState((s) => ({
         ...s,
         tagline: d.tagline || s.tagline,
@@ -192,24 +192,15 @@ export function useProfileSetup() {
     if (state.yearsExperience > 0) body.yearsExperience = state.yearsExperience;
     if (state.education.length) body.education = state.education;
     if (state.experience.length) body.experience = state.experience;
-    await updateProfileMutation(body as Parameters<typeof updateProfileMutation>[0]).unwrap();
+    await updateProfileMutation.mutateAsync(body as Parameters<typeof updateProfileMutation.mutateAsync>[0]);
   }, [state, updateProfileMutation]);
 
   const publishProfile = useCallback(async () => {
     setState((s) => ({ ...s, isPublishing: true }));
     try {
       await saveProfileFields();
-      const result = await publishProfileMutation().unwrap();
-      const d = result.data as { profileUrl: string };
-
-      // Mark user as onboarded in Redux
-      if (user) {
-        dispatch(setCredentials({
-          user: { ...user, isOnboarded: true },
-          profile: profile,
-          accessToken: accessToken ?? undefined,
-        }));
-      }
+      const result = await publishProfileMutation.mutateAsync();
+      const d = result.data.data as { profileUrl: string };
 
       // Clear localStorage
       if (storageKey) localStorage.removeItem(storageKey);
@@ -219,10 +210,10 @@ export function useProfileSetup() {
       return { success: true, profileUrl: d?.profileUrl };
     } catch (err: unknown) {
       setState((s) => ({ ...s, isPublishing: false }));
-      const msg = (err as { data?: { message?: string } })?.data?.message || "Failed to publish profile";
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Failed to publish profile";
       return { success: false, error: msg };
     }
-  }, [state, saveProfileFields, publishProfileMutation, user, profile, accessToken, dispatch, storageKey, router]);
+  }, [state, saveProfileFields, publishProfileMutation, storageKey, router]);
 
   return {
     state,

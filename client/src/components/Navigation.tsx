@@ -1,45 +1,46 @@
 "use client";
 
+import {
+  Bell,
+  ChevronDown,
+  Hammer,
+  MessageCircle,
+  PenSquare,
+  Search,
+} from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { Bell, Search, PenSquare, Hammer, ChevronDown, MessageCircle } from "lucide-react";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { logOut } from "@/store/authSlice";
-import { apiSlice, useLogoutMutation } from "@/store/apiSlice";
-import FilterBar from "./FilterBar";
+import { useState } from "react";
+import { useAuth, useLogout } from "@/features/auth";
+import { dashboardPathForRole } from "@/lib/authRedirect";
 
 export default function Navigation() {
-  const dispatch = useAppDispatch();
-  const { profile, isLoggedIn } = useAppSelector((s) => s.auth);
+  const { profile, isLoggedIn, role } = useAuth();
+  const logout = useLogout();
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
-  const isFeed = pathname === "/feed";
-  const [logoutMutation] = useLogoutMutation();
+  const home = dashboardPathForRole(role);
 
   const handleLogout = async () => {
-    try {
-      await logoutMutation().unwrap();
-    } catch {
-      // Cookie clearing may still succeed even if the request errors
-    } finally {
-      dispatch(logOut());
-      dispatch(apiSlice.util.resetApiState());
-      setMenuOpen(false);
-    }
+    setMenuOpen(false);
+    await logout();
   };
 
   return (
     <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-[color:var(--line)]">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center gap-4">
-
         {/* Brand mark */}
-        <Link href="/feed" className="flex items-center gap-2.5 shrink-0 group">
+        <Link href={home} className="flex items-center gap-2.5 shrink-0 group">
           <div className="relative w-9 h-9 bg-[color:var(--ink)] rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-hover:rotate-[-6deg] group-hover:bg-primary shadow-[0_2px_6px_rgba(28,20,16,0.18)]">
-            <Hammer className="w-4 h-4 text-[color:var(--orange-300)] group-hover:text-white transition-colors" strokeWidth={2.5} />
+            <Hammer
+              className="w-4 h-4 text-[color:var(--orange-300)] group-hover:text-white transition-colors"
+              strokeWidth={2.5}
+            />
             <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary ring-2 ring-white group-hover:bg-[color:var(--orange-300)] transition-colors" />
           </div>
-          <span className="font-bold text-[19px] text-[color:var(--ink)] font-playfair tracking-tight leading-none">Fundi</span>
+          <span className="font-bold text-[19px] text-[color:var(--ink)] font-playfair tracking-tight leading-none">
+            Fundi
+          </span>
         </Link>
 
         {/* Search */}
@@ -54,7 +55,7 @@ export default function Navigation() {
           </div>
         </div>
 
-<div className="flex items-center gap-1.5 ml-auto">
+        <div className="flex items-center gap-1.5 ml-auto">
           {isLoggedIn && profile ? (
             <>
               {/* Messages */}
@@ -92,17 +93,26 @@ export default function Navigation() {
                   <div className="w-7 h-7 rounded-full bg-orange-100 flex items-center justify-center text-primary font-bold text-xs overflow-hidden ring-2 ring-[color:var(--line)] hover:ring-orange-200 transition-all">
                     {profile.avatarUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={profile.avatarUrl} alt={profile.fullName} className="w-full h-full object-cover" />
+                      <img
+                        src={profile.avatarUrl}
+                        alt={profile.fullName}
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
                       profile.fullName?.[0]?.toUpperCase()
                     )}
                   </div>
-                  <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${menuOpen ? "rotate-180" : ""}`} />
+                  <ChevronDown
+                    className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${menuOpen ? "rotate-180" : ""}`}
+                  />
                 </button>
 
                 {menuOpen && (
                   <>
-                    <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setMenuOpen(false)}
+                    />
                     <div className="absolute right-0 mt-1.5 w-56 bg-white rounded-2xl shadow-warm-lg border border-[color:var(--line)] py-1.5 z-50">
                       {/* User info header */}
                       <div className="px-4 py-3 border-b border-[color:var(--line)]">
@@ -110,15 +120,23 @@ export default function Navigation() {
                           <div className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center text-primary font-bold text-sm overflow-hidden shrink-0 ring-2 ring-[color:var(--line)]">
                             {profile.avatarUrl ? (
                               // eslint-disable-next-line @next/next/no-img-element
-                              <img src={profile.avatarUrl} alt="" className="w-full h-full object-cover" />
+                              <img
+                                src={profile.avatarUrl}
+                                alt=""
+                                className="w-full h-full object-cover"
+                              />
                             ) : (
                               profile.fullName?.[0]?.toUpperCase()
                             )}
                           </div>
                           <div className="min-w-0">
-                            <p className="text-sm font-semibold text-[color:var(--ink)] truncate leading-tight">{profile.fullName}</p>
+                            <p className="text-sm font-semibold text-[color:var(--ink)] truncate leading-tight">
+                              {profile.fullName}
+                            </p>
                             {profile.profession && (
-                              <p className="text-xs text-[color:var(--ink-soft)] truncate leading-tight mt-0.5">{profile.profession}</p>
+                              <p className="text-xs text-[color:var(--ink-soft)] truncate leading-tight mt-0.5">
+                                {profile.profession}
+                              </p>
                             )}
                           </div>
                         </div>
@@ -126,7 +144,7 @@ export default function Navigation() {
 
                       <div className="py-1">
                         <Link
-                          href={`/profile/${profile.username}`}
+                          href="/worker/profile"
                           className="flex items-center px-4 py-2 text-sm text-[color:var(--ink)] hover:bg-[color:var(--line-soft)] transition-colors"
                           onClick={() => setMenuOpen(false)}
                         >
@@ -172,8 +190,6 @@ export default function Navigation() {
           )}
         </div>
       </div>
-
-      {isFeed && <FilterBar />}
     </nav>
   );
 }

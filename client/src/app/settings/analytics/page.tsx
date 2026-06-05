@@ -1,10 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Eye, TrendingUp, Calendar, Share2 } from "lucide-react";
-import { useAppSelector } from "@/store/hooks";
-
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:9000/api/v1";
+import { useGetAnalytics } from "@/features/settings";
 
 interface DayCount { date: string; count: number }
 interface Referrers { whatsapp: number; instagram: number; google: number; direct: number }
@@ -17,20 +14,10 @@ interface Analytics {
 }
 
 export default function AnalyticsPage() {
-  const { accessToken } = useAppSelector((s) => s.auth);
-  const [data, setData] = useState<Analytics | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch(`${API}/profile/analytics`, {
-      credentials: "include",
-      headers: { Authorization: `Bearer ${accessToken}` },
-    })
-      .then((r) => r.json())
-      .then((j) => { if (j?.data) setData(j.data); })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [accessToken]);
+  const { data, isLoading: loading } = useGetAnalytics() as {
+    data: Analytics | undefined;
+    isLoading: boolean;
+  };
 
   if (loading) {
     return (

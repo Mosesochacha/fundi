@@ -1,38 +1,96 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import type { AppRole } from "@/features/auth/types/auth.types";
+import { auth } from "@/lib/auth";
+import { dashboardPathForRole } from "@/lib/authRedirect";
 
-const PROTECTED = ["/feed", "/setup", "/settings", "/post", "/messages"];
-const AUTH_ONLY = ["/login", "/register", "/forgot-password", "/reset-password", "/verify-email"];
+/** Logged-in users bounce away from these. */
+const AUTH_ONLY = [
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/reset-password",
+  "/verify-email",
+];
 
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-  const hasSession = !!request.cookies.get("lot_r1");
+/**
+ * Role dashboards — gated by exact role. `/worker` can't be blanket-gated
+ * (`/worker/[id]` is a public profile), so only its dashboard is listed.
+ */
+const ROLE_GATED: Record<string, AppRole> = {
+  "/worker/dashboard": "worker",
+  "/employer": "employer",
+  "/admin": "admin",
+  "/moderator": "moderator",
+};
 
-  const isProtected = PROTECTED.some((p) => pathname === p || pathname.startsWith(p + "/"));
-  const isAuthOnly = AUTH_ONLY.some((p) => pathname === p || pathname.startsWith(p + "/"));
+/** Any authenticated user. (`/worker/[id]` stays public — it's a profile view.) */
+const AUTH_REQUIRED = [
+  "/setup",
+  "/settings",
+  "/post",
+  "/messages",
+  "/worker/profile",
+];
 
-  if (isProtected && !hasSession) {
-    const url = request.nextUrl.clone();
+const matches = (path: string, prefix: string) =>
+  path === prefix || path.startsWith(prefix + "/");
+
+export default auth((req) => {
+  const { nextUrl } = req;
+  const path = nextUrl.pathname;
+  const session = req.auth;
+  const role = session?.user?.role;
+
+  const toLogin = () => {
+    const url = nextUrl.clone();
     url.pathname = "/login";
-    url.searchParams.set("next", pathname);
+    url.searchParams.set("next", path);
     return NextResponse.redirect(url);
+  };
+  const toDashboard = () => {
+    const url = nextUrl.clone();
+    url.pathname = dashboardPathForRole(role);
+    url.search = "";
+    return NextResponse.redirect(url);
+  };
+
+  // Already signed in → keep them out of the auth screens.
+  if (AUTH_ONLY.some((p) => matches(path, p))) {
+    return session ? toDashboard() : NextResponse.next();
   }
 
-  if (isAuthOnly && hasSession) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/feed";
-    return NextResponse.redirect(url);
+  // Role-gated dashboard areas.
+  for (const [prefix, needed] of Object.entries(ROLE_GATED)) {
+    if (matches(path, prefix)) {
+      if (!session) return toLogin();
+      if (role !== needed) return toDashboard();
+      return NextResponse.next();
+    }
+  }
+
+  // Authenticated-only areas.
+  if (AUTH_REQUIRED.some((p) => matches(path, p))) {
+    if (!session) return toLogin();
+    if (matches(path, "/worker/profile") && role !== "worker") {
+      return toDashboard();
+    }
+    return NextResponse.next();
   }
 
   return NextResponse.next();
-}
+});
 
 export const config = {
   matcher: [
-    "/feed/:path*",
     "/setup/:path*",
     "/settings/:path*",
     "/post/:path*",
     "/messages/:path*",
+    "/worker/profile/:path*",
+    "/worker/dashboard/:path*",
+    "/employer/:path*",
+    "/admin/:path*",
+    "/moderator/:path*",
     "/login",
     "/register",
     "/forgot-password",

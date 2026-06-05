@@ -2,29 +2,23 @@
 
 import { useRef } from "react";
 import { Camera, X } from "lucide-react";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:9000/api/v1";
+import client from "@/lib/axios";
 
 interface Props {
   photos: string[];
   onAdd: (url: string) => void;
   onRemove: (i: number) => void;
-  token: string | null;
 }
 
-export default function PhotoUploadGrid({ photos, onAdd, onRemove, token }: Props) {
+export default function PhotoUploadGrid({ photos, onAdd, onRemove }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const upload = async (file: File) => {
     const fd = new FormData();
     fd.append("avatar", file);
     try {
-      const res = await fetch(`${API_BASE}/photos/avatar`, {
-        method: "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: fd,
-      });
-      const json = await res.json();
+      const res = await client.post("/photos/avatar", fd);
+      const json = res.data;
       if (json.success && json.data?.avatarUrl) onAdd(json.data.avatarUrl);
     } catch {}
   };

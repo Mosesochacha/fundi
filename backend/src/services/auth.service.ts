@@ -15,19 +15,60 @@ import logger from "../utils/logger";
 export interface RegisterData {
   email: string;
   password: string;
-  username: string;
   firstName: string;
   lastName: string;
-  profession: string;
   location: string;
-  termsAccepted?: boolean;
-  ageConfirmed?: boolean;
+  accountType: "employer" | "worker";
+  phoneNumber?: string;
+  trade?: string;             // workers: their main trade
+  interestedTrades?: string[]; // employers: trades they want to hire
+  dailyRate?: number;         // workers: optional daily rate
+  agreedToTerms?: boolean;
+  username?: string;          // optional override; auto-generated when absent
   role?: "user" | "admin" | "moderator";
 }
 
+/**
+ * Build a unique, URL-safe username from a person's name. Falls back to a
+ * random numeric suffix when the base is taken.
+ */
+async function generateUniqueUsername(
+  firstName: string,
+  lastName: string,
+  t: any
+): Promise<string> {
+  const base =
+    `${firstName}${lastName}`.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 20) || "fundi";
+  let candidate = base.length >= 3 ? base : `${base}user`;
+  let tries = 0;
+  // eslint-disable-next-line no-await-in-loop
+  while (await db.Profile.findOne({ where: { username: candidate }, transaction: t })) {
+    candidate = `${base.slice(0, 20)}${Math.floor(1000 + Math.random() * 9000)}`;
+    if (++tries > 12) {
+      candidate = `${base.slice(0, 15)}${Date.now().toString().slice(-6)}`;
+      break;
+    }
+  }
+  return candidate;
+}
+
 export interface LoginData {
-  email: string;
+  /** Email address or phone number. */
+  identifier: string;
   password: string;
+}
+
+/**
+ * Normalise an international phone number for storage/matching: strip all
+ * formatting (spaces, dashes, parentheses, dots) but preserve a leading "+"
+ * country-code marker. Country-agnostic — works for any region.
+ * NOTE: national vs international equivalence (e.g. 0712… ≡ +254712…) is NOT
+ * resolved here; that needs a real phone library + the user's country.
+ */
+export function normalizePhone(s: string): string {
+  const trimmed = s.trim();
+  const digits = trimmed.replace(/\D/g, "");
+  return trimmed.startsWith("+") ? `+${digits}` : digits;
 }
 
 export interface AuthTokens {
@@ -40,7 +81,11 @@ class AuthService {
    * Register a new user
    */
   async register(userData: RegisterData) {
-    const { email, password, username, firstName, lastName, profession, location, termsAccepted, ageConfirmed, role } = userData;
+    const {
+      email, password, firstName, lastName, location, accountType,
+      phoneNumber, trade, interestedTrades, dailyRate, agreedToTerms, role,
+    } = userData;
+    const isWorker = accountType === "worker";
     const t = await db.sequelize.transaction();
     try {
       const existingUser = await db.User.findOne({ where: { email }, transaction: t });
@@ -48,6 +93,8 @@ class AuthService {
         throw new Error("Email already in use");
       }
       const passwordHash = await bcrypt.hash(password, 12);
+      const username = userData.username?.trim() || (await generateUniqueUsername(firstName, lastName, t));
+
       const user = await db.User.create(
         {
           firstName,
@@ -55,23 +102,35 @@ class AuthService {
           email,
           passwordHash,
           role: role || 'user',
+          accountType,
+          phoneNumber: phoneNumber ? normalizePhone(phoneNumber) : null,
+          isPhoneVerified: false,
+          // The signup flow collects role + location + trade up front, so the
+          // account is effectively onboarded the moment it is created.
+          isProfileComplete: true,
+          isOnboarded: true,
+          onboardingCompletedAt: new Date(),
+          interestedTrades: isWorker ? [] : (interestedTrades || []),
+          dailyRate: isWorker ? (dailyRate ?? null) : null,
           emailVerified: false,
           status: 'active',
-          termsAccepted: !!termsAccepted,
-          termsAcceptedAt: termsAccepted ? new Date() : null,
-          ageConfirmed: !!ageConfirmed,
-          ageConfirmedAt: ageConfirmed ? new Date() : null,
+          termsAccepted: !!agreedToTerms,
+          termsAcceptedAt: agreedToTerms ? new Date() : null,
         },
         { transaction: t }
       );
+
       const fullName = `${firstName} ${lastName}`;
       await db.Profile.create(
         {
           userId: user.id,
           username,
           fullName,
-          profession,
+          // Workers surface their trade as their profession; employers get a
+          // neutral label and are kept out of the worker directory/search.
+          profession: isWorker ? (trade || 'Other') : 'Client',
           location,
+          appearInSearch: isWorker,
         },
         { transaction: t }
       );
@@ -96,13 +155,18 @@ class AuthService {
     profile: any;
     tokens: AuthTokens;
   }> {
-    const { email, password } = loginData;
+    const { identifier, password } = loginData;
+    const id = identifier.trim();
+    const isEmail = id.includes("@");
+    const where = isEmail
+      ? { email: id.toLowerCase() }
+      : { phoneNumber: normalizePhone(id) };
 
     try {
-      const user = await db.User.findOne({ where: { email } });
+      const user = await db.User.findOne({ where });
 
       if (!user) {
-        logger.warn('Login failed: user not found', { email, ipAddress });
+        logger.warn('Login failed: user not found', { identifier: id, ipAddress });
         throw new Error("Invalid credentials");
       }
 
@@ -166,10 +230,90 @@ class AuthService {
       };
     } catch (error: any) {
       if (!['Invalid credentials', 'Email not verified', 'Account is deactivated'].includes(error.message)) {
-        logger.error('Login error', { email, error: error.message, ipAddress });
+        logger.error('Login error', { identifier: id, error: error.message, ipAddress });
       }
       throw error;
     }
+  }
+
+  /**
+   * Sign in (or sign up) a user from a verified Google identity.
+   * New accounts are created with `accountType: null` and `isOnboarded: false`
+   * so the client routes them through /setup to choose worker/employer.
+   */
+  async loginWithGoogle(
+    googleUser: {
+      email: string;
+      firstName: string;
+      lastName: string;
+      avatarUrl?: string | null;
+    },
+    ipAddress = '',
+    userAgent = ''
+  ): Promise<{ user: any; profile: any; tokens: AuthTokens }> {
+    const email = googleUser.email.toLowerCase().trim();
+    let user = await db.User.findOne({ where: { email } });
+
+    if (!user) {
+      const t = await db.sequelize.transaction();
+      try {
+        const username = await generateUniqueUsername(
+          googleUser.firstName,
+          googleUser.lastName,
+          t
+        );
+        // Random password — Google users authenticate via OAuth, not this hash.
+        const passwordHash = await bcrypt.hash(uuidv4(), 12);
+        user = await db.User.create(
+          {
+            firstName: googleUser.firstName || 'Fundi',
+            lastName: googleUser.lastName || 'User',
+            email,
+            passwordHash,
+            role: 'user',
+            accountType: null,
+            emailVerified: true,
+            isProfileComplete: false,
+            isOnboarded: false,
+            status: 'active',
+          },
+          { transaction: t }
+        );
+        await db.Profile.create(
+          {
+            userId: user.id,
+            username,
+            fullName: `${googleUser.firstName} ${googleUser.lastName}`.trim(),
+            profession: 'Client',
+            location: '',
+            avatarUrl: googleUser.avatarUrl ?? null,
+            appearInSearch: false,
+          },
+          { transaction: t }
+        );
+        await t.commit();
+      } catch (err) {
+        await t.rollback();
+        throw err;
+      }
+    } else if (!user.emailVerified) {
+      // Google verified the email — trust it.
+      await user.update({ emailVerified: true });
+    }
+
+    if (!user.isActive) {
+      throw new Error('Account is deactivated');
+    }
+
+    const tokens = await this.generateTokens(user, ipAddress, userAgent);
+    await user.update({ lastLoginAt: new Date() });
+    const profile = await db.Profile.findOne({ where: { userId: user.id } });
+
+    return {
+      user: formatUserResponse(user),
+      profile: profile ? profile.get({ plain: true }) : null,
+      tokens,
+    };
   }
 
   /**

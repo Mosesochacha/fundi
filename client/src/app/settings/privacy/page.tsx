@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useToastContext } from "@/context/ToastContext";
-import { useGetPrivacyQuery, useUpdatePrivacyMutation } from "@/store/apiSlice";
+import { useGetPrivacy, useUpdatePrivacy } from "@/features/settings";
 import SettingsHeader from "@/components/settings/SettingsHeader";
 import SettingsSection from "@/components/settings/SettingsSection";
 import SettingsRow from "@/components/settings/SettingsRow";
@@ -27,10 +27,10 @@ const COMMUNITY_TOGGLES = [
 
 export default function PrivacyPage() {
   const { error } = useToastContext();
-  const { data } = useGetPrivacyQuery();
-  const [updatePrivacy] = useUpdatePrivacyMutation();
+  const { data } = useGetPrivacy();
+  const updatePrivacy = useUpdatePrivacy();
 
-  const serverPrefs: Record<string, boolean> = (data as any)?.data ?? {};
+  const serverPrefs: Record<string, boolean> = data ?? {};
   const [prefs, setPrefs] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState<Record<string, boolean>>({});
 
@@ -42,7 +42,7 @@ export default function PrivacyPage() {
     setPrefs((p) => ({ ...p, [key]: value }));
     setSaving((s) => ({ ...s, [key]: true }));
     try {
-      await updatePrivacy({ [key]: value }).unwrap();
+      await updatePrivacy.mutateAsync({ [key]: value });
     } catch {
       setPrefs((p) => ({ ...p, [key]: !value }));
       error("Failed to save. Please try again.");

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { useAppSelector } from "@/store/hooks";
+import { useAuth } from "@/features/auth";
 import SettingsSidebar from "@/components/settings/SettingsSidebar";
 
 const SECTION_LABELS: Record<string, string> = {
@@ -20,7 +20,7 @@ const SECTION_LABELS: Record<string, string> = {
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { isLoggedIn } = useAppSelector((s) => s.auth);
+  const { isLoggedIn } = useAuth();
 
   // Mobile: null = show sidebar menu; string = show section content
   const [mobileSection, setMobileSection] = useState<string | null>(() =>

@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import { Check } from "lucide-react";
 import { useToastContext } from "@/context/ToastContext";
-import { useUpdateProfileMutation, useGetPreferencesQuery, useUpdatePreferencesMutation } from "@/store/apiSlice";
-import { useAppSelector } from "@/store/hooks";
+import { useUpdateProfile, useGetPreferences, useUpdatePreferences } from "@/features/settings";
+import { useAuth } from "@/features/auth";
 import SettingsHeader from "@/components/settings/SettingsHeader";
 import SettingsSection from "@/components/settings/SettingsSection";
 import Button from "@/components/ui/Button";
@@ -34,12 +34,13 @@ const LAYOUTS = [
 
 export default function AppearancePage() {
   const { success, error } = useToastContext();
-  const { profile } = useAppSelector((s) => s.auth);
-  const [updateProfile, { isLoading: saving }] = useUpdateProfileMutation();
-  const [updatePrefs] = useUpdatePreferencesMutation();
-  const { data: prefsData } = useGetPreferencesQuery();
+  const { profile } = useAuth();
+  const updateProfile = useUpdateProfile();
+  const saving = updateProfile.isPending;
+  const updatePrefs = useUpdatePreferences();
+  const { data: prefsData } = useGetPreferences();
 
-  const prefs: any = (prefsData as any)?.data ?? {};
+  const prefs: any = prefsData ?? {};
 
   const [theme, setTheme] = useState("orange");
   const [nameFormat, setNameFormat] = useState("full");
@@ -53,8 +54,8 @@ export default function AppearancePage() {
   const handleSave = async () => {
     try {
       await Promise.all([
-        updateProfile({ theme }).unwrap(),
-        updatePrefs({ displayNameFormat: nameFormat, profileLayout: layout }).unwrap(),
+        updateProfile.mutateAsync({ theme }),
+        updatePrefs.mutateAsync({ displayNameFormat: nameFormat, profileLayout: layout }),
       ]);
       success("Appearance saved");
     } catch {

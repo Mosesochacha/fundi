@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Hammer, Lightbulb, HelpCircle, Briefcase, MessageCircle, Share2, MoreHorizontal, Heart } from "lucide-react";
-import { useAppSelector } from "@/store/hooks";
-import { useToggleLikeMutation, useToggleFollowMutation } from "@/store/apiSlice";
+import { useAuth } from "@/features/auth";
+import { useToggleLike } from "@/features/posts";
+import { useToggleFollow } from "@/features/profiles";
 
 type PostTypeKey = "SHOWCASE" | "TIP" | "QUESTION" | "HIRING";
 
@@ -85,10 +86,10 @@ function timeAgo(date: string) {
 }
 
 export default function PostCard({ post: initial, full = false }: { post: Post; full?: boolean }) {
-  const { isLoggedIn, profile } = useAppSelector((s) => s.auth);
+  const { isLoggedIn, profile } = useAuth();
   const router = useRouter();
-  const [toggleLike] = useToggleLikeMutation();
-  const [toggleFollow] = useToggleFollowMutation();
+  const toggleLike = useToggleLike();
+  const toggleFollow = useToggleFollow();
   const [post, setPost] = useState(initial);
   const [burst, setBurst] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -107,8 +108,8 @@ export default function PostCard({ post: initial, full = false }: { post: Post; 
     }
     setPost((p) => ({ ...p, likedByMe: willLike, likesCount: p.likesCount + (willLike ? 1 : -1) }));
     try {
-      const res = await toggleLike(post.id).unwrap();
-      const data = (res as { data: { liked: boolean; likesCount: number } }).data;
+      const res = await toggleLike.mutateAsync(post.id);
+      const data = (res.data as { data: { liked: boolean; likesCount: number } }).data;
       setPost((p) => ({ ...p, likedByMe: data.liked, likesCount: data.likesCount }));
     } catch {
       setPost(initial);
@@ -119,8 +120,8 @@ export default function PostCard({ post: initial, full = false }: { post: Post; 
     if (!isLoggedIn) { router.push("/login"); return; }
     setIsFollowing((f) => !f);
     try {
-      const res = await toggleFollow(post.author.id).unwrap();
-      const data = (res as { data: { following: boolean } }).data;
+      const res = await toggleFollow.mutateAsync(post.author.id);
+      const data = (res.data as { data: { following: boolean } }).data;
       setIsFollowing(data.following);
     } catch {
       setIsFollowing(initial.followedByMe);

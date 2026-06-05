@@ -1,15 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   User, Settings, Lock, Bell, Palette, Eye, CreditCard, LogOut, BarChart2
 } from "lucide-react";
-import { useAppSelector, useAppDispatch } from "@/store/hooks";
-import { logOut } from "@/store/authSlice";
+import { useAuth, useLogout } from "@/features/auth";
 import { useToastContext } from "@/context/ToastContext";
-
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:9000/api/v1";
 
 const NAV_ITEMS = [
   { href: "/settings/profile",       label: "Profile",       icon: User },
@@ -28,22 +25,13 @@ interface SettingsSidebarProps {
 
 export default function SettingsSidebar({ onNavigate }: SettingsSidebarProps) {
   const pathname = usePathname();
-  const router = useRouter();
-  const dispatch = useAppDispatch();
-  const { user, profile, accessToken } = useAppSelector((s) => s.auth);
+  const { user, profile } = useAuth();
+  const logout = useLogout();
   const { success } = useToastContext();
 
   const handleSignOut = async () => {
-    try {
-      await fetch(`${API}/auth/logout`, {
-        method: "POST",
-        credentials: "include",
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-    } catch { /* ignore */ }
-    dispatch(logOut());
-    router.push("/login");
     success("Signed out");
+    await logout({ callbackUrl: "/login" });
   };
 
   const initials = user

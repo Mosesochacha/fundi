@@ -1,24 +1,23 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useAppSelector, useAppDispatch } from "@/store/hooks";
-import { setCredentials } from "@/store/authSlice";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/features/auth";
 import { useToastContext } from "@/context/ToastContext";
-import { useUpdateProfileMutation } from "@/store/apiSlice";
+import { useUpdateProfile } from "@/features/settings";
+import { useGetProfile, useCheckUsername } from "@/features/profiles";
 import SettingsHeader from "@/components/settings/SettingsHeader";
 import SettingsSection from "@/components/settings/SettingsSection";
 import SettingsRow from "@/components/settings/SettingsRow";
 import AvatarUpload from "@/components/settings/AvatarUpload";
 import BannerUpload from "@/components/settings/BannerUpload";
 import Button from "@/components/ui/Button";
-
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:9000/api/v1";
+import client from "@/lib/axios";
 
 export default function ProfileSettingsPage() {
-  const dispatch = useAppDispatch();
-  const { user, profile, accessToken } = useAppSelector((s) => s.auth);
+  const { user, profile } = useAuth();
   const { success, error } = useToastContext();
-  const [updateProfile, { isLoading: saving }] = useUpdateProfileMutation();
+  const updateProfile = useUpdateProfile();
+  const saving = updateProfile.isPending;
 
   // Form state
   const [form, setForm] = useState({
@@ -36,73 +35,56 @@ export default function ProfileSettingsPage() {
   const [serviceInput, setServiceInput] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [bannerUrl, setBannerUrl] = useState<string | null>(null);
-  const [usernameStatus, setUsernameStatus] = useState<"idle" | "checking" | "available" | "taken">("idle");
   const [whatsappSameAsPhone, setWhatsappSameAsPhone] = useState(false);
   const [regenLoading, setRegenLoading] = useState(false);
 
-  // Load profile data
-  useEffect(() => {
-    const fetchFull = async () => {
-      if (!profile?.username) return;
-      try {
-        const res = await fetch(`${API}/profiles/${profile.username}`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-          credentials: "include",
-        });
-        const data = await res.json();
-        if (data.success) {
-          const p = data.data;
-          setForm({
-            fullName: p.fullName || "",
-            username: p.username || "",
-            profession: p.profession || "",
-            location: p.location || "",
-            tagline: p.tagline || "",
-            bio: p.bio || "",
-            yearsExperience: p.yearsExperience?.toString() || "",
-            phone: p.phone || "",
-            whatsapp: p.whatsapp || "",
-            services: Array.isArray(p.services) ? p.services : [],
-          });
-          setAvatarUrl(p.avatarUrl || null);
-          setBannerUrl(p.bannerUrl || null);
-          if (p.whatsapp && p.phone && p.whatsapp === p.phone) {
-            setWhatsappSameAsPhone(true);
-          }
-        }
-      } catch { /* ignore */ }
-    };
-    fetchFull();
-  }, [profile?.username, accessToken]);
-
   // Username availability check (debounced)
-  const checkUsername = useCallback(
-    (() => {
-      let timer: ReturnType<typeof setTimeout>;
-      return (val: string) => {
-        clearTimeout(timer);
-        if (!val || val === profile?.username) { setUsernameStatus("idle"); return; }
-        setUsernameStatus("checking");
-        timer = setTimeout(async () => {
-          try {
-            const res = await fetch(`${API}/profiles/check-username?u=${encodeURIComponent(val)}`, {
-              headers: { Authorization: `Bearer ${accessToken}` },
-              credentials: "include",
-            });
-            const data = await res.json();
-            setUsernameStatus(data.data?.available ? "available" : "taken");
-          } catch {
-            setUsernameStatus("idle");
-          }
-        }, 500);
-      };
-    })(),
-    [accessToken, profile?.username]
-  );
+  const [usernameQuery, setUsernameQuery] = useState("");
+  const usernameCheck = useCheckUsername(usernameQuery, usernameQuery.length > 0);
+  const usernameStatus: "idle" | "checking" | "available" | "taken" =
+    usernameQuery.length === 0
+      ? "idle"
+      : usernameCheck.isLoading
+        ? "checking"
+        : usernameCheck.data?.available
+          ? "available"
+          : "taken";
+
+  // Load profile data
+  const { data: fullProfile } = useGetProfile(profile?.username);
+
+  useEffect(() => {
+    if (!fullProfile) return;
+    const p = fullProfile;
+    setForm({
+      fullName: p.fullName || "",
+      username: p.username || "",
+      profession: p.profession || "",
+      location: p.location || "",
+      tagline: p.tagline || "",
+      bio: p.bio || "",
+      yearsExperience: p.yearsExperience?.toString() || "",
+      phone: p.phone || "",
+      whatsapp: p.whatsapp || "",
+      services: Array.isArray(p.services) ? p.services : [],
+    });
+    setAvatarUrl(p.avatarUrl || null);
+    setBannerUrl(p.bannerUrl || null);
+    if (p.whatsapp && p.phone && p.whatsapp === p.phone) {
+      setWhatsappSameAsPhone(true);
+    }
+  }, [fullProfile]);
+
+  // Debounce username input into the availability query
+  useEffect(() => {
+    const val = form.username;
+    if (!val || val === profile?.username) { setUsernameQuery(""); return; }
+    const timer = setTimeout(() => setUsernameQuery(val), 500);
+    return () => clearTimeout(timer);
+  }, [form.username, profile?.username]);
 
   const setField = (key: keyof typeof form, value: string) => {
     setForm((f) => ({ ...f, [key]: value }));
-    if (key === "username") checkUsername(value);
     if (key === "phone" && whatsappSameAsPhone) {
       setForm((f) => ({ ...f, phone: value, whatsapp: value }));
     }
@@ -126,20 +108,12 @@ export default function ProfileSettingsPage() {
   const handleRegenBio = async () => {
     setRegenLoading(true);
     try {
-      const res = await fetch(`${API}/ai/polish-post`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          roughText: form.bio || `I am a ${form.profession} based in ${form.location}.`,
-          profession: form.profession,
-          postType: "bio",
-        }),
+      const res = await client.post("/ai/polish-post", {
+        roughText: form.bio || `I am a ${form.profession} based in ${form.location}.`,
+        profession: form.profession,
+        postType: "bio",
       });
-      const data = await res.json();
+      const data = res.data;
       if (data.success && data.data?.polished) {
         setForm((f) => ({ ...f, bio: data.data.polished.slice(0, 500) }));
         success("Bio regenerated");
@@ -167,14 +141,7 @@ export default function ProfileSettingsPage() {
     if (form.yearsExperience) payload.yearsExperience = parseInt(form.yearsExperience);
 
     try {
-      const result = await updateProfile(payload).unwrap();
-      // Update Redux profile if username/fullName changed
-      if (user && profile) {
-        dispatch(setCredentials({
-          user,
-          profile: { ...profile, fullName: payload.fullName, username: payload.username },
-        }));
-      }
+      await updateProfile.mutateAsync(payload);
       success("Profile saved");
     } catch {
       error("Failed to save. Please try again.");

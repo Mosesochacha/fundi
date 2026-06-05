@@ -11,7 +11,6 @@ import { THEME_COLORS } from "../shared/ThemeSelector";
 import AvatarUpload from "@/components/settings/AvatarUpload";
 import BannerUpload from "@/components/settings/BannerUpload";
 import type { SetupState, EducationItem, ExperienceItem } from "@/hooks/useProfileSetup";
-import { useAppSelector } from "@/store/hooks";
 
 interface Props {
   state: SetupState;
@@ -37,7 +36,6 @@ function SectionCard({ title, children }: { title: string; children: React.React
 }
 
 export default function AIEditMode({ state, setField, checkUsername, onPublish }: Props) {
-  const { accessToken } = useAppSelector((s) => s.auth);
   const [whatsappSame, setWhatsappSame] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const color = THEME_COLORS[state.theme] || THEME_COLORS.orange;
@@ -190,7 +188,6 @@ export default function AIEditMode({ state, setField, checkUsername, onPublish }
           photos={state.photos}
           onAdd={(url) => setField("photos", [...state.photos, url])}
           onRemove={(i) => setField("photos", state.photos.filter((_, idx) => idx !== i))}
-          token={accessToken}
         />
       </SectionCard>
 

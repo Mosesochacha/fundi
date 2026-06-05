@@ -1,23 +1,20 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Hammer, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
-import { useAppSelector } from "@/store/hooks";
+import { useAuth } from "@/features/auth";
 import {
-  useGetProfileQuery,
-  useGetProfilePostsQuery,
-  useToggleFollowMutation,
-  useGetProfileStatsQuery,
-  useGetProfileActivityQuery,
-  useGetAnalyticsQuery,
-} from "@/store/apiSlice";
+  useGetProfile,
+  useGetProfilePosts,
+  useToggleFollow,
+} from "@/features/profiles";
+import client from "@/lib/axios";
 import { useToastContext } from "@/context/ToastContext";
 import PostCard from "@/components/PostCard";
-
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:9000/api/v1";
 
 type Tab = "posts" | "insights" | "share";
 
@@ -54,7 +51,7 @@ const ACTIVITY_COLORS: Record<string, string> = {
 };
 
 export default function ProfileContent({ username }: { username: string }) {
-  const { isLoggedIn, profile: myProfile, accessToken } = useAppSelector((s) => s.auth);
+  const { isLoggedIn, profile: myProfile } = useAuth();
   const myProfileId = myProfile?.id;
   const router = useRouter();
   const { success } = useToastContext();
@@ -62,20 +59,38 @@ export default function ProfileContent({ username }: { username: string }) {
   const [activeTab, setActiveTab] = useState<Tab>("posts");
   const [profileUrl, setProfileUrl] = useState("");
 
-  const { data: profileRes, isLoading } = useGetProfileQuery(username);
-  const { data: postsRes } = useGetProfilePostsQuery({ username });
-  const [toggleFollow, { isLoading: following }] = useToggleFollowMutation();
+  const { data: profileRes, isLoading } = useGetProfile(username);
+  const { data: postsRes } = useGetProfilePosts(username);
+  const toggleFollowMutation = useToggleFollow();
+  const following = toggleFollowMutation.isPending;
   const [isFollowing, setIsFollowing] = useState<boolean | null>(null);
   const [startingChat, setStartingChat] = useState(false);
 
-  const profile = (profileRes as { data?: Record<string, unknown> } | undefined)?.data;
+  const profile = profileRes as Record<string, unknown> | undefined;
   const isOwnProfile = !!profile && myProfileId === profile.id;
 
   // Owner-only data — skipped for other visitors
-  const { data: statsRes, isFetching: statsFetching } = useGetProfileStatsQuery(undefined, { skip: !isOwnProfile });
-  const { data: activityRes } = useGetProfileActivityQuery(undefined, { skip: !isOwnProfile });
-  const { data: analyticsRes } = useGetAnalyticsQuery(undefined, { skip: !isOwnProfile });
-  const { data: fullProfileRes } = useGetProfileQuery(myProfile?.username ?? "", { skip: !isOwnProfile });
+  const { data: statsRes, isFetching: statsFetching } = useQuery({
+    queryKey: ["profiles", "stats"],
+    queryFn: () => client.get("/profile/stats"),
+    enabled: isOwnProfile,
+    select: (res) => res.data,
+  });
+  const { data: activityRes } = useQuery({
+    queryKey: ["profiles", "activity"],
+    queryFn: () => client.get("/profile/activity"),
+    enabled: isOwnProfile,
+    select: (res) => res.data,
+  });
+  const { data: analyticsRes } = useQuery({
+    queryKey: ["profiles", "analytics"],
+    queryFn: () => client.get("/profile/analytics"),
+    enabled: isOwnProfile,
+    select: (res) => res.data,
+  });
+  const { data: fullProfileRes } = useGetProfile(
+    isOwnProfile ? (myProfile?.username ?? undefined) : undefined,
+  );
 
   useEffect(() => {
     if (isOwnProfile) {
@@ -87,13 +102,11 @@ export default function ProfileContent({ username }: { username: string }) {
     if (!isLoggedIn) { router.push("/login"); return; }
     setStartingChat(true);
     try {
-      const res = await fetch(`${API}/messages`, {
-        method: "POST",
-        credentials: "include",
-        headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ recipientId: profile?.id, content: "👋 Hi!" }),
+      const res = await client.post(`/messages`, {
+        recipientId: profile?.id,
+        content: "👋 Hi!",
       });
-      const json = await res.json();
+      const json = res.data;
       if (json?.data?.conversationId) router.push(`/messages/${json.data.conversationId}`);
     } catch {} finally {
       setStartingChat(false);
@@ -116,15 +129,15 @@ export default function ProfileContent({ username }: { username: string }) {
     );
   }
 
-  const posts = ((postsRes as { data?: unknown[] } | undefined)?.data) ?? [];
+  const posts = ((postsRes as unknown[] | undefined)) ?? [];
   const followingState = isFollowing ?? (profile.isFollowing as boolean);
 
   const handleFollow = async () => {
     if (!isLoggedIn) return;
     setIsFollowing(!followingState);
     try {
-      const res = await toggleFollow(profile.id as string).unwrap();
-      setIsFollowing((res as { data: { following: boolean } }).data.following);
+      const res = await toggleFollowMutation.mutateAsync(profile.id as string);
+      setIsFollowing((res.data as { data: { following: boolean } }).data.following);
     } catch {
       setIsFollowing(followingState);
     }
@@ -135,7 +148,7 @@ export default function ProfileContent({ username }: { username: string }) {
   const activity: any[] = (activityRes as any)?.data ?? [];
   const daily: any[] = (analyticsRes as any)?.data?.daily ?? [];
   const maxDaily = Math.max(...daily.map((d: any) => d.count), 1);
-  const fullProfile = (fullProfileRes as any)?.data;
+  const fullProfile = fullProfileRes as any;
   const profileScore = stats?.profileScore ?? 0;
   const checklistItems = [
     { label: "Profile photo", done: !!fullProfile?.avatarUrl },

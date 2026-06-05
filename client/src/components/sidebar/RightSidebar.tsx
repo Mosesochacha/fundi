@@ -3,8 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { TrendingUp, UserPlus, CheckCircle2 } from "lucide-react";
-import { useAppSelector } from "@/store/hooks";
-import { useBrowseProfilesQuery, useGetProfileQuery, useToggleFollowMutation } from "@/store/apiSlice";
+import { useAuth } from "@/features/auth";
+import { useBrowseProfiles, useGetProfile, useToggleFollow } from "@/features/profiles";
 
 const TRENDING_PROFESSIONS = ['Plumber', 'Electrician', 'Carpenter', 'Painter', 'Mason', 'Welder'];
 
@@ -20,17 +20,16 @@ function SectionLabel({ icon: Icon, children }: { icon: React.ComponentType<{ cl
 }
 
 export default function RightSidebar() {
-  const { profile: me } = useAppSelector((s) => s.auth);
+  const { profile: me } = useAuth();
   const [followedIds, setFollowedIds] = useState<Set<string>>(new Set());
-  const [toggleFollow] = useToggleFollowMutation();
+  const toggleFollow = useToggleFollow();
 
-  const { data: browseData } = useBrowseProfilesQuery({ limit: 6 });
+  const { data: browseData } = useBrowseProfiles({ limit: 6 });
   const suggested = ((browseData as any)?.data?.profiles ?? [])
     .filter((p: any) => p.username !== me?.username)
     .slice(0, 3);
 
-  const { data: profileData } = useGetProfileQuery(me?.username ?? '', { skip: !me?.username });
-  const myProfile = (profileData as any)?.data;
+  const { data: myProfile } = useGetProfile(me?.username);
   const missingItems = [
     !myProfile?.avatarUrl && 'Add a profile photo',
     !myProfile?.bio && 'Write your bio',
@@ -47,7 +46,7 @@ export default function RightSidebar() {
       return next;
     });
     try {
-      await toggleFollow(profileId).unwrap();
+      await toggleFollow.mutateAsync(profileId);
     } catch {
       setFollowedIds((prev) => {
         const next = new Set(prev);

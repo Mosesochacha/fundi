@@ -3,8 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { MapPin, Star } from "lucide-react";
-import { useAppSelector } from "@/store/hooks";
-import { useBrowseProfilesQuery, useToggleFollowMutation } from "@/store/apiSlice";
+import { useAuth } from "@/features/auth";
+import { useBrowseProfiles, useToggleFollow } from "@/features/profiles";
 
 const TRADE_PILLS = ["Plumber", "Electrician", "Painter", "Carpenter", "Designer", "Developer"];
 
@@ -32,11 +32,11 @@ interface BrowseRightSidebarProps {
 }
 
 export default function BrowseRightSidebar({ activeProfession, onProfessionClick, activeLocation, onLocationClick }: BrowseRightSidebarProps) {
-  const { profile: me } = useAppSelector((s) => s.auth);
+  const { profile: me } = useAuth();
   const [followedIds, setFollowedIds] = useState<Set<string>>(new Set());
-  const [toggleFollow] = useToggleFollowMutation();
+  const toggleFollow = useToggleFollow();
 
-  const { data: browseData } = useBrowseProfilesQuery({ limit: 6 });
+  const { data: browseData } = useBrowseProfiles({ limit: 6 });
   const suggested = ((browseData as any)?.data?.profiles ?? [])
     .filter((p: any) => p.username !== me?.username)
     .slice(0, 3);
@@ -48,7 +48,7 @@ export default function BrowseRightSidebar({ activeProfession, onProfessionClick
       return next;
     });
     try {
-      await toggleFollow(profileId).unwrap();
+      await toggleFollow.mutateAsync(profileId);
     } catch {
       setFollowedIds((prev) => {
         const next = new Set(prev);

@@ -3,10 +3,9 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
-import { useAppSelector } from "@/store/hooks";
+import client from "@/lib/axios";
+import { useAuth } from "@/features/auth";
 import { useSocket } from "@/hooks/useSocket";
-
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:9000/api/v1";
 
 interface Conversation {
   id: string;
@@ -16,21 +15,18 @@ interface Conversation {
 }
 
 export default function MessagesPage() {
-  const { accessToken, profile } = useAppSelector((s) => s.auth);
+  const { profile } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const socket = useSocket();
 
   const fetchConversations = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/messages/conversations`, {
-        credentials: "include",
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-      const json = await res.json();
+      const res = await client.get("/messages/conversations");
+      const json = res.data;
       if (Array.isArray(json?.data)) setConversations(json.data);
     } catch {}
-  }, [accessToken]);
+  }, []);
 
   useEffect(() => {
     fetchConversations().finally(() => setLoading(false));

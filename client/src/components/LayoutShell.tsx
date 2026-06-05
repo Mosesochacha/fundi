@@ -1,75 +1,86 @@
 "use client";
 
-import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import Navigation from "./Navigation";
-import LeftSidebar from "./sidebar/LeftSidebar";
+import { useEffect } from "react";
+import { redirectPathForRole } from "@/lib/authRedirect";
+import { useAuth } from "@/features/auth";
 import BottomNav from "./BottomNav";
+import Navigation from "./Navigation";
 import SocketInit from "./SocketInit";
-import { useAppSelector, useAppDispatch } from "@/store/hooks";
-import { setCredentials, logOut, type AuthUser, type AuthProfile } from "@/store/authSlice";
-import { useGetMeQuery } from "@/store/apiSlice";
+import LeftSidebar from "./sidebar/LeftSidebar";
 
-const AUTH_PATHS = ["/login", "/register", "/forgot-password", "/verify-email", "/reset-password"];
+const AUTH_PATHS = [
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/verify-email",
+  "/reset-password",
+];
 const FULL_CONTENT_PATHS = ["/settings", "/messages"];
 const SETUP_PATHS = ["/setup"];
-const LANDING_PATHS = ["/"];
+// Pages that ship their own marketing chrome (LandingNav) — render bare.
+const BARE_PATHS = ["/", "/browse"];
+// Role dashboards provide their own chrome via the dashboard <Shell>.
+const DASHBOARD_PATHS = ["/worker", "/employer", "/admin", "/moderator"];
 
-function SessionRestorer() {
-  const dispatch = useAppDispatch();
-  const { isLoggedIn } = useAppSelector((s) => s.auth);
-  const { data, isError } = useGetMeQuery(undefined, { skip: !isLoggedIn });
-
-  useEffect(() => {
-    if (data?.success) {
-      const { user, profile } = (data as { success: boolean; data: { user: AuthUser; profile: AuthProfile | null } }).data;
-      dispatch(setCredentials({ user, profile }));
-    }
-    if (isError) {
-      dispatch(logOut());
-    }
-  }, [data, isError, dispatch]);
-
-  return null;
-}
+// /auth/me is fetched on demand by `useCurrentUser`; the NextAuth session is the
+// source of truth for "logged in", so no Redux session-restorer is needed.
 
 function OnboardingGuard() {
   const router = useRouter();
   const pathname = usePathname();
-  const { isLoggedIn, user } = useAppSelector((s) => s.auth);
+  const { isLoggedIn, user, profile } = useAuth();
   const isAuth = AUTH_PATHS.some((p) => pathname.startsWith(p));
   const isSetup = SETUP_PATHS.some((p) => pathname.startsWith(p));
 
   useEffect(() => {
     if (!isLoggedIn || isAuth) return;
+    if (!user) return; // /auth/me still loading — don't redirect prematurely
     if (!user?.isOnboarded && !isSetup) {
       router.replace("/setup");
     } else if (user?.isOnboarded && pathname === "/setup") {
       // Only redirect from the choice screen, not from mid-flow or complete pages
-      router.replace("/feed");
+      router.replace(redirectPathForRole(user, profile));
     }
-  }, [isLoggedIn, user?.isOnboarded, isSetup, isAuth, pathname, router]);
+  }, [isLoggedIn, user, profile, isSetup, isAuth, pathname, router]);
 
   return null;
 }
 
-export default function LayoutShell({ children }: { children: React.ReactNode }) {
+export default function LayoutShell({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
-  const { isLoggedIn } = useAppSelector((s) => s.auth);
+  const { isLoggedIn } = useAuth();
   const isAuth = AUTH_PATHS.some((p) => pathname.startsWith(p));
   const isFullContent = FULL_CONTENT_PATHS.some((p) => pathname.startsWith(p));
   const isSetup = SETUP_PATHS.some((p) => pathname.startsWith(p));
 
   if (isAuth) return <>{children}</>;
 
-  const isLanding = LANDING_PATHS.includes(pathname);
-  if (isLanding) return <>{children}</>;
+  const isBare = BARE_PATHS.includes(pathname);
+  if (isBare) return <>{children}</>;
+
+  // Role dashboards: session plumbing only — the dashboard <Shell> renders the
+  // sidebar/topbar/nav itself, so skip the app's orange Navigation/sidebars.
+  const isDashboard = DASHBOARD_PATHS.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`),
+  );
+  if (isDashboard) {
+    return (
+      <>
+        <SocketInit />
+        {children}
+      </>
+    );
+  }
 
   // Setup flow: fullscreen, no nav/sidebar
   if (isSetup) {
     return (
       <>
-        <SessionRestorer />
         <OnboardingGuard />
         <SocketInit />
         {children}
@@ -81,7 +92,6 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
   if (isFullContent) {
     return (
       <>
-        <SessionRestorer />
         <OnboardingGuard />
         <SocketInit />
         <Navigation />
@@ -95,7 +105,6 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
 
   return (
     <>
-      <SessionRestorer />
       <OnboardingGuard />
       <SocketInit />
       <Navigation />
@@ -109,9 +118,7 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
               </aside>
 
               {/* Main content */}
-              <main className="flex-1 min-w-0 pb-16 lg:pb-0">
-                {children}
-              </main>
+              <main className="flex-1 min-w-0 pb-16 lg:pb-0">{children}</main>
             </div>
           </div>
         ) : (

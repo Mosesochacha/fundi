@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { Copy, Check } from "lucide-react";
-import { useAppSelector } from "@/store/hooks";
+import { useAuth, useChangeEmail } from "@/features/auth";
 import { useToastContext } from "@/context/ToastContext";
-import { useChangeEmailMutation, useUpdatePreferencesMutation, useGetPreferencesQuery } from "@/store/apiSlice";
+import { useUpdatePreferences, useGetPreferences } from "@/features/settings";
 import SettingsHeader from "@/components/settings/SettingsHeader";
 import SettingsSection from "@/components/settings/SettingsSection";
 import SettingsRow from "@/components/settings/SettingsRow";
@@ -36,13 +36,15 @@ function maskEmail(email: string) {
 }
 
 export default function AccountSettingsPage() {
-  const { user, profile } = useAppSelector((s) => s.auth);
+  const { user, profile } = useAuth();
   const { success, error } = useToastContext();
-  const [changeEmail, { isLoading: changingEmail }] = useChangeEmailMutation();
-  const [updatePrefs, { isLoading: savingPrefs }] = useUpdatePreferencesMutation();
-  const { data: prefsData } = useGetPreferencesQuery();
+  const changeEmail = useChangeEmail();
+  const changingEmail = changeEmail.isPending;
+  const updatePrefs = useUpdatePreferences();
+  const savingPrefs = updatePrefs.isPending;
+  const { data: prefsData } = useGetPreferences();
 
-  const prefs: any = (prefsData as any)?.data ?? {};
+  const prefs: any = prefsData ?? {};
 
   const [emailForm, setEmailForm] = useState({ newEmail: "", password: "" });
   const [showEmailForm, setShowEmailForm] = useState(false);
@@ -68,18 +70,18 @@ export default function AccountSettingsPage() {
       return;
     }
     try {
-      await changeEmail({ newEmail: emailForm.newEmail, currentPassword: emailForm.password }).unwrap();
+      await changeEmail.mutateAsync({ newEmail: emailForm.newEmail, currentPassword: emailForm.password });
       success("Email updated successfully");
       setShowEmailForm(false);
       setEmailForm({ newEmail: "", password: "" });
     } catch (e: any) {
-      error(e?.data?.message || "Failed to update email");
+      error(e?.response?.data?.message || "Failed to update email");
     }
   };
 
   const handleSavePrefs = async () => {
     try {
-      await updatePrefs(prefForm).unwrap();
+      await updatePrefs.mutateAsync(prefForm);
       success("Preferences saved");
     } catch {
       error("Failed to save preferences");

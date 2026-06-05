@@ -4,14 +4,14 @@ import { useState } from "react";
 import { Monitor, Smartphone, CheckCircle, XCircle } from "lucide-react";
 import { useToastContext } from "@/context/ToastContext";
 import {
-  useChangePasswordMutation,
-  useGetSessionsQuery,
-  useRevokeSessionMutation,
-  useRevokeAllSessionsMutation,
-  useGetLoginHistoryQuery,
-  useResendVerificationMutation,
-} from "@/store/apiSlice";
-import { useAppSelector } from "@/store/hooks";
+  useAuth,
+  useChangePassword,
+  useGetSessions,
+  useRevokeSession,
+  useRevokeAllSessions,
+  useGetLoginHistory,
+  useResendVerification,
+} from "@/features/auth";
 import SettingsHeader from "@/components/settings/SettingsHeader";
 import SettingsSection from "@/components/settings/SettingsSection";
 import SettingsRow from "@/components/settings/SettingsRow";
@@ -44,39 +44,42 @@ function timeAgo(date: string) {
 
 export default function SecuritySettingsPage() {
   const { success, error } = useToastContext();
-  const { user } = useAppSelector((s) => s.auth);
-  const [resendVerification, { isLoading: resending }] = useResendVerificationMutation();
+  const { user } = useAuth();
+  const resendVerification = useResendVerification();
+  const resending = resendVerification.isPending;
 
-  const [changePassword, { isLoading: changingPwd }] = useChangePasswordMutation();
-  const [revokeSession] = useRevokeSessionMutation();
-  const [revokeAll, { isLoading: revokingAll }] = useRevokeAllSessionsMutation();
-  const { data: sessionsData } = useGetSessionsQuery();
+  const changePassword = useChangePassword();
+  const changingPwd = changePassword.isPending;
+  const revokeSession = useRevokeSession();
+  const revokeAll = useRevokeAllSessions();
+  const revokingAll = revokeAll.isPending;
+  const { data: sessionsData } = useGetSessions();
   const [showAllHistory, setShowAllHistory] = useState(false);
-  const { data: historyData } = useGetLoginHistoryQuery(showAllHistory ? 30 : 5);
+  const { data: historyData } = useGetLoginHistory(showAllHistory ? 30 : 5);
 
   const [pwdForm, setPwdForm] = useState({ current: "", next: "", confirm: "" });
   const [showPwd, setShowPwd] = useState({ current: false, next: false, confirm: false });
 
   const strength = strengthLabel(pwdForm.next);
-  const sessions: any[] = (sessionsData as any)?.data ?? [];
-  const history: any[] = (historyData as any)?.data ?? [];
+  const sessions: any[] = sessionsData ?? [];
+  const history: any[] = historyData ?? [];
 
   const handlePasswordChange = async () => {
     if (!pwdForm.current) { error("Enter your current password"); return; }
     if (pwdForm.next.length < 8) { error("New password must be at least 8 characters"); return; }
     if (pwdForm.next !== pwdForm.confirm) { error("Passwords do not match"); return; }
     try {
-      await changePassword({ currentPassword: pwdForm.current, newPassword: pwdForm.next }).unwrap();
+      await changePassword.mutateAsync({ currentPassword: pwdForm.current, newPassword: pwdForm.next });
       success("Password updated. Please sign in again.");
       setPwdForm({ current: "", next: "", confirm: "" });
     } catch (e: any) {
-      error(e?.data?.message || "Failed to update password");
+      error(e?.response?.data?.message || "Failed to update password");
     }
   };
 
   const handleRevokeSession = async (id: string) => {
     try {
-      await revokeSession(id).unwrap();
+      await revokeSession.mutateAsync(id);
       success("Session signed out");
     } catch {
       error("Failed to sign out session");
@@ -85,7 +88,7 @@ export default function SecuritySettingsPage() {
 
   const handleRevokeAll = async () => {
     try {
-      await revokeAll().unwrap();
+      await revokeAll.mutateAsync();
       success("All other sessions signed out");
     } catch {
       error("Failed to sign out sessions");
@@ -247,7 +250,7 @@ export default function SecuritySettingsPage() {
                 onClick={async () => {
                   if (!user?.email) return;
                   try {
-                    await resendVerification({ email: user.email }).unwrap();
+                    await resendVerification.mutateAsync({ email: user.email });
                     success("Verification email sent — check your inbox");
                   } catch {
                     error("Failed to send. Please try again.");

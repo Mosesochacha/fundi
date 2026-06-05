@@ -1,18 +1,18 @@
 "use client";
 
-import Link from "next/link";
-import { useState, useRef, useCallback, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { motion } from "framer-motion";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import posthog from "posthog-js";
-import { useVerifyEmailMutation, useResendVerificationMutation } from "@/store/apiSlice";
-import { useToastContext } from "@/context/ToastContext";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import FormInput from "@/components/auth/FormInput";
 import Button from "@/components/ui/Button";
 import PageHeader from "@/components/ui/PageHeader";
+import { useToastContext } from "@/context/ToastContext";
+import { useResendVerification, useVerifyEmail } from "@/features/auth";
 
 const schema = z.object({
   code: z
@@ -23,7 +23,13 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 const EnvelopeIcon = () => (
-  <svg width="52" height="52" viewBox="0 0 52 52" fill="none" aria-hidden="true">
+  <svg
+    width="52"
+    height="52"
+    viewBox="0 0 52 52"
+    fill="none"
+    aria-hidden="true"
+  >
     <rect width="52" height="52" rx="14" fill="#fff7ed" />
     <path
       d="M10 19C10 17.3 11.3 16 13 16H39C40.7 16 42 17.3 42 19V33C42 34.7 40.7 36 39 36H13C11.3 36 10 34.7 10 33V19Z"
@@ -42,12 +48,27 @@ const EnvelopeIcon = () => (
 );
 
 export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={null}>
+      <VerifyEmailForm />
+    </Suspense>
+  );
+}
+
+function VerifyEmailForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email") ?? "";
+  // Where to land after verifying — the role-based dashboard. Middleware sends
+  // the (still unauthenticated) user through /login first, then on here.
+  const accountType = searchParams.get("accountType");
+  const dashboardPath =
+    accountType === "employer" ? "/employer/dashboard" : "/worker/dashboard";
 
-  const [verifyEmail, { isLoading }] = useVerifyEmailMutation();
-  const [resendVerification, { isLoading: isResending }] = useResendVerificationMutation();
+  const verifyEmailMutation = useVerifyEmail();
+  const isLoading = verifyEmailMutation.isPending;
+  const resendVerificationMutation = useResendVerification();
+  const isResending = resendVerificationMutation.isPending;
   const { success, error: toastError } = useToastContext();
 
   const [countdown, setCountdown] = useState(45);
@@ -73,7 +94,9 @@ export default function VerifyEmailPage() {
   // Start resend countdown on mount
   useEffect(() => {
     startCountdown();
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
   }, [startCountdown]);
 
   const {
@@ -88,13 +111,16 @@ export default function VerifyEmailPage() {
       return;
     }
     try {
-      await verifyEmail({ email, code: data.code }).unwrap();
+      await verifyEmailMutation.mutateAsync({ email, code: data.code });
       posthog.capture("email_verified");
       success("Email verified! You can now sign in.");
-      router.push("/login");
+      router.push(dashboardPath);
     } catch (err: any) {
-      const msg = err?.data?.message ?? "";
-      if (msg.toLowerCase().includes("expired") || msg.toLowerCase().includes("invalid")) {
+      const msg = err?.response?.data?.message ?? "";
+      if (
+        msg.toLowerCase().includes("expired") ||
+        msg.toLowerCase().includes("invalid")
+      ) {
         toastError("That code is invalid or expired. Request a new one below.");
       } else if (msg.toLowerCase().includes("attempts")) {
         toastError("Too many attempts. Please request a new code.");
@@ -107,11 +133,13 @@ export default function VerifyEmailPage() {
   const handleResend = async () => {
     if (!email) return;
     try {
-      await resendVerification({ email }).unwrap();
+      await resendVerificationMutation.mutateAsync({ email });
       startCountdown();
       success("A new code has been sent to your email.");
     } catch (err: any) {
-      toastError(err?.data?.message || "Could not resend. Please try again.");
+      toastError(
+        err?.response?.data?.message || "Could not resend. Please try again.",
+      );
     }
   };
 
@@ -140,7 +168,11 @@ export default function VerifyEmailPage() {
           }
         />
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-4"
+          noValidate
+        >
           <FormInput
             label="6-digit code"
             type="text"
@@ -172,24 +204,17 @@ export default function VerifyEmailPage() {
             <span className="text-gray-400">Resend code in {countdown}s</span>
           )}
         </div>
-
-        {/* Info box */}
-        <div className="rounded-xl bg-orange-50 border border-orange-100 px-4 py-4 space-y-2">
-          <p className="text-[13px] font-semibold text-orange-700 font-dm-sans">
-            This code expires in 10 minutes
-          </p>
-          <p className="text-[13px] text-orange-600 font-dm-sans leading-relaxed">
-            If the code expires before you use it, go back to register and sign up again to receive a fresh code. Make sure to check your spam or junk folder — sometimes verification emails land there.
-          </p>
-        </div>
       </div>
 
       {/* Below card */}
       <p className="mt-4 text-center font-dm-sans text-xs text-gray-300 italic">
         Check your spam folder if you don't see it.
       </p>
-      <div className="mt-3 text-center font-dm-sans text-sm text-gray-400">
-        <Link href="/register" className="hover:text-gray-600 transition-colors">
+      <div className="mt-3 text-center font-dm-sans text-base text-gray-400">
+        <Link
+          href="/register"
+          className="hover:text-gray-600 transition-colors"
+        >
           ← Wrong email? Back to register
         </Link>
       </div>

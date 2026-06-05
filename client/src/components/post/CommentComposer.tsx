@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Send, Smile, X } from "lucide-react";
-import { useAddCommentMutation, useSearchProfilesQuery } from "@/store/apiSlice";
+import { useAddComment } from "@/features/posts";
+import { useSearchProfiles } from "@/features/profiles";
 
 const EMOJIS = [
   "😀","😂","❤️","🔥","👍","🙌","💯","🎉",
@@ -45,11 +46,12 @@ export default function CommentComposer({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const emojiRef = useRef<HTMLDivElement>(null);
 
-  const [addComment, { isLoading: submitting }] = useAddCommentMutation();
-  const { data: searchRes } = useSearchProfilesQuery(mentionQuery, {
-    skip: !mentionOpen || mentionQuery.length < 2,
-  });
-  const mentionResults: ProfileSuggestion[] = ((searchRes as any)?.data ?? []);
+  const addCommentMutation = useAddComment();
+  const submitting = addCommentMutation.isPending;
+  const { data: searchRes } = useSearchProfiles(
+    mentionOpen && mentionQuery.length >= 2 ? mentionQuery : "",
+  );
+  const mentionResults: ProfileSuggestion[] = ((searchRes as any) ?? []);
 
   const autoGrow = useCallback(() => {
     const el = textareaRef.current;
@@ -167,11 +169,11 @@ export default function CommentComposer({
     e.preventDefault();
     if (!text.trim() || submitting) return;
     try {
-      await addComment({
+      await addCommentMutation.mutateAsync({
         postId,
         content: text.trim(),
         ...(replyingTo ? { parentCommentId: replyingTo.commentId } : {}),
-      }).unwrap();
+      });
       setText("");
       onCancelReply?.();
       setFocused(false);

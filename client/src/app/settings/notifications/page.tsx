@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useToastContext } from "@/context/ToastContext";
-import { useGetNotificationsQuery, useUpdateNotificationsMutation } from "@/store/apiSlice";
+import { useGetNotifications, useUpdateNotifications } from "@/features/settings";
 import SettingsHeader from "@/components/settings/SettingsHeader";
 import SettingsSection from "@/components/settings/SettingsSection";
 import SettingsRow from "@/components/settings/SettingsRow";
@@ -19,10 +19,10 @@ const EMAIL_TOGGLES = [
 
 export default function NotificationsPage() {
   const { error } = useToastContext();
-  const { data } = useGetNotificationsQuery();
-  const [updateNotifications] = useUpdateNotificationsMutation();
+  const { data } = useGetNotifications();
+  const updateNotifications = useUpdateNotifications();
 
-  const serverPrefs: Record<string, boolean> = (data as any)?.data ?? {};
+  const serverPrefs: Record<string, boolean> = data ?? {};
   const [prefs, setPrefs] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState<Record<string, boolean>>({});
 
@@ -34,7 +34,7 @@ export default function NotificationsPage() {
     setPrefs((p) => ({ ...p, [key]: value }));
     setSaving((s) => ({ ...s, [key]: true }));
     try {
-      await updateNotifications({ [key]: value }).unwrap();
+      await updateNotifications.mutateAsync({ [key]: value });
     } catch {
       setPrefs((p) => ({ ...p, [key]: !value }));
       error("Failed to save. Please try again.");

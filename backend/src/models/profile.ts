@@ -30,6 +30,10 @@ export class Profile extends Model<
   declare workPhotos: CreationOptional<string[] | null>;
   declare education: CreationOptional<object[] | null>;
   declare experience: CreationOptional<object[] | null>;
+  declare portfolio: CreationOptional<object[] | null>;
+  declare certifications: CreationOptional<object[] | null>;
+  declare serviceAreas: CreationOptional<string[] | null>;
+  declare isAvailable: CreationOptional<boolean>;
   // Notification preferences
   declare emailProfileViewed: CreationOptional<boolean>;
   declare emailNewFollower: CreationOptional<boolean>;
@@ -101,6 +105,10 @@ export function initModel(sequelize: Sequelize): typeof Profile {
       workPhotos: { type: DataTypes.JSON, allowNull: true, defaultValue: [] },
       education:  { type: DataTypes.JSON, allowNull: true, defaultValue: [] },
       experience: { type: DataTypes.JSON, allowNull: true, defaultValue: [] },
+      portfolio:  { type: DataTypes.JSON, allowNull: true, defaultValue: [] },
+      certifications: { type: DataTypes.JSON, allowNull: true, defaultValue: [] },
+      serviceAreas: { type: DataTypes.JSON, allowNull: true, defaultValue: [] },
+      isAvailable: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
       // Notification preferences
       emailProfileViewed: { type: DataTypes.BOOLEAN, defaultValue: true },
       emailNewFollower: { type: DataTypes.BOOLEAN, defaultValue: true },
