@@ -12,6 +12,7 @@ import settingsRoutes from './settings.routes';
 import sessionsRoutes from './sessions.routes';
 import photosRoutes from './photos.routes';
 import messagesRoutes from './messages.routes';
+import jobsRoutes from './jobs.routes';
 import searchRoutes from './search.routes';
 import workerRoutes from './worker.routes';
 import verifyJWT from '../middleware/verifyJWT';
@@ -41,5 +42,6 @@ router.use(settingsRoutes);
 router.use(sessionsRoutes);
 router.use(photosRoutes);
 router.use(messagesRoutes);
+router.use(jobsRoutes);
 
 export default router;

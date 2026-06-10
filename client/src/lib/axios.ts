@@ -22,17 +22,30 @@ let cachedToken: { value: string | undefined; expiresAt: number } = {
   expiresAt: 0,
 };
 
+// Single-flight: concurrent callers (e.g. a screen mounting many queries at once)
+// share one getSession() call so the NextAuth jwt callback rotates the backend
+// refresh token exactly once, instead of racing N concurrent /auth/refresh calls.
+let inFlight: Promise<string | undefined> | null = null;
+
 async function getAccessToken(force = false): Promise<string | undefined> {
   if (!force && cachedToken.value && Date.now() < cachedToken.expiresAt) {
     return cachedToken.value;
   }
-  // getSession() triggers the server-side jwt callback, refreshing if expired.
-  const session = await getSession();
-  cachedToken = {
-    value: session?.accessToken,
-    expiresAt: Date.now() + 30_000,
-  };
-  return session?.accessToken;
+  if (inFlight) return inFlight; // piggyback on an in-progress refresh
+  inFlight = (async () => {
+    try {
+      // getSession() triggers the server-side jwt callback, refreshing if expired.
+      const session = await getSession();
+      cachedToken = {
+        value: session?.accessToken,
+        expiresAt: Date.now() + 30_000,
+      };
+      return session?.accessToken;
+    } finally {
+      inFlight = null;
+    }
+  })();
+  return inFlight;
 }
 
 client.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {

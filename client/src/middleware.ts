@@ -18,6 +18,7 @@ const AUTH_ONLY = [
  */
 const ROLE_GATED: Record<string, AppRole> = {
   "/worker/dashboard": "worker",
+  "/worker/messages": "worker",
   "/employer": "employer",
   "/admin": "admin",
   "/moderator": "moderator",
@@ -88,6 +89,7 @@ export const config = {
     "/messages/:path*",
     "/worker/profile/:path*",
     "/worker/dashboard/:path*",
+    "/worker/messages/:path*",
     "/employer/:path*",
     "/admin/:path*",
     "/moderator/:path*",

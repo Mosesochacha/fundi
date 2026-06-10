@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
 import { Op } from "sequelize";
 import db from "../models";
-import { JWT_CONFIG, USERNAME_CONFIG } from "../utils/constants";
+import { JWT_CONFIG, USERNAME_CONFIG, REFRESH_GRACE_MS } from "../utils/constants";
 import {
   hashString,
   safeCompare,
@@ -424,12 +424,17 @@ class AuthService {
     // Hash the provided token to compare with stored hash
     const hashedToken = hashString(refreshToken);
     
-    // First, find all non-revoked tokens for this user
+    // Find candidate tokens: active ones, plus any rotated within the grace window
+    // so concurrent/duplicate refresh calls (multiple tabs, retries) don't fail.
+    const graceCutoff = new Date(Date.now() - REFRESH_GRACE_MS);
     const userTokens = await db.RefreshToken.findAll({
       where: {
         userId,
-        isRevoked: false,
         expiresAt: { [Op.gt]: new Date() },
+        [Op.or]: [
+          { isRevoked: false },
+          { rotatedAt: { [Op.gt]: graceCutoff } },
+        ],
       },
       include: [{ model: db.User, as: "user" }],
     });
@@ -481,8 +486,19 @@ class AuthService {
       throw new Error("Invalid refresh token");
     }
 
-    // Revoke old token
-    await storedToken.update({ isRevoked: true });
+    // Already rotated, but within the grace window: a concurrent/duplicate refresh.
+    // Don't fail — issue a fresh token for the same user so the caller isn't poisoned.
+    if (storedToken.isRevoked) {
+      logger.info("Refresh token already rotated within grace window; reissuing", {
+        tokenId: storedToken.id,
+        userId: storedToken.userId,
+        rotatedAt: storedToken.rotatedAt,
+      });
+      return this.generateTokens(storedToken.user, ipAddress, userAgent);
+    }
+
+    // Rotate: revoke old token (stamp rotatedAt so reuse within grace is tolerated)
+    await storedToken.update({ isRevoked: true, rotatedAt: new Date() });
 
     // Generate new tokens
     return this.generateTokens(storedToken.user, ipAddress, userAgent);

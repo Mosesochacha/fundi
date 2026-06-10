@@ -4,6 +4,7 @@ export class Conversation extends Model<InferAttributes<Conversation>, InferCrea
   declare id: CreationOptional<string>;
   declare participant1Id: string;
   declare participant2Id: string;
+  declare linkedJobId: CreationOptional<string | null>;
   declare lastMessageAt: CreationOptional<Date | null>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
@@ -11,6 +12,7 @@ export class Conversation extends Model<InferAttributes<Conversation>, InferCrea
   static associate(models: any) {
     Conversation.belongsTo(models.Profile, { foreignKey: 'participant1Id', as: 'participant1' });
     Conversation.belongsTo(models.Profile, { foreignKey: 'participant2Id', as: 'participant2' });
+    Conversation.belongsTo(models.JobRequest, { foreignKey: 'linkedJobId', as: 'linkedJob' });
     Conversation.hasMany(models.Message, { foreignKey: 'conversationId', as: 'messages', onDelete: 'CASCADE' });
   }
 }
@@ -30,6 +32,12 @@ export function initModel(sequelize: Sequelize): typeof Conversation {
         allowNull: false,
         references: { model: 'Profiles', key: 'id' },
         onDelete: 'CASCADE',
+      } as any,
+      linkedJobId: {
+        type: DataTypes.UUID,
+        allowNull: true,
+        references: { model: 'JobRequests', key: 'id' },
+        onDelete: 'SET NULL',
       } as any,
       lastMessageAt: { type: DataTypes.DATE, allowNull: true },
       createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },

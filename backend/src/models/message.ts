@@ -5,6 +5,7 @@ export class Message extends Model<InferAttributes<Message>, InferCreationAttrib
   declare conversationId: string;
   declare senderId: string;
   declare content: string;
+  declare type: CreationOptional<'text' | 'system'>;
   declare readAt: CreationOptional<Date | null>;
   declare createdAt: CreationOptional<Date>;
 
@@ -31,6 +32,11 @@ export function initModel(sequelize: Sequelize): typeof Message {
         onDelete: 'CASCADE',
       } as any,
       content: { type: DataTypes.TEXT, allowNull: false },
+      type: {
+        type: DataTypes.ENUM('text', 'system'),
+        allowNull: false,
+        defaultValue: 'text',
+      },
       readAt: { type: DataTypes.DATE, allowNull: true },
       createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
     },

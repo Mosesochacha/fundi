@@ -228,12 +228,33 @@ class WorkerController {
     return sendSuccess(res, 'Service area updated', { areas: clean });
   });
 
+  // Handles both the Shell footer toggle ({ available }) and the settings
+  // Availability panel (the full object). The `available` flag lives on
+  // Profile.isAvailable; the rest is merged into the availabilitySettings JSON.
   updateAvailability = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-    const available = !!req.body.available;
     const profile = await getOwnProfile(req);
     if (!profile) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Profile not found');
-    await profile.update({ isAvailable: available });
-    return sendSuccess(res, 'Availability updated', { available });
+
+    const updates: Record<string, any> = {};
+    if ('available' in req.body) updates.isAvailable = !!req.body.available;
+
+    const BOOL_KEYS = ['emergencyCallouts', 'weekends'];
+    const STR_KEYS = ['workingHoursFrom', 'workingHoursTo', 'maxDistance'];
+    const extras: Record<string, unknown> = { ...((profile.availabilitySettings as object) ?? {}) };
+    let extrasTouched = false;
+    for (const k of BOOL_KEYS) {
+      if (k in req.body) { extras[k] = !!req.body[k]; extrasTouched = true; }
+    }
+    for (const k of STR_KEYS) {
+      if (k in req.body) { extras[k] = String(req.body[k]); extrasTouched = true; }
+    }
+    if (extrasTouched) updates.availabilitySettings = extras;
+
+    if (Object.keys(updates).length) await profile.update(updates);
+    return sendSuccess(res, 'Availability updated', {
+      available: profile.isAvailable,
+      ...extras,
+    });
   });
 
   // ── Portfolio ────────────────────────────────────────────────────────────────

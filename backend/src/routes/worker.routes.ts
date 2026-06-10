@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import WorkerController from '../controllers/worker.controller';
+import WorkerSettingsController from '../controllers/workerSettings.controller';
 import verifyJWT from '../middleware/verifyJWT';
+import { uploadAvatar } from '../middleware/upload';
 
 const router = Router();
 
@@ -34,5 +36,26 @@ router.post('/worker/profile/education', verifyJWT, WorkerController.addEducatio
 router.delete('/worker/profile/education/:id', verifyJWT, WorkerController.deleteEducation);
 
 router.patch('/worker/availability', verifyJWT, WorkerController.updateAvailability);
+
+// ── Settings page (/worker/settings) ────────────────────────────────────────
+router.get('/worker/settings', verifyJWT, WorkerSettingsController.getSettings);
+
+router.patch('/worker/profile', verifyJWT, WorkerSettingsController.updateProfile);
+router.patch('/worker/profile/avatar', verifyJWT, uploadAvatar, WorkerSettingsController.uploadAvatar);
+router.delete('/worker/profile/avatar', verifyJWT, WorkerSettingsController.deleteAvatar);
+
+router.patch('/worker/account/email', verifyJWT, WorkerSettingsController.updateEmail);
+router.post('/worker/account/email/verify', verifyJWT, WorkerSettingsController.verifyEmail);
+router.patch('/worker/account/phone', verifyJWT, WorkerSettingsController.updatePhone);
+router.post('/worker/account/phone/verify', verifyJWT, WorkerSettingsController.verifyPhone);
+router.patch('/worker/account/password', verifyJWT, WorkerSettingsController.updatePassword);
+router.post('/worker/account/google/disconnect', verifyJWT, WorkerSettingsController.disconnectGoogle);
+
+router.patch('/worker/notifications', verifyJWT, WorkerSettingsController.updateNotifications);
+router.patch('/worker/privacy', verifyJWT, WorkerSettingsController.updatePrivacy);
+
+router.patch('/worker/account/pause', verifyJWT, WorkerSettingsController.pauseAccount);
+router.post('/worker/account/export', verifyJWT, WorkerSettingsController.exportData);
+router.delete('/worker/account', verifyJWT, WorkerSettingsController.deleteAccount);
 
 export default router;

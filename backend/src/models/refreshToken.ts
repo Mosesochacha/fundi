@@ -7,6 +7,7 @@ export class RefreshToken extends Model {
   declare ipAddress: string;
   declare userAgent: string;
   declare isRevoked: boolean;
+  declare rotatedAt: Date | null;
   declare expiresAt: Date;
   declare createdAt: Date;
   declare updatedAt: Date;
@@ -46,6 +47,10 @@ export function initModel(sequelize: Sequelize): typeof RefreshToken {
         type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: false,
+      },
+      rotatedAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
       },
       expiresAt: {
         type: DataTypes.DATE,
