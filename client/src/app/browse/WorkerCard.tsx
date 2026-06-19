@@ -1,143 +1,103 @@
 "use client";
 
-import { MapPin, Star, BadgeCheck, CircleCheck } from "lucide-react";
+import { MapPin } from "lucide-react";
 import type { BrowseWorker } from "@/features/browse";
-import { bannerColor, avatarTint, formatRate } from "./constants";
+import { avatarTint, bannerGradient, tradeAccent } from "./constants";
 
 interface Props {
   worker: BrowseWorker;
   onView: (w: BrowseWorker) => void;
-  onHire: (w: BrowseWorker) => void;
 }
 
 /**
- * Rating display. Workers with at least one review get the star row; workers
- * with no reviews get a plain muted "New" pill — no star, no dash.
+ * Find-a-Fundi worker card. Gradient cover banner + availability pill, avatar
+ * with verification check, name, trade label, location, tagline (bio) and a
+ * rating · experience footer. Single "View profile" action.
  */
-function Rating({ worker }: { worker: BrowseWorker }) {
-  if (worker.reviewCount < 1) {
-    return <span className="wk-new-pill">New</span>;
-  }
-  return (
-    <span className="wk-rating" aria-label={`Rated ${worker.rating}`}>
-      <Star size={12} className="wk-star" aria-hidden />
-      <span className="wk-rating-num">{worker.rating.toFixed(1)}</span>
-      <span className="wk-rating-meta">({worker.reviewCount})</span>
-    </span>
-  );
-}
+export function WorkerCardGrid({ worker, onView }: Props) {
+  const accent = tradeAccent(worker.trade);
+  const available = worker.isAvailable;
 
-export function WorkerCardGrid({ worker, onView, onHire }: Props) {
   return (
     <article className="wk-card">
-      <div className="wk-banner" style={{ background: bannerColor(worker.trade) }}>
-        <span className="wk-trade-tag">{worker.trade}</span>
-        {worker.isAvailable && <span className="wk-avail-dot" aria-label="Available now" />}
+      {/* COVER BANNER */}
+      <div
+        className="wk-banner"
+        style={{ background: bannerGradient(worker.trade) }}
+      >
+        <span className={`wk-avail ${available ? "is-avail" : "is-booked"}`}>
+          <span className="wk-avail-dot" />
+          {available ? "Available now" : "Booked"}
+        </span>
       </div>
 
+      {/* AVATAR */}
+      <div className="wk-avatar-wrap">
+        <span
+          className="wk-avatar"
+          style={{ background: avatarTint(worker.trade), color: accent }}
+        >
+          {worker.avatarUrl ? (
+            // biome-ignore lint/performance/noImgElement: avatar URLs are arbitrary external hosts
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={worker.avatarUrl} alt={worker.name} />
+          ) : (
+            worker.initials
+          )}
+        </span>
+        {worker.isVerified && (
+          <span className="wk-check" role="img" aria-label="Verified">
+            ✓
+          </span>
+        )}
+      </div>
+
+      {/* CONTENT */}
       <div className="wk-body">
-        <div className="wk-avatar-wrap">
-          <span
-            className="wk-avatar"
-            style={{ background: avatarTint(worker.trade) }}
-          >
-            {worker.avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={worker.avatarUrl} alt={worker.name} />
-            ) : (
-              worker.initials
-            )}
-            {worker.isAvailable && <span className="wk-online" aria-hidden />}
+        <h3 className="wk-name">{worker.name}</h3>
+
+        <div className="wk-trade">
+          <span className="wk-trade-dot" style={{ background: accent }} />
+          <span className="wk-trade-label" style={{ color: accent }}>
+            {worker.trade}
           </span>
         </div>
 
-        <div className="wk-name-row">
-          <h3 className="wk-name">{worker.name}</h3>
-          {worker.isVerified && (
-            <BadgeCheck size={14} className="wk-verified" aria-label="Verified" />
-          )}
-        </div>
-        <p className="wk-handle">@{worker.username}</p>
         {worker.location && (
           <p className="wk-loc">
-            <MapPin size={11} aria-hidden />
+            <MapPin size={13} aria-hidden />
             {worker.location}
           </p>
         )}
-        {worker.bio && <p className="wk-bio">{worker.bio}</p>}
 
-        <div className="wk-footer">
-          <div className="wk-stats">
-            <Rating worker={worker} />
-            {worker.jobsDone > 0 && (
-              <span className="wk-jobs">{worker.jobsDone} jobs</span>
-            )}
-          </div>
-          <span className="wk-rate">{formatRate(worker.currency, worker.dailyRate)}</span>
+        {worker.bio && <p className="wk-tagline">{worker.bio}</p>}
+
+        <div className="wk-divider" />
+
+        <div className="wk-meta">
+          {worker.reviewCount > 0 && (
+            <>
+              <span>
+                <strong>{worker.rating.toFixed(1)}</strong> rating
+              </span>
+              <span className="wk-meta-sep">·</span>
+            </>
+          )}
+          <span>
+            <strong>
+              {worker.yearsExperience}{" "}
+              {worker.yearsExperience === 1 ? "yr" : "yrs"}
+            </strong>{" "}
+            experience
+          </span>
         </div>
 
-        <div className="wk-cta">
-          <button type="button" className="wk-btn wk-btn-outline" onClick={() => onView(worker)}>
-            View profile
-          </button>
-          <button type="button" className="wk-btn wk-btn-gold" onClick={() => onHire(worker)}>
-            Request hire
-          </button>
-        </div>
-      </div>
-    </article>
-  );
-}
-
-export function WorkerCardList({ worker, onView, onHire }: Props) {
-  return (
-    <article className="wk-row">
-      <span className="wk-avatar wk-avatar-row" style={{ background: avatarTint(worker.trade) }}>
-        {worker.avatarUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={worker.avatarUrl} alt={worker.name} />
-        ) : (
-          worker.initials
-        )}
-        {worker.isAvailable && <span className="wk-online" aria-hidden />}
-      </span>
-
-      <div className="wk-row-content">
-        <div className="wk-row-top">
-          <h3 className="wk-name">{worker.name}</h3>
-          {worker.isVerified && (
-            <span className="wk-chip wk-chip-verified">
-              <BadgeCheck size={11} aria-hidden /> Verified
-            </span>
-          )}
-          {worker.isAvailable && (
-            <span className="wk-chip wk-chip-avail">
-              <CircleCheck size={11} aria-hidden /> Available
-            </span>
-          )}
-          <span className="wk-chip wk-chip-trade">{worker.trade}</span>
-        </div>
-        <div className="wk-row-meta">
-          <Rating worker={worker} />
-          {worker.location && (
-            <span className="wk-loc-inline">
-              <MapPin size={11} aria-hidden />
-              {worker.location}
-            </span>
-          )}
-          {worker.jobsDone > 0 && (
-            <span className="wk-jobs">{worker.jobsDone} jobs done</span>
-          )}
-          <span className="wk-rate">{formatRate(worker.currency, worker.dailyRate)}</span>
-        </div>
-      </div>
-
-      <div className="wk-row-actions">
-        <button type="button" className="wk-btn wk-btn-outline" onClick={() => onView(worker)}>
-          Profile
-        </button>
-        <button type="button" className="wk-btn wk-btn-gold" onClick={() => onHire(worker)}>
-          Hire
+        <button
+          type="button"
+          className="wk-view"
+          onClick={() => onView(worker)}
+        >
+          View profile <span aria-hidden>→</span>
         </button>
       </div>
     </article>

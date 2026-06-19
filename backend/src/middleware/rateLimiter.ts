@@ -95,6 +95,14 @@ export const aiGenerationRateLimit = createRateLimiter({
   message: 'Daily AI generation limit reached. Try again tomorrow.',
 });
 
+// Public "Ask AI / find a fundi" helper — reachable by logged-out visitors, so
+// limit per-IP to keep Groq usage bounded without blocking genuine browsing.
+export const findFundiRateLimit = createRateLimiter({
+  windowMs: 60 * 60 * 1000,
+  maxRequests: 20,
+  message: 'Too many AI requests, please try again in a little while.',
+});
+
 export const postCreationRateLimit = createRateLimiter({
   windowMs: 24 * 60 * 60 * 1000,
   maxRequests: 10,

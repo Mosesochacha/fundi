@@ -1,39 +1,46 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { MapPin, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
-import {
-  Search,
-  MapPin,
-  ChevronDown,
-  LayoutGrid,
-  List as ListIcon,
-  ArrowRight,
-} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import "@/app/landing.css";
 import "./browse.css";
 import LandingNav from "@/components/landing/LandingNav";
-import { useAuth } from "@/features/auth";
-import { useSearchStore } from "@/store/searchStore";
 import {
-  useBrowseWorkers,
   type BrowseFilters,
   type BrowseWorker,
   type BrowseWorkersResponse,
+  useBrowseWorkers,
 } from "@/features/browse";
+import { useSearchStore } from "@/store/searchStore";
+import AskAiModal from "./AskAiModal";
 import FilterBar from "./FilterBar";
-import { WorkerCardGrid, WorkerCardList } from "./WorkerCard";
-import { SORT_OPTIONS } from "./constants";
+import { WorkerCardGrid } from "./WorkerCard";
 
 interface Props {
   initialData?: BrowseWorkersResponse;
+  fontClass?: string;
 }
 
-export default function BrowseClient({ initialData }: Props) {
-  const router = useRouter();
-  const { isLoggedIn } = useAuth();
+const PAGE_SIZE = 12;
 
-  // --- store filter state (selected individually) ---
+/** Numbered page list with ellipses, e.g. 1 … 4 5 6 … 20. */
+function pageList(current: number, total: number): (number | "…")[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const pages: (number | "…")[] = [1];
+  if (current > 3) pages.push("…");
+  const start = Math.max(2, current - 1);
+  const end = Math.min(total - 1, current + 1);
+  for (let i = start; i <= end; i++) pages.push(i);
+  if (current < total - 2) pages.push("…");
+  pages.push(total);
+  return pages;
+}
+
+export default function BrowseClient({ initialData, fontClass }: Props) {
+  const router = useRouter();
+
+  // --- store filter state ---
   const selectedTrades = useSearchStore((s) => s.selectedTrades);
   const location = useSearchStore((s) => s.location);
   const availableNow = useSearchStore((s) => s.availableNow);
@@ -44,18 +51,29 @@ export default function BrowseClient({ initialData }: Props) {
   const minRating = useSearchStore((s) => s.minRating);
   const minExp = useSearchStore((s) => s.minExp);
   const sortBy = useSearchStore((s) => s.sortBy);
-  const viewMode = useSearchStore((s) => s.viewMode);
   const setFilter = useSearchStore((s) => s.setFilter);
-  const setSortBy = useSearchStore((s) => s.setSortBy);
-  const setViewMode = useSearchStore((s) => s.setViewMode);
   const resetFilters = useSearchStore((s) => s.resetFilters);
 
   // --- local UI state ---
-  const [limit, setLimit] = useState(12);
+  const [page, setPage] = useState(1);
   const [nameInput, setNameInput] = useState("");
   const [locInput, setLocInput] = useState("");
   const [nameQuery, setNameQuery] = useState(""); // applied client-side
-  const [sortOpen, setSortOpen] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
+
+  // Any filter change resets pagination back to the first page.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: these filters are intentional reset triggers
+  useEffect(() => {
+    setPage(1);
+  }, [
+    selectedTrades,
+    location,
+    availableNow,
+    minRating,
+    minExp,
+    sortBy,
+    nameQuery,
+  ]);
 
   const filters: BrowseFilters = useMemo(
     () => ({
@@ -69,8 +87,8 @@ export default function BrowseClient({ initialData }: Props) {
       verifiedOnly,
       certified,
       sortBy,
-      page: 1,
-      limit,
+      page,
+      limit: PAGE_SIZE,
     }),
     [
       selectedTrades,
@@ -83,16 +101,18 @@ export default function BrowseClient({ initialData }: Props) {
       verifiedOnly,
       certified,
       sortBy,
-      limit,
+      page,
     ],
   );
 
-  const { data, isLoading, isFetching } = useBrowseWorkers(filters, { initialData });
+  const { data, isLoading, isFetching } = useBrowseWorkers(filters, {
+    initialData: page === 1 ? initialData : undefined,
+  });
 
   const allWorkers = data?.workers ?? [];
-  const total = data?.total ?? 0;
+  const totalPages = data?.totalPages ?? 1;
 
-  // Client-side name/skill filter folded on top of the server result.
+  // Client-side name/skill filter folded on top of the current page.
   const workers = useMemo(() => {
     if (!nameQuery.trim()) return allWorkers;
     const q = nameQuery.trim().toLowerCase();
@@ -104,59 +124,49 @@ export default function BrowseClient({ initialData }: Props) {
     );
   }, [allWorkers, nameQuery]);
 
-  const hasMore = allWorkers.length < total && !nameQuery.trim();
-
   // --- handlers ---
   const handleSearch = () => {
     setNameQuery(nameInput);
     setFilter("location", locInput.trim());
-    setLimit(12);
   };
 
   const handleView = (w: BrowseWorker) => router.push(`/worker/${w.username}`);
-  const handleHire = (w: BrowseWorker) => {
-    if (isLoggedIn) router.push(`/worker/${w.username}`);
-    else router.push("/register");
+
+  const clearAll = () => {
+    resetFilters();
+    setNameQuery("");
+    setNameInput("");
+    setLocInput("");
   };
 
-  const activeSort = SORT_OPTIONS.find((s) => s.value === sortBy)?.label ?? "Best match";
+  const goToPage = (p: number) => {
+    setPage(p);
+    if (typeof window !== "undefined")
+      window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const showPagination = !nameQuery.trim() && totalPages > 1;
 
   return (
-    <div className="lp browse">
+    <div className={`lp browse ${fontClass ?? ""}`}>
       <LandingNav />
 
       <main className="browse-main">
-        {/* PAGE HEADER */}
-        <header className="browse-header">
-          <div className="bh-top">
-            <div className="bh-titleblock">
-              <p className="bh-eyebrow">Discover skilled professionals</p>
-              <h1 className="bh-title">
-                Find your <em>fundi.</em>
-              </h1>
-            </div>
-            <div className="bh-stats">
-              <div className="bh-stat">
-                <span className="bh-stat-num">48K+</span>
-                <span className="bh-stat-label">Workers</span>
-              </div>
-              <span className="bh-stat-div" aria-hidden />
-              <div className="bh-stat">
-                <span className="bh-stat-num">12</span>
-                <span className="bh-stat-label">Countries</span>
-              </div>
-              <span className="bh-stat-div" aria-hidden />
-              <div className="bh-stat">
-                <span className="bh-stat-num">4.9★</span>
-                <span className="bh-stat-label">Avg rating</span>
-              </div>
-            </div>
-          </div>
+        {/* HERO */}
+        <header className="bh">
+          <p className="bh-eyebrow">Discover skilled professionals</p>
+          <h1 className="bh-title">
+            Find your <em>fundi.</em>
+          </h1>
+          <p className="bh-sub">
+            Browse vetted tradespeople across Kenya — every profile ID-verified,
+            skill-assessed, and reviewed by real customers.
+          </p>
 
           {/* SEARCH BAR */}
           <div className="bh-search">
             <div className="bh-search-field bh-search-main">
-              <Search size={18} aria-hidden />
+              <Search size={19} aria-hidden />
               <input
                 type="text"
                 value={nameInput}
@@ -168,7 +178,7 @@ export default function BrowseClient({ initialData }: Props) {
             </div>
             <span className="bh-search-div" aria-hidden />
             <div className="bh-search-field bh-search-loc">
-              <MapPin size={16} aria-hidden />
+              <MapPin size={17} aria-hidden />
               <input
                 type="text"
                 value={locInput}
@@ -178,130 +188,90 @@ export default function BrowseClient({ initialData }: Props) {
                 aria-label="City or location"
               />
             </div>
-            <button type="button" className="bh-search-btn" onClick={handleSearch}>
+            <button
+              type="button"
+              className="bh-search-btn"
+              onClick={handleSearch}
+            >
               Search
             </button>
           </div>
         </header>
 
-        {/* STICKY FILTER BAR */}
-        <FilterBar />
-
-        {/* RESULTS COUNT BAR */}
-        <div className="results-bar">
-          <p className="results-count">
-            <strong>{total.toLocaleString()}</strong> professionals found
-          </p>
-          <div className="results-controls">
-            <div className="sort-dd">
-              <button
-                type="button"
-                className={`pill ${sortOpen ? "pill-open" : ""}`}
-                onClick={() => setSortOpen((o) => !o)}
-                onBlur={() => setTimeout(() => setSortOpen(false), 120)}
-                aria-expanded={sortOpen}
-              >
-                {activeSort}
-                <ChevronDown size={14} className="pill-chev" aria-hidden />
-              </button>
-              {sortOpen && (
-                <div className="sort-panel">
-                  {SORT_OPTIONS.map((o) => (
-                    <button
-                      key={o.value}
-                      type="button"
-                      className={`sort-opt ${sortBy === o.value ? "active" : ""}`}
-                      onMouseDown={() => {
-                        setSortBy(o.value);
-                        setSortOpen(false);
-                      }}
-                    >
-                      {o.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="view-toggle">
-              <button
-                type="button"
-                className={viewMode === "grid" ? "active" : ""}
-                onClick={() => setViewMode("grid")}
-                aria-label="Grid view"
-                aria-pressed={viewMode === "grid"}
-              >
-                <LayoutGrid size={15} aria-hidden />
-              </button>
-              <button
-                type="button"
-                className={viewMode === "list" ? "active" : ""}
-                onClick={() => setViewMode("list")}
-                aria-label="List view"
-                aria-pressed={viewMode === "list"}
-              >
-                <ListIcon size={15} aria-hidden />
-              </button>
-            </div>
-          </div>
-        </div>
+        {/* FILTER TOOLBAR */}
+        <FilterBar onAskAi={() => setAiOpen(true)} />
 
         {/* RESULTS */}
-        <section className="results">
+        <section className="results" aria-busy={isFetching}>
           {isLoading ? (
-            <div className={viewMode === "grid" ? "grid-wrap" : "list-wrap"}>
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className={viewMode === "grid" ? "wk-skel" : "wk-skel-row"} />
+            <div className="wk-grid">
+              {Array.from({ length: 8 }).map((_, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: fixed skeleton tiles
+                <div key={i} className="wk-skel" />
               ))}
             </div>
           ) : workers.length === 0 ? (
             <div className="empty-state">
-              <p className="empty-title">No workers match your filters</p>
+              <p className="empty-title">No fundis match those filters</p>
               <p className="empty-sub">
-                Try widening your budget, location, or trade selection.
+                Try widening your trade, location or rating filters.
               </p>
-              <button
-                type="button"
-                className="btn btn-gold"
-                onClick={() => {
-                  resetFilters();
-                  setNameQuery("");
-                  setNameInput("");
-                  setLocInput("");
-                }}
-              >
+              <button type="button" className="empty-btn" onClick={clearAll}>
                 Clear all filters
               </button>
             </div>
-          ) : viewMode === "grid" ? (
-            <div className="grid-wrap" aria-busy={isFetching}>
-              {workers.map((w) => (
-                <WorkerCardGrid key={w.id} worker={w} onView={handleView} onHire={handleHire} />
-              ))}
-            </div>
           ) : (
-            <div className="list-wrap" aria-busy={isFetching}>
-              {workers.map((w) => (
-                <WorkerCardList key={w.id} worker={w} onView={handleView} onHire={handleHire} />
-              ))}
-            </div>
-          )}
+            <>
+              <div className="wk-grid">
+                {workers.map((w) => (
+                  <WorkerCardGrid key={w.id} worker={w} onView={handleView} />
+                ))}
+              </div>
 
-          {hasMore && (
-            <div className="load-more-wrap">
-              <button
-                type="button"
-                className="load-more"
-                onClick={() => setLimit((l) => l + 12)}
-                disabled={isFetching}
-              >
-                {isFetching ? "Loading…" : "Load more professionals"}
-                <ArrowRight size={15} aria-hidden />
-              </button>
-            </div>
+              {showPagination && (
+                <nav className="pager" aria-label="Pagination">
+                  <button
+                    type="button"
+                    className="pager-edge"
+                    onClick={() => goToPage(page - 1)}
+                    disabled={page <= 1}
+                  >
+                    ← Prev
+                  </button>
+                  {pageList(page, totalPages).map((p, i) =>
+                    p === "…" ? (
+                      // biome-ignore lint/suspicious/noArrayIndexKey: ellipsis gaps have no stable id
+                      <span key={`gap-${i}`} className="pager-gap">
+                        …
+                      </span>
+                    ) : (
+                      <button
+                        key={p}
+                        type="button"
+                        className={`pager-num ${p === page ? "is-current" : ""}`}
+                        onClick={() => goToPage(p)}
+                        aria-current={p === page ? "page" : undefined}
+                      >
+                        {p}
+                      </button>
+                    ),
+                  )}
+                  <button
+                    type="button"
+                    className="pager-edge"
+                    onClick={() => goToPage(page + 1)}
+                    disabled={page >= totalPages}
+                  >
+                    Next →
+                  </button>
+                </nav>
+              )}
+            </>
           )}
         </section>
       </main>
+
+      <AskAiModal open={aiOpen} onClose={() => setAiOpen(false)} />
     </div>
   );
 }

@@ -1,6 +1,9 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { browseService } from "../services/browse.service";
-import type { BrowseFilters, BrowseWorkersResponse } from "../types/browse.types";
+import type {
+  BrowseFilters,
+  BrowseWorkersResponse,
+} from "../types/browse.types";
 
 /**
  * Browse workers with the current filters. Refetches automatically whenever the

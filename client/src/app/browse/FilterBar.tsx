@@ -1,46 +1,39 @@
 "use client";
 
+import { ChevronDown, MapPin, Sparkles, Wrench, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import {
-  Wrench,
-  MapPin,
-  Coins,
-  SlidersHorizontal,
-  CircleCheck,
-  ChevronDown,
-  Check,
-  X,
-} from "lucide-react";
 import { SEARCH_DEFAULTS, useSearchStore } from "@/store/searchStore";
 import {
-  TRADES,
   CITIES,
-  RATING_OPTIONS,
   EXP_OPTIONS,
-  BUDGET_PRESETS,
+  RATING_OPTIONS,
+  SORT_OPTIONS,
+  TRADES,
 } from "./constants";
 
-type OpenPanel = "trade" | "location" | "budget" | "more" | null;
+type OpenPanel = "trade" | "location" | "exp" | "rating" | null;
 
-export default function FilterBar() {
+interface Props {
+  onAskAi: () => void;
+}
+
+export default function FilterBar({ onAskAi }: Props) {
   const selectedTrades = useSearchStore((s) => s.selectedTrades);
   const location = useSearchStore((s) => s.location);
   const availableNow = useSearchStore((s) => s.availableNow);
-  const verifiedOnly = useSearchStore((s) => s.verifiedOnly);
-  const certified = useSearchStore((s) => s.certified);
-  const minRate = useSearchStore((s) => s.minRate);
-  const maxRate = useSearchStore((s) => s.maxRate);
   const minRating = useSearchStore((s) => s.minRating);
   const minExp = useSearchStore((s) => s.minExp);
+  const sortBy = useSearchStore((s) => s.sortBy);
 
   const toggleTrade = useSearchStore((s) => s.toggleTrade);
   const setFilter = useSearchStore((s) => s.setFilter);
+  const setSortBy = useSearchStore((s) => s.setSortBy);
   const resetFilters = useSearchStore((s) => s.resetFilters);
 
   const [open, setOpen] = useState<OpenPanel>(null);
   const barRef = useRef<HTMLDivElement>(null);
 
-  // Click-outside closes any open panel.
+  // Click-outside / Escape closes any open panel.
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent) => {
@@ -57,325 +50,276 @@ export default function FilterBar() {
     };
   }, [open]);
 
-  const toggle = (panel: OpenPanel) => setOpen((cur) => (cur === panel ? null : panel));
+  const toggle = (panel: OpenPanel) =>
+    setOpen((cur) => (cur === panel ? null : panel));
 
-  // Active-filter detection — measured against the store's default config.
   const D = SEARCH_DEFAULTS;
   const tradeActive = selectedTrades.length > 0;
   const locActive = location !== D.location;
-  const budgetActive = minRate !== D.minRate || maxRate !== D.maxRate;
-  const moreActive =
-    verifiedOnly !== D.verifiedOnly ||
-    certified !== D.certified ||
-    minRating !== D.minRating ||
-    minExp !== D.minExp;
+  const expActive = minExp > 0;
+  const ratingActive = minRating > 0;
   const anyActive =
-    tradeActive ||
-    locActive ||
-    budgetActive ||
-    moreActive ||
-    availableNow !== D.availableNow;
+    tradeActive || locActive || expActive || ratingActive || availableNow;
 
-  const activePreset = BUDGET_PRESETS.find(
-    (p) => p.min === minRate && p.max === maxRate,
-  )?.label;
+  const expLabel = EXP_OPTIONS.find((o) => o.value === minExp)?.label;
+  const ratingLabel = RATING_OPTIONS.find((o) => o.value === minRating)?.label;
 
   return (
-    <div className="filter-bar" ref={barRef}>
-      <div className="filter-row">
-        {/* TRADE */}
-        <div className="fb-dd">
-          <button
-            type="button"
-            className={`pill ${tradeActive ? "pill-active" : ""} ${open === "trade" ? "pill-open" : ""}`}
-            onClick={() => toggle("trade")}
-            aria-expanded={open === "trade"}
-          >
-            <Wrench size={14} aria-hidden />
-            Trade
-            {tradeActive && <span className="pill-badge">{selectedTrades.length}</span>}
-            <ChevronDown size={14} className="pill-chev" aria-hidden />
-          </button>
-          {open === "trade" && (
-            <div className="fb-panel fb-panel-trade">
-              <p className="fb-panel-title">Select trade</p>
-              <div className="fb-trade-grid">
+    <div className="fb" ref={barRef}>
+      <div className="fb-toolbar">
+        {/* LEFT — filter dropdowns */}
+        <div className="fb-left">
+          {/* TRADE */}
+          <div className="fb-dd">
+            <button
+              type="button"
+              className={`fb-btn ${tradeActive ? "is-active" : ""}`}
+              onClick={() => toggle("trade")}
+              aria-expanded={open === "trade"}
+            >
+              <Wrench size={15} aria-hidden />
+              {tradeActive ? `Trade · ${selectedTrades.length}` : "Trade"}
+              <ChevronDown size={13} className="fb-chev" aria-hidden />
+            </button>
+            {open === "trade" && (
+              <div className="fb-menu fb-menu-trade">
                 {TRADES.map((t) => {
                   const checked = selectedTrades.includes(t.name);
                   return (
                     <button
                       key={t.name}
                       type="button"
-                      className={`fb-trade-item ${checked ? "checked" : ""}`}
+                      className="fb-opt"
                       onClick={() => toggleTrade(t.name)}
                     >
-                      <span className="fb-trade-emoji" aria-hidden>{t.emoji}</span>
-                      <span className="fb-trade-text">
-                        <span className="fb-trade-name">{t.name}</span>
-                        <span className="fb-trade-count">{t.count}</span>
+                      <span
+                        className={`fb-box ${checked ? "on" : ""}`}
+                        aria-hidden
+                      >
+                        {checked ? "✓" : ""}
                       </span>
-                      <span className={`fb-check ${checked ? "on" : ""}`} aria-hidden>
-                        {checked && <Check size={11} strokeWidth={3} />}
-                      </span>
+                      <span className="fb-opt-label">{t.name}</span>
                     </button>
                   );
                 })}
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
 
-        {/* LOCATION */}
-        <div className="fb-dd">
-          <button
-            type="button"
-            className={`pill ${locActive ? "pill-active" : ""} ${open === "location" ? "pill-open" : ""}`}
-            onClick={() => toggle("location")}
-            aria-expanded={open === "location"}
-          >
-            <MapPin size={14} aria-hidden />
-            {locActive ? location : "Location"}
-            <ChevronDown size={14} className="pill-chev" aria-hidden />
-          </button>
-          {open === "location" && (
-            <div className="fb-panel fb-panel-loc">
-              <p className="fb-panel-title">Popular locations</p>
-              <ul className="fb-loc-list">
+          {/* LOCATION */}
+          <div className="fb-dd">
+            <button
+              type="button"
+              className={`fb-btn ${locActive ? "is-active" : ""}`}
+              onClick={() => toggle("location")}
+              aria-expanded={open === "location"}
+            >
+              <MapPin size={15} aria-hidden />
+              {locActive ? location : "Location"}
+              <ChevronDown size={13} className="fb-chev" aria-hidden />
+            </button>
+            {open === "location" && (
+              <div className="fb-menu">
+                <button
+                  type="button"
+                  className="fb-opt fb-opt-row"
+                  onClick={() => {
+                    setFilter("location", "");
+                    setOpen(null);
+                  }}
+                >
+                  <span className="fb-opt-label">All locations</span>
+                  {!locActive && <span className="fb-tick">✓</span>}
+                </button>
                 {CITIES.map((c) => (
-                  <li key={c.name}>
-                    <button
-                      type="button"
-                      className={`fb-loc-item ${location === c.name ? "active" : ""}`}
-                      onClick={() => {
-                        setFilter("location", location === c.name ? "" : c.name);
-                        setOpen(null);
-                      }}
-                    >
-                      <span className="fb-loc-name">
-                        <MapPin size={12} aria-hidden />
-                        {c.name}
-                      </span>
-                      <span className="fb-loc-count">{c.count}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-
-        {/* BUDGET */}
-        <div className="fb-dd">
-          <button
-            type="button"
-            className={`pill ${budgetActive ? "pill-active" : ""} ${open === "budget" ? "pill-open" : ""}`}
-            onClick={() => toggle("budget")}
-            aria-expanded={open === "budget"}
-          >
-            <Coins size={14} aria-hidden />
-            Budget
-            <ChevronDown size={14} className="pill-chev" aria-hidden />
-          </button>
-          {open === "budget" && (
-            <div className="fb-panel fb-panel-budget">
-              <p className="fb-panel-title">Daily rate (KSh)</p>
-              <div className="fb-rate-inputs">
-                <input
-                  type="number"
-                  min={500}
-                  max={10000}
-                  step={100}
-                  value={minRate}
-                  onChange={(e) =>
-                    setFilter("minRate", Math.min(Number(e.target.value) || 0, maxRate))
-                  }
-                  aria-label="Minimum daily rate"
-                />
-                <span className="fb-rate-sep">—</span>
-                <input
-                  type="number"
-                  min={500}
-                  max={10000}
-                  step={100}
-                  value={maxRate}
-                  onChange={(e) =>
-                    setFilter("maxRate", Math.max(Number(e.target.value) || 0, minRate))
-                  }
-                  aria-label="Maximum daily rate"
-                />
-              </div>
-              <input
-                type="range"
-                className="fb-range"
-                min={500}
-                max={10000}
-                step={100}
-                value={maxRate}
-                onChange={(e) => setFilter("maxRate", Number(e.target.value))}
-                aria-label="Maximum daily rate slider"
-              />
-              <div className="fb-presets">
-                {BUDGET_PRESETS.map((p) => (
                   <button
-                    key={p.label}
+                    key={c.name}
                     type="button"
-                    className={`fb-preset ${activePreset === p.label ? "active" : ""}`}
+                    className="fb-opt fb-opt-row"
                     onClick={() => {
-                      setFilter("minRate", p.min);
-                      setFilter("maxRate", p.max);
+                      setFilter("location", location === c.name ? "" : c.name);
+                      setOpen(null);
                     }}
                   >
-                    {p.label}
+                    <span className="fb-opt-label">{c.name}</span>
+                    {location === c.name && <span className="fb-tick">✓</span>}
                   </button>
                 ))}
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
 
-        {/* MORE FILTERS */}
-        <div className="fb-dd">
-          <button
-            type="button"
-            className={`pill ${moreActive ? "pill-active" : ""} ${open === "more" ? "pill-open" : ""}`}
-            onClick={() => toggle("more")}
-            aria-expanded={open === "more"}
-          >
-            <SlidersHorizontal size={14} aria-hidden />
-            More filters
-            <ChevronDown size={14} className="pill-chev" aria-hidden />
-          </button>
-          {open === "more" && (
-            <div className="fb-panel fb-panel-more">
-              <p className="fb-panel-title">Trust &amp; verification</p>
-              <label className="fb-toggle-row">
-                <span>Verified only</span>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={verifiedOnly}
-                  className={`fb-switch ${verifiedOnly ? "on" : ""}`}
-                  onClick={() => setFilter("verifiedOnly", !verifiedOnly)}
-                >
-                  <span className="fb-switch-knob" />
-                </button>
-              </label>
-              <label className="fb-toggle-row">
-                <span>Certified</span>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={certified}
-                  className={`fb-switch ${certified ? "on" : ""}`}
-                  onClick={() => setFilter("certified", !certified)}
-                >
-                  <span className="fb-switch-knob" />
-                </button>
-              </label>
-
-              <p className="fb-panel-title fb-panel-title-mt">Min rating</p>
-              <div className="fb-seg">
-                {RATING_OPTIONS.map((o) => (
-                  <button
-                    key={o.value}
-                    type="button"
-                    className={`fb-seg-pill ${minRating === o.value ? "active" : ""}`}
-                    onClick={() => setFilter("minRating", o.value)}
-                  >
-                    {o.label}
-                  </button>
-                ))}
-              </div>
-
-              <p className="fb-panel-title fb-panel-title-mt">Experience</p>
-              <div className="fb-seg">
+          {/* EXPERIENCE */}
+          <div className="fb-dd">
+            <button
+              type="button"
+              className={`fb-btn ${expActive ? "is-active" : ""}`}
+              onClick={() => toggle("exp")}
+              aria-expanded={open === "exp"}
+            >
+              {expActive ? expLabel : "Experience"}
+              <ChevronDown size={13} className="fb-chev" aria-hidden />
+            </button>
+            {open === "exp" && (
+              <div className="fb-menu">
                 {EXP_OPTIONS.map((o) => (
                   <button
                     key={o.value}
                     type="button"
-                    className={`fb-seg-pill ${minExp === o.value ? "active" : ""}`}
-                    onClick={() => setFilter("minExp", o.value)}
+                    className="fb-opt fb-opt-row"
+                    onClick={() => {
+                      setFilter("minExp", o.value);
+                      setOpen(null);
+                    }}
                   >
-                    {o.label}
+                    <span className="fb-opt-label">{o.label}</span>
+                    {minExp === o.value && <span className="fb-tick">✓</span>}
                   </button>
                 ))}
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
 
-        <span className="fb-divider" aria-hidden />
+          {/* RATING */}
+          <div className="fb-dd">
+            <button
+              type="button"
+              className={`fb-btn ${ratingActive ? "is-active" : ""}`}
+              onClick={() => toggle("rating")}
+              aria-expanded={open === "rating"}
+            >
+              {ratingActive ? ratingLabel : "Rating"}
+              <ChevronDown size={13} className="fb-chev" aria-hidden />
+            </button>
+            {open === "rating" && (
+              <div className="fb-menu">
+                {RATING_OPTIONS.map((o) => (
+                  <button
+                    key={o.value}
+                    type="button"
+                    className="fb-opt fb-opt-row"
+                    onClick={() => {
+                      setFilter("minRating", o.value);
+                      setOpen(null);
+                    }}
+                  >
+                    <span className="fb-opt-label">{o.label}</span>
+                    {minRating === o.value && (
+                      <span className="fb-tick">✓</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
-        {/* AVAILABLE NOW */}
-        <button
-          type="button"
-          className={`pill ${availableNow ? "pill-active" : ""}`}
-          onClick={() => setFilter("availableNow", !availableNow)}
-          aria-pressed={availableNow}
-        >
-          <CircleCheck size={14} aria-hidden />
-          Available now
-        </button>
-      </div>
-
-      {/* ACTIVE FILTER TAGS */}
-      <div className="fb-tags">
-        {!anyActive && <span className="fb-no-filters">No filters applied</span>}
-
-        {selectedTrades.map((t) => (
-          <button key={t} type="button" className="fb-tag" onClick={() => toggleTrade(t)}>
-            {t} <X size={11} aria-hidden />
-          </button>
-        ))}
-        {locActive && (
-          <button type="button" className="fb-tag" onClick={() => setFilter("location", "")}>
-            {location} <X size={11} aria-hidden />
-          </button>
-        )}
-        {budgetActive && (
+          {/* AVAILABLE NOW */}
           <button
             type="button"
-            className="fb-tag"
-            onClick={() => {
-              setFilter("minRate", D.minRate);
-              setFilter("maxRate", D.maxRate);
-            }}
+            className={`fb-avail ${availableNow ? "is-on" : ""}`}
+            onClick={() => setFilter("availableNow", !availableNow)}
+            aria-pressed={availableNow}
           >
-            KSh {minRate.toLocaleString()}–{maxRate.toLocaleString()} <X size={11} aria-hidden />
+            <span className="fb-avail-dot" />
+            Available now
           </button>
-        )}
-        {certified !== D.certified && (
-          <button type="button" className="fb-tag" onClick={() => setFilter("certified", D.certified)}>
-            Certified <X size={11} aria-hidden />
-          </button>
-        )}
-        {verifiedOnly !== D.verifiedOnly && (
-          <button type="button" className="fb-tag" onClick={() => setFilter("verifiedOnly", D.verifiedOnly)}>
-            Verified only <X size={11} aria-hidden />
-          </button>
-        )}
-        {minRating !== D.minRating && (
-          <button type="button" className="fb-tag" onClick={() => setFilter("minRating", D.minRating)}>
-            {minRating === 0 ? "Any rating" : `${minRating}+ stars`} <X size={11} aria-hidden />
-          </button>
-        )}
-        {minExp !== D.minExp && (
-          <button type="button" className="fb-tag" onClick={() => setFilter("minExp", D.minExp)}>
-            {minExp}+ yrs exp <X size={11} aria-hidden />
-          </button>
-        )}
-        {availableNow !== D.availableNow && (
-          <button type="button" className="fb-tag" onClick={() => setFilter("availableNow", D.availableNow)}>
-            Incl. unavailable <X size={11} aria-hidden />
-          </button>
-        )}
+        </div>
 
-        {anyActive && (
-          <button type="button" className="fb-clear" onClick={() => resetFilters()}>
+        {/* RIGHT — Ask AI + sort */}
+        <div className="fb-right">
+          <button type="button" className="fb-askai" onClick={onAskAi}>
+            <Sparkles size={15} aria-hidden />
+            Ask AI
+          </button>
+          <div className="fb-sort">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              aria-label="Sort workers"
+            >
+              {SORT_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+            <ChevronDown size={13} className="fb-sort-chev" aria-hidden />
+          </div>
+        </div>
+      </div>
+
+      {/* ACTIVE CHIPS */}
+      {anyActive && (
+        <div className="fb-chips">
+          {selectedTrades.map((t) => (
+            <span key={t} className="fb-chip">
+              {t}
+              <button
+                type="button"
+                onClick={() => toggleTrade(t)}
+                aria-label={`Remove ${t}`}
+              >
+                <X size={11} aria-hidden />
+              </button>
+            </span>
+          ))}
+          {locActive && (
+            <span className="fb-chip">
+              {location}
+              <button
+                type="button"
+                onClick={() => setFilter("location", "")}
+                aria-label="Remove location"
+              >
+                <X size={11} aria-hidden />
+              </button>
+            </span>
+          )}
+          {expActive && (
+            <span className="fb-chip">
+              {expLabel}
+              <button
+                type="button"
+                onClick={() => setFilter("minExp", 0)}
+                aria-label="Remove experience filter"
+              >
+                <X size={11} aria-hidden />
+              </button>
+            </span>
+          )}
+          {ratingActive && (
+            <span className="fb-chip">
+              {ratingLabel}
+              <button
+                type="button"
+                onClick={() => setFilter("minRating", 0)}
+                aria-label="Remove rating filter"
+              >
+                <X size={11} aria-hidden />
+              </button>
+            </span>
+          )}
+          {availableNow && (
+            <span className="fb-chip">
+              Available now
+              <button
+                type="button"
+                onClick={() => setFilter("availableNow", false)}
+                aria-label="Remove availability filter"
+              >
+                <X size={11} aria-hidden />
+              </button>
+            </span>
+          )}
+          <button
+            type="button"
+            className="fb-clear"
+            onClick={() => resetFilters()}
+          >
             Clear all
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

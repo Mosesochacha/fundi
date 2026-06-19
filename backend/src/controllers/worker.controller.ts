@@ -117,6 +117,7 @@ class WorkerController {
     let order: any[];
     if (sort === 'rate_asc') order = [[{ model: db.User, as: 'user' }, 'dailyRate', 'ASC']];
     else if (sort === 'rate_desc') order = [[{ model: db.User, as: 'user' }, 'dailyRate', 'DESC']];
+    else if (sort === 'most_experienced') order = [['yearsExperience', 'DESC'], [popularity, 'DESC']];
     else order = [[popularity, 'DESC'], ['views', 'DESC']];
 
     const { count, rows } = await db.Profile.findAndCountAll({
