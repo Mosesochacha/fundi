@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import { JWT_CONFIG } from "./constants";
 
 function isCrossOrigin(req?: Request) {
   if (!req) return false;
@@ -92,6 +93,72 @@ export function setCsrfCookie(res: Response, token: string, req?: Request) {
     domain: getCookieDomain(req),
     maxAge: 12 * 60 * 60 * 1000,
   });
+}
+
+// ── Pending email verification ──────────────────────────────────────────────
+// During registration (and when an unverified user asks to verify) we stash the
+// email being verified in a short-lived, signed, httpOnly cookie instead of
+// passing it through the URL. The /verify-email and /resend-verification
+// endpoints read the email from here, so it never appears in a query string,
+// browser history, or a shareable link.
+const PENDING_VERIFICATION_COOKIE = "lot_pv";
+const PENDING_VERIFICATION_TTL_MS = 15 * 60 * 1000; // 15 minutes
+
+export interface PendingVerification {
+  email: string;
+  accountType?: "employer" | "worker" | null;
+}
+
+// Shared cross-site cookie attributes (same logic the auth cookies use).
+function cookieSecurity(req?: Request) {
+  const crossSite = isCrossOrigin(req);
+  const isProduction = process.env.NODE_ENV === "production";
+  const isSecure =
+    req?.secure || req?.headers["x-forwarded-proto"] === "https" || isProduction;
+  const sameSite = crossSite ? (isSecure ? "none" : "lax") : "lax";
+  const secure = crossSite ? isSecure : isProduction;
+  return { sameSite: sameSite as "none" | "lax" | "strict", secure };
+}
+
+export function setPendingVerificationCookie(
+  res: Response,
+  payload: PendingVerification,
+  req?: Request
+) {
+  const token = jwt.sign(
+    { email: payload.email, accountType: payload.accountType ?? null },
+    JWT_CONFIG.SECRET as string,
+    { expiresIn: "15m" }
+  );
+  const { sameSite, secure } = cookieSecurity(req);
+  res.cookie(PENDING_VERIFICATION_COOKIE, token, {
+    httpOnly: true,
+    secure,
+    sameSite,
+    path: "/",
+    domain: getCookieDomain(req),
+    maxAge: PENDING_VERIFICATION_TTL_MS,
+  });
+}
+
+// Returns the email/accountType from a valid pending-verification cookie, or
+// null when it is missing, malformed, or expired.
+export function readPendingVerification(req: Request): PendingVerification | null {
+  const token = (req as any).cookies?.[PENDING_VERIFICATION_COOKIE];
+  if (!token) return null;
+  try {
+    const decoded = jwt.verify(token, JWT_CONFIG.SECRET as string) as any;
+    if (!decoded?.email) return null;
+    return { email: String(decoded.email), accountType: decoded.accountType ?? null };
+  } catch {
+    return null;
+  }
+}
+
+export function clearPendingVerificationCookie(res: Response, req?: Request) {
+  const currentDomain = getCookieDomain(req);
+  res.clearCookie(PENDING_VERIFICATION_COOKIE, { path: "/", domain: currentDomain });
+  res.clearCookie(PENDING_VERIFICATION_COOKIE, { path: "/" });
 }
 
 export function clearAuthCookies(res: Response, req?: Request) {

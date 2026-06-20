@@ -2,6 +2,7 @@ export * from "./services/auth.service";
 export * from "./hooks/useAuth";
 export * from "./hooks/useCurrentUser";
 export * from "./hooks/useLogin";
+export * from "./hooks/useGoogleAuth";
 export * from "./hooks/useLogout";
 export * from "./hooks/useRegister";
 export * from "./hooks/useForgotPassword";

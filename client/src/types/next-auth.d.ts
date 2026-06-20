@@ -1,4 +1,8 @@
-import type { AppRole, AuthProfile, AuthUser } from "@/features/auth/types/auth.types";
+import type {
+  AppRole,
+  AuthProfile,
+  AuthUser,
+} from "@/features/auth/types/auth.types";
 
 declare module "next-auth" {
   interface Session {
@@ -9,7 +13,7 @@ declare module "next-auth" {
       role: AppRole;
     };
     accessToken: string;
-    /** Set to "RefreshAccessTokenError" / "GoogleSignInError" when re-auth is required. */
+    /** Set to "RefreshAccessTokenError" when re-auth is required. */
     error?: string;
     /** Full backend user/profile, hydrated at sign-in for immediate render. */
     backendUser?: AuthUser;

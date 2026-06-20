@@ -1,10 +1,9 @@
 import NextAuth from "next-auth";
-import Credentials from "next-auth/providers/credentials";
-import Google from "next-auth/providers/google";
 import type { JWT } from "next-auth/jwt";
+import Credentials from "next-auth/providers/credentials";
+import type { LoginResult } from "@/features/auth/types/auth.types";
 import { API_BASE } from "@/lib/apiBase";
 import { roleForUser } from "@/lib/authRedirect";
-import type { LoginResult } from "@/features/auth/types/auth.types";
 
 const ACCESS_TTL_MS = 15 * 60 * 1000; // matches backend JWT_ACCESS_EXPIRES=15m
 const REFRESH_SKEW_MS = 30 * 1000; // refresh slightly early
@@ -15,7 +14,9 @@ function readSetCookie(res: Response, name: string): string | undefined {
   const list =
     typeof (res.headers as { getSetCookie?: () => string[] }).getSetCookie ===
     "function"
-      ? (res.headers as unknown as { getSetCookie: () => string[] }).getSetCookie()
+      ? (
+          res.headers as unknown as { getSetCookie: () => string[] }
+        ).getSetCookie()
       : [res.headers.get("set-cookie") ?? ""];
   for (const raw of list) {
     const match = raw.match(new RegExp(`(?:^|; )${name}=([^;]+)`));
@@ -85,42 +86,76 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         };
       },
     }),
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      allowDangerousEmailAccountLinking: true,
+    Credentials({
+      id: "verify-email",
+      name: "Verify email",
+      // The user submits the 6-digit OTP; the email being verified lives in the
+      // signed `lot_pv` cookie. We forward the browser's cookies to the backend
+      // so it can read that email, verify the code, and hand back session tokens
+      // — auto-logging the user in the moment their email is confirmed.
+      credentials: { code: {} },
+      async authorize(credentials, request) {
+        const code = credentials?.code;
+        if (!code) return null;
+        const cookie = request?.headers?.get?.("cookie") ?? "";
+        const res = await fetch(`${API_BASE}/auth/verify-email`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Cookie: cookie },
+          body: JSON.stringify({ code }),
+          cache: "no-store",
+        });
+        if (!res.ok) return null;
+        const json = (await res.json()) as { data: LoginResult };
+        const { user, profile, tokens } = json.data;
+        if (!user || !tokens?.accessToken) return null;
+        return {
+          id: user.id,
+          email: user.email,
+          name: `${user.firstName} ${user.lastName}`.trim(),
+          role: roleForUser(user),
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+          backendUser: user,
+          backendProfile: profile,
+        };
+      },
+    }),
+    Credentials({
+      id: "firebase-google",
+      name: "Google",
+      // The client gets a Firebase ID token from the Google popup and hands it
+      // here; we exchange it with the backend for our own session tokens.
+      credentials: { idToken: {} },
+      async authorize(credentials) {
+        const idToken = credentials?.idToken;
+        if (!idToken) return null;
+        const res = await fetch(`${API_BASE}/auth/google`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ idToken }),
+          cache: "no-store",
+        });
+        if (!res.ok) return null;
+        const json = (await res.json()) as { data: LoginResult };
+        const { user, profile, tokens } = json.data;
+        if (!user || !tokens?.accessToken) return null;
+        return {
+          id: user.id,
+          email: user.email,
+          name: `${user.firstName} ${user.lastName}`.trim(),
+          role: roleForUser(user),
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+          backendUser: user,
+          backendProfile: profile,
+        };
+      },
     }),
   ],
   callbacks: {
-    async jwt({ token, user, account }) {
-      // Google: exchange the Google id_token for backend tokens.
-      if (account?.provider === "google" && account.id_token) {
-        try {
-          const res = await fetch(`${API_BASE}/auth/google`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ idToken: account.id_token }),
-            cache: "no-store",
-          });
-          if (!res.ok) throw new Error(`google login failed: ${res.status}`);
-          const json = (await res.json()) as { data: LoginResult };
-          const { user: bUser, profile, tokens } = json.data;
-          token.id = bUser.id;
-          token.role = roleForUser(bUser);
-          token.accessToken = tokens.accessToken;
-          token.refreshToken = tokens.refreshToken;
-          token.accessTokenExpires = Date.now() + ACCESS_TTL_MS;
-          token.user = bUser;
-          token.profile = profile;
-          token.error = undefined;
-          return token;
-        } catch {
-          token.error = "GoogleSignInError";
-          return token;
-        }
-      }
-
-      // Credentials sign-in: seed the token. (authorize always sets these.)
+    async jwt({ token, user }) {
+      // Credentials sign-in (password or firebase-google): seed the token.
+      // authorize() always sets these on first sign-in.
       if (user?.accessToken && user.backendUser) {
         token.id = user.id!;
         token.role = user.role!;

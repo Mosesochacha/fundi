@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import WorkerController from '../controllers/worker.controller';
 import WorkerSettingsController from '../controllers/workerSettings.controller';
+import WorkerRequestsController from '../controllers/workerRequests.controller';
 import verifyJWT from '../middleware/verifyJWT';
 import { uploadAvatar } from '../middleware/upload';
 
@@ -36,6 +37,14 @@ router.post('/worker/profile/education', verifyJWT, WorkerController.addEducatio
 router.delete('/worker/profile/education/:id', verifyJWT, WorkerController.deleteEducation);
 
 router.patch('/worker/availability', verifyJWT, WorkerController.updateAvailability);
+
+// ── Job requests page (/worker/requests) ────────────────────────────────────
+// `stats` is registered before the `/:id/*` action routes so it isn't shadowed.
+router.get('/worker/requests/stats', verifyJWT, WorkerRequestsController.getStats);
+router.get('/worker/requests', verifyJWT, WorkerRequestsController.getRequests);
+router.patch('/worker/requests/:id/accept', verifyJWT, WorkerRequestsController.acceptRequest);
+router.patch('/worker/requests/:id/decline', verifyJWT, WorkerRequestsController.declineRequest);
+router.patch('/worker/requests/:id/complete', verifyJWT, WorkerRequestsController.completeRequest);
 
 // ── Settings page (/worker/settings) ────────────────────────────────────────
 router.get('/worker/settings', verifyJWT, WorkerSettingsController.getSettings);

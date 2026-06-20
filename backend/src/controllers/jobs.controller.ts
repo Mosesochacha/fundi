@@ -50,14 +50,33 @@ class JobsController {
     const profileId = req.user?.profileId;
     if (!profileId) return sendError(res, HTTP_STATUS.UNAUTHORIZED, 'Unauthorized');
 
-    const { workerId, title, location, description, scheduledAt } = req.body;
+    const {
+      workerId,
+      title,
+      location,
+      description,
+      scheduledAt,
+      scheduledEndAt,
+      agreedRate,
+      estimatedDuration,
+      tags,
+    } = req.body;
     if (!workerId) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'workerId is required');
     if (workerId === profileId) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Cannot send a job request to yourself');
     if (!title?.trim()) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'title is required');
     if (!location?.trim()) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'location is required');
 
+    let rate: number | null = null;
+    if (agreedRate !== undefined && agreedRate !== null) {
+      const n = Number(agreedRate);
+      if (Number.isNaN(n) || n < 0 || n > 9_999_999) {
+        return sendError(res, HTTP_STATUS.BAD_REQUEST, 'agreedRate must be between 0 and 9,999,999');
+      }
+      rate = Math.round(n);
+    }
+
     const employer = await db.Profile.findByPk(profileId, { attributes: ['id', 'fullName'] });
-    const worker = await db.Profile.findByPk(workerId, { attributes: ['id'] });
+    const worker = await db.Profile.findByPk(workerId, { attributes: ['id', 'userId'] });
     if (!worker) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Worker not found');
 
     const job = await (db as any).JobRequest.create({
@@ -67,12 +86,25 @@ class JobsController {
       location: location.trim(),
       description: description?.trim() || null,
       scheduledAt: scheduledAt || null,
+      scheduledEndAt: scheduledEndAt || null,
+      agreedRate: rate,
+      estimatedDuration: estimatedDuration?.trim() || null,
+      tags: Array.isArray(tags) ? tags.map((t: unknown) => String(t)).slice(0, 12) : null,
     });
 
     const conv = await findOrCreateConversation(profileId, workerId);
     await conv.update({ linkedJobId: job.id });
 
     await createSystemMessage(conv, profileId, `Job request sent by ${(employer as any)?.fullName ?? 'employer'}`);
+
+    // Real-time nudge so the worker's /requests page surfaces it immediately.
+    const io = getIo();
+    if (io) {
+      io.to(String((worker as any).userId)).emit('new_request', {
+        jobId: job.id,
+        employerName: (employer as any)?.fullName ?? 'An employer',
+      });
+    }
 
     return sendSuccess(res, 'Job request sent', {
       job: job.get({ plain: true }),

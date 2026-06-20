@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useToastContext } from "@/context/ToastContext";
-import { useLogin } from "@/features/auth";
+import { useGoogleAuth, useLogin, useStartVerification } from "@/features/auth";
 import { dashboardPathForRole, redirectPathForRole } from "@/lib/authRedirect";
 import "./login.css";
 
@@ -33,6 +32,8 @@ function EyeIcon() {
 export default function LoginPage() {
   const router = useRouter();
   const { login, isLoading } = useLogin();
+  const { googleSignIn, isLoading: googleLoading } = useGoogleAuth();
+  const startVerification = useStartVerification();
   const { error: toastError, success, warning } = useToastContext();
 
   const [identifier, setIdentifier] = useState("");
@@ -116,8 +117,43 @@ export default function LoginPage() {
     }
   };
 
+  const onGoogle = async () => {
+    try {
+      const session = await googleSignIn();
+      if (!session) return; // popup closed
+      const user = session.backendUser ?? null;
+      const profile = session.backendProfile ?? null;
+      if (user && !user.isOnboarded) {
+        router.push("/setup");
+      } else {
+        success("Welcome back!");
+        router.push(
+          user
+            ? redirectPathForRole(user, profile)
+            : dashboardPathForRole(undefined),
+        );
+      }
+    } catch (err) {
+      toastError(err instanceof Error ? err.message : "Google sign-in failed");
+    }
+  };
+
   const clearError = (field: "identifier" | "password") => {
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }));
+  };
+
+  // Begin email verification: the backend stashes the email in a signed session
+  // cookie (kept out of the URL) and sends a fresh code, then we route to the
+  // standalone verify page which reads that session.
+  const onVerifyEmail = async () => {
+    if (!unverifiedEmail) return;
+    try {
+      await startVerification.mutateAsync({ identifier: unverifiedEmail });
+    } catch {
+      // Generic by design — proceed regardless; the verify page redirects to
+      // register if no verification session was established.
+    }
+    router.push("/verify-email");
   };
 
   const locked = lockSecondsLeft > 0;
@@ -149,21 +185,23 @@ export default function LoginPage() {
         {unverifiedEmail && (
           <div className="notice notice-verify">
             Your email isn’t verified yet.{" "}
-            <Link
-              href={`/verify-email?email=${encodeURIComponent(unverifiedEmail)}`}
+            <button
+              type="button"
+              onClick={onVerifyEmail}
+              disabled={startVerification.isPending}
             >
-              Enter verification code →
-            </Link>
+              {startVerification.isPending
+                ? "Sending code…"
+                : "Enter verification code →"}
+            </button>
           </div>
         )}
 
         <button
           type="button"
           className="btn-google"
-          // Role isn't known until the OAuth round-trip finishes, so land on
-          // /login — middleware bounces the authenticated user to their
-          // role-based dashboard.
-          onClick={() => signIn("google", { callbackUrl: "/login" })}
+          onClick={onGoogle}
+          disabled={googleLoading || locked}
         >
           <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
             <path

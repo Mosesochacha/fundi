@@ -19,10 +19,14 @@ export const authService = {
   me: () => client.get("/auth/me"),
   logout: () => client.post("/auth/logout"),
 
-  verifyEmail: (data: { email: string; code: string }) =>
+  // Email for verification lives in a signed httpOnly cookie set at register /
+  // start-verification time — it is never sent in the body or the URL.
+  pendingVerification: () => client.get("/auth/pending-verification"),
+  startVerification: (data: { identifier: string }) =>
+    client.post("/auth/start-verification", data),
+  verifyEmail: (data: { code: string }) =>
     client.post("/auth/verify-email", data),
-  resendVerification: (data: { email: string }) =>
-    client.post("/auth/resend-verification", data),
+  resendVerification: () => client.post("/auth/resend-verification"),
 
   forgotPassword: (data: { identifier: string }) =>
     client.post("/auth/forgot-password", data),

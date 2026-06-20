@@ -12,6 +12,8 @@ router.post('/auth/google', authRateLimit, AuthController.googleLogin);
 router.post('/auth/logout', AuthController.logout);
 router.post('/auth/refresh', AuthController.refresh);
 router.get('/auth/me', verifyJWT, AuthController.me);
+router.get('/auth/pending-verification', AuthController.pendingVerification);
+router.post('/auth/start-verification', authRateLimit, AuthController.startVerification);
 router.post('/auth/verify-email', authRateLimit, AuthController.verifyEmail);
 router.post('/auth/resend-verification', authRateLimit, AuthController.resendVerification);
 router.post('/auth/forgot-password', passwordResetRateLimit, AuthController.forgotPassword);

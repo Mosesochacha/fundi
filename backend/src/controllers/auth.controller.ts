@@ -4,15 +4,26 @@ import OTPService from '../services/otp.service';
 import { sendSuccess, sendError, asyncHandler, formatUserResponse, hashString } from '../utils/helpers';
 import { HTTP_STATUS, RESPONSE_MESSAGES } from '../utils/constants';
 import { AuthenticatedRequest } from '../middleware/verifyJWT';
-import { setAuthCookie, clearAuthCookies } from '../utils/authCookies';
+import {
+  setAuthCookie,
+  clearAuthCookies,
+  setPendingVerificationCookie,
+  readPendingVerification,
+  clearPendingVerificationCookie,
+} from '../utils/authCookies';
 import db from '../models';
 import logger from '../utils/logger';
 import emailService from '../services/email.service';
-import { OAuth2Client } from 'google-auth-library';
 
 const REFRESH_COOKIE = 'lot_r1';
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
+
+/** Mask an email for display: `john@gmail.com` → `j***@gmail.com`. */
+function maskEmail(email: string): string {
+  const [local, domain] = String(email).split('@');
+  if (!domain) return email;
+  const visible = local.slice(0, 1) || '*';
+  return `${visible}***@${domain}`;
+}
 
 /** Look up a user by an identifier that may be an email or a phone number. */
 async function findUserByIdentifier(identifier: string) {
@@ -99,6 +110,10 @@ class AuthController {
         logger.warn('Failed to send verification OTP after register', { email, err });
       });
 
+      // Stash the email being verified in a signed, httpOnly cookie so the
+      // /verify-email page never has to carry it in the URL.
+      setPendingVerificationCookie(res, { email: email.toLowerCase().trim(), accountType }, req);
+
       return sendSuccess(res, RESPONSE_MESSAGES.USER_CREATED, result);
     } catch (err: any) {
       console.error('Register error:', err);
@@ -164,41 +179,46 @@ class AuthController {
     }
   });
 
-  // Sign in / sign up with a Google ID token. Verifies the token against the
-  // configured Google client, then issues the same { user, profile, tokens }
-  // shape as /auth/login (refresh token also set as the lot_r1 cookie).
+  // Sign in / sign up with a Firebase ID token (Google popup on the client).
+  // Verifies the token with the Firebase Admin SDK, then issues the same
+  // { user, profile, tokens } shape as /auth/login (refresh token also set as
+  // the lot_r1 cookie).
   googleLogin = asyncHandler(async (req: Request, res: Response) => {
     const idToken: string = req.body.idToken ?? req.body.credential;
     if (!idToken) {
       return sendError(res, HTTP_STATUS.BAD_REQUEST, 'A Google idToken is required');
     }
-    if (!GOOGLE_CLIENT_ID) {
-      return sendError(res, HTTP_STATUS.INTERNAL_SERVER_ERROR, 'Google sign-in is not configured');
-    }
 
-    let payload: import('google-auth-library').TokenPayload | undefined;
+    let decoded: import('firebase-admin/auth').DecodedIdToken;
     try {
-      const ticket = await googleClient.verifyIdToken({
-        idToken,
-        audience: GOOGLE_CLIENT_ID,
-      });
-      payload = ticket.getPayload();
+      // Lazily import so a missing/incomplete Firebase config fails here (this
+      // request) rather than crashing the whole controller module at load time.
+      const { firebaseAuth } = await import('../lib/firebaseAdmin');
+      decoded = await firebaseAuth.verifyIdToken(idToken);
     } catch (err) {
-      logger.warn('Google token verification failed', { err });
+      const message = (err as Error)?.message ?? '';
+      if (message.includes('Firebase Admin configuration is incomplete')) {
+        logger.error('Firebase Admin is not configured for Google sign-in', { err });
+        return sendError(res, HTTP_STATUS.INTERNAL_SERVER_ERROR, 'Google sign-in is not configured');
+      }
+      logger.warn('Firebase token verification failed', { err });
       return sendError(res, HTTP_STATUS.UNAUTHORIZED, 'Invalid Google sign-in.');
     }
 
-    if (!payload?.email || !payload.email_verified) {
+    if (!decoded.email || !decoded.email_verified) {
       return sendError(res, HTTP_STATUS.UNAUTHORIZED, 'Your Google email is not verified.');
     }
+
+    // Firebase ID tokens carry a single `name` claim (no given/family split).
+    const [firstName, ...rest] = (decoded.name ?? '').trim().split(/\s+/);
 
     try {
       const result = await AuthService.loginWithGoogle(
         {
-          email: payload.email,
-          firstName: payload.given_name ?? '',
-          lastName: payload.family_name ?? '',
-          avatarUrl: payload.picture ?? null,
+          email: decoded.email,
+          firstName: firstName ?? '',
+          lastName: rest.join(' '),
+          avatarUrl: decoded.picture ?? null,
         },
         req.ip || '',
         req.get('user-agent') || ''
@@ -421,46 +441,105 @@ class AuthController {
     return sendSuccess(res, 'Password reset successfully. You can now log in with your new password.');
   });
 
-  verifyEmail = asyncHandler(async (req: Request, res: Response) => {
-    const { email, code } = req.body;
+  // Returns the masked email / accountType for the email currently mid-
+  // verification, read from the signed pending-verification cookie. The
+  // /verify-email page calls this on load; a 401 means "no active session →
+  // send the user back to register".
+  pendingVerification = asyncHandler(async (req: Request, res: Response) => {
+    const pending = readPendingVerification(req);
+    if (!pending) {
+      return sendError(res, HTTP_STATUS.CONFLICT, 'Session expired, please register again');
+    }
+    return sendSuccess(res, 'Pending verification', {
+      emailMasked: maskEmail(pending.email),
+      accountType: pending.accountType ?? null,
+    });
+  });
 
-    if (!email || !code) {
-      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Email and code are required');
+  // Begins (or resumes) email verification for an existing unverified account —
+  // used by the login page when a user with an unverified email tries to sign
+  // in. Sets the pending-verification cookie (so the email stays out of the URL)
+  // and sends a fresh OTP. Always returns a generic 200 so account existence
+  // and verification status are never leaked.
+  startVerification = asyncHandler(async (req: Request, res: Response) => {
+    const identifier: string = req.body.identifier ?? req.body.email;
+    const message = 'If your account exists and is unverified, a code has been sent.';
+
+    if (!identifier) {
+      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Email or phone number is required');
     }
 
-    const verification = await OTPService.verifyOTP(email.toLowerCase().trim(), code, 'verification');
+    const user = await findUserByIdentifier(identifier);
+    if (!user || user.emailVerified) return sendSuccess(res, message);
+
+    setPendingVerificationCookie(res, { email: user.email, accountType: user.accountType }, req);
+    await OTPService.generateOTP(user.email, 'verification');
+
+    return sendSuccess(res, message);
+  });
+
+  verifyEmail = asyncHandler(async (req: Request, res: Response) => {
+    const { code } = req.body;
+
+    // Email comes from the signed session cookie, never from the request body.
+    const pending = readPendingVerification(req);
+    if (!pending) {
+      return sendError(res, HTTP_STATUS.CONFLICT, 'Session expired, please register again');
+    }
+
+    if (!code) {
+      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'The verification code is required');
+    }
+
+    const normalizedEmail = pending.email.toLowerCase().trim();
+    const verification = await OTPService.verifyOTP(normalizedEmail, String(code).trim(), 'verification');
     if (!verification.success) {
       return sendError(res, HTTP_STATUS.BAD_REQUEST, verification.message);
     }
 
-    const normalizedEmail = email.toLowerCase().trim();
     await AuthService.markEmailAsVerified(normalizedEmail);
+    clearPendingVerificationCookie(res, req);
 
-    const user = await db.User.findOne({ where: { email: normalizedEmail }, attributes: ['firstName'] });
-    emailService.sendWelcomeEmail(normalizedEmail, user?.firstName ?? undefined).catch(() => {});
+    const user = await db.User.findOne({ where: { email: normalizedEmail } });
+    if (!user) {
+      // Shouldn't happen — the OTP existed for this email a moment ago.
+      return sendError(res, HTTP_STATUS.INTERNAL_SERVER_ERROR, RESPONSE_MESSAGES.SERVER_ERROR);
+    }
 
-    return sendSuccess(res, 'Email verified successfully. You can now sign in.');
+    emailService.sendWelcomeEmail(normalizedEmail, user.firstName ?? undefined).catch(() => {});
+
+    // Auto-login: issue session tokens (same shape as /auth/login) so the
+    // just-verified user lands authenticated instead of bouncing to /login.
+    const tokens = await AuthService.generateTokens(user, req.ip || '', req.get('user-agent') || '');
+    await user.update({ lastLoginAt: new Date() });
+    setAuthCookie(res, 'lot_r1', tokens.refreshToken, req);
+
+    const profile = await db.Profile.findOne({ where: { userId: user.id } });
+
+    return sendSuccess(res, 'Email verified successfully.', {
+      user: formatUserResponse(user),
+      profile: profile ? profile.get({ plain: true }) : null,
+      tokens,
+      accountType: user.accountType ?? pending.accountType ?? null,
+    });
   });
 
   resendVerification = asyncHandler(async (req: Request, res: Response) => {
-    const { email } = req.body;
-
-    if (!email) {
-      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Email is required');
+    // Email comes from the signed session cookie — no body, nothing in the URL.
+    const pending = readPendingVerification(req);
+    if (!pending) {
+      return sendError(res, HTTP_STATUS.CONFLICT, 'Session expired, please register again');
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Please provide a valid email address');
-    }
+    const normalizedEmail = pending.email.toLowerCase().trim();
 
-    // Always return the same message — don't reveal whether the email exists
+    // Always return the same message — don't reveal whether the email exists.
     const message = 'If your account exists and is unverified, a new code has been sent.';
 
-    const userExists = await AuthService.checkUserExists(email.toLowerCase().trim());
+    const userExists = await AuthService.checkUserExists(normalizedEmail);
     if (!userExists) return sendSuccess(res, message);
 
-    const result = await OTPService.generateOTP(email.toLowerCase().trim(), 'verification');
+    const result = await OTPService.generateOTP(normalizedEmail, 'verification');
     if (!result.success) return sendSuccess(res, message); // rate limited — still 200
 
     return sendSuccess(res, message);

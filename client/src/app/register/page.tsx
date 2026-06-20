@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
 import { useMemo, useState } from "react";
 import { useToastContext } from "@/context/ToastContext";
+import { useGoogleAuth, useRegister } from "@/features/auth";
+import { redirectPathForRole } from "@/lib/authRedirect";
 import { accountStepSchema } from "@/lib/validations/auth";
-import { useRegister } from "@/features/auth";
 import "./signup.css";
 
 type AccountType = "employer" | "worker";
@@ -75,6 +76,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const register = useRegister();
   const isLoading = register.isPending;
+  const { googleSignIn, isLoading: googleLoading } = useGoogleAuth();
   const { error: toastError } = useToastContext();
 
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
@@ -165,6 +167,23 @@ export default function RegisterPage() {
     }
   };
 
+  const onGoogle = async () => {
+    try {
+      const session = await googleSignIn();
+      if (!session) return; // popup closed
+      const user = session.backendUser ?? null;
+      const profile = session.backendProfile ?? null;
+      // Brand-new Google users have isOnboarded=false → pick worker/employer.
+      if (!user || !user.isOnboarded) {
+        router.push("/setup");
+      } else {
+        router.push(redirectPathForRole(user, profile));
+      }
+    } catch (err) {
+      toastError(err instanceof Error ? err.message : "Google sign-in failed");
+    }
+  };
+
   const inputClass = (k: string, extra = "") =>
     `input${errors[k] ? " error" : ""}${extra}`;
 
@@ -195,7 +214,8 @@ export default function RegisterPage() {
             <button
               type="button"
               className="btn-google"
-              onClick={() => toastError("Google sign-up is coming soon")}
+              onClick={onGoogle}
+              disabled={googleLoading}
             >
               <svg
                 viewBox="0 0 24 24"
@@ -613,11 +633,7 @@ export default function RegisterPage() {
               type="button"
               className="btn-next"
               style={{ width: "100%" }}
-              onClick={() =>
-                router.push(
-                  `/verify-email?email=${encodeURIComponent(form.email.trim().toLowerCase())}&accountType=${accountType ?? "worker"}`,
-                )
-              }
+              onClick={() => router.push("/verify-email")}
             >
               Go to dashboard →
             </button>
