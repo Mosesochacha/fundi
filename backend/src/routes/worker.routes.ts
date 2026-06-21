@@ -2,6 +2,7 @@ import { Router } from 'express';
 import WorkerController from '../controllers/worker.controller';
 import WorkerSettingsController from '../controllers/workerSettings.controller';
 import WorkerRequestsController from '../controllers/workerRequests.controller';
+import WorkerDashboardController from '../controllers/workerDashboard.controller';
 import verifyJWT from '../middleware/verifyJWT';
 import { uploadAvatar } from '../middleware/upload';
 
@@ -13,6 +14,9 @@ router.get('/browse/workers', WorkerController.browseWorkers);
 // Authenticated own-profile read — MUST be registered before the public
 // `/worker/:id/profile` route so "me" isn't captured as an :id.
 router.get('/worker/me/profile', verifyJWT, WorkerController.getMyProfile);
+
+// Dashboard home aggregate.
+router.get('/worker/dashboard', verifyJWT, WorkerDashboardController.getDashboard);
 
 // Public worker profile (employer view) — by profile id or username.
 router.get('/worker/:id/profile', WorkerController.getProfile);
