@@ -1,31 +1,11 @@
-import db from '../models';
+import 'dotenv/config'; // must precede typesense.service (reads env at construction)
 import typesenseService from '../services/typesense.service';
+import { reindexProfiles } from '../jobs/reindex';
 
 async function main() {
   await typesenseService.setup();
-
-  const profiles = await (db as any).Profile.findAll();
-
-  console.log(`Indexing ${profiles.length} profiles...`);
-  for (const profile of profiles) {
-    const p = profile.get({ plain: true });
-    await typesenseService.upsertProfile({
-      id:           p.id,
-      fullName:     p.fullName,
-      username:     p.username,
-      profession:   p.profession,
-      location:     p.location,
-      bio:          p.bio          || '',
-      services:     p.services     || [],
-      avatarUrl:    p.avatarUrl    || '',
-      theme:        p.theme        || '',
-      profileViews: p.views        || 0,
-      isPublished:  true,
-      createdAt:    new Date(p.createdAt).getTime(),
-    });
-    console.log(`  indexed: ${p.id} [@${p.username}]`);
-  }
-  console.log('Done.');
+  const count = await reindexProfiles();
+  console.log(`Done. Indexed ${count} profiles.`);
   process.exit(0);
 }
 
