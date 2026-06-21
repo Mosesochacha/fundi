@@ -10,7 +10,9 @@
     "migrate:undo": "NODE_OPTIONS=--no-network-family-autoselection npx sequelize db:migrate:undo",
     "migrate:undo:all": "NODE_OPTIONS=--no-network-family-autoselection npx sequelize db:migrate:undo:all",
     "seed": "NODE_OPTIONS=--no-network-family-autoselection npx sequelize db:seed:all",
-    "db:reset": "npm run migrate:undo:all && npm run migrate && npm run seed"
+    "db:reset": "npm run migrate:undo:all && npm run migrate && npm run seed",
+    "reindex:posts": "NODE_OPTIONS=--no-network-family-autoselection ts-node --transpile-only src/scripts/reindex-posts.ts",
+    "reindex:profiles": "NODE_OPTIONS=--no-network-family-autoselection ts-node --transpile-only src/scripts/reindex-profiles.ts"
   },
   "dependencies": {
     "@sentry/node": "^8.55.2",
