@@ -19,7 +19,9 @@ const AUTH_PATHS = [
 const FULL_CONTENT_PATHS = ["/settings", "/messages"];
 const SETUP_PATHS = ["/setup"];
 // Pages that ship their own marketing chrome (LandingNav) — render bare.
-const BARE_PATHS = ["/", "/browse"];
+// /logout is bare too: it just signs out and redirects, so it should never
+// show the app chrome.
+const BARE_PATHS = ["/", "/browse", "/logout"];
 // Role dashboards provide their own chrome via the dashboard <Shell>.
 const DASHBOARD_PATHS = ["/worker", "/employer", "/admin", "/moderator"];
 
