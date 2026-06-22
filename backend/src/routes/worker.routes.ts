@@ -3,6 +3,7 @@ import WorkerController from '../controllers/worker.controller';
 import WorkerSettingsController from '../controllers/workerSettings.controller';
 import WorkerRequestsController from '../controllers/workerRequests.controller';
 import WorkerDashboardController from '../controllers/workerDashboard.controller';
+import WorkerReviewsController from '../controllers/workerReviews.controller';
 import verifyJWT from '../middleware/verifyJWT';
 import { uploadAvatar } from '../middleware/upload';
 
@@ -17,6 +18,9 @@ router.get('/worker/me/profile', verifyJWT, WorkerController.getMyProfile);
 
 // Dashboard home aggregate.
 router.get('/worker/dashboard', verifyJWT, WorkerDashboardController.getDashboard);
+
+// Reviews page aggregate.
+router.get('/worker/reviews', verifyJWT, WorkerReviewsController.getReviews);
 
 // Public worker profile (employer view) — by profile id or username.
 router.get('/worker/:id/profile', WorkerController.getProfile);
