@@ -27,9 +27,6 @@ const ROLE_GATED: Record<string, AppRole> = {
 /** Any authenticated user. (`/worker/[id]` stays public — it's a profile view.) */
 const AUTH_REQUIRED = [
   "/setup",
-  "/settings",
-  "/post",
-  "/messages",
   "/worker/profile",
 ];
 
@@ -84,9 +81,6 @@ export default auth((req) => {
 export const config = {
   matcher: [
     "/setup/:path*",
-    "/settings/:path*",
-    "/post/:path*",
-    "/messages/:path*",
     "/worker/profile/:path*",
     "/worker/dashboard/:path*",
     "/worker/messages/:path*",

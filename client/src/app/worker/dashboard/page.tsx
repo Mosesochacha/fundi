@@ -84,7 +84,7 @@ export default function WorkerDashboardPage() {
     const username = profile?.username;
     const url =
       typeof window !== "undefined"
-        ? `${window.location.origin}/profile/${username ?? ""}`
+        ? `${window.location.origin}/worker/${username ?? ""}`
         : "";
     if (typeof navigator !== "undefined" && navigator.share) {
       navigator.share({ title: `${name} on Fundi`, url }).catch(() => {});
