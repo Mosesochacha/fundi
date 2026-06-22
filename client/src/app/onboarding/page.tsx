@@ -28,7 +28,7 @@ const initialsOf = (n: string) =>
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { data: session, status, update } = useSession();
+  const { data: session, status } = useSession();
   const { user, isLoading } = useAuth();
   const { error: toastError } = useToastContext();
   const workerOnb = useWorkerOnboarding();
@@ -69,7 +69,8 @@ export default function OnboardingPage() {
         location: wLocation.trim(),
         dailyRate: dailyRate ? Number(dailyRate.replace(/[^0-9]/g, "")) : undefined,
       });
-      await update(); // refresh JWT so middleware sees isProfileComplete=true
+      // JWT auto-heals in the auth jwt callback (re-pulls /auth/me while the
+      // cached user is incomplete), so middleware lets the dashboard through.
       router.push("/worker/dashboard?welcome=true");
     } catch {
       toastError("Could not complete setup. Please try again.");
@@ -82,7 +83,6 @@ export default function OnboardingPage() {
         location: eLocation.trim(),
         interestedTrades: interested,
       });
-      await update();
       router.push("/employer/dashboard?welcome=true");
     } catch {
       toastError("Could not complete setup. Please try again.");
