@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleCheck } from "lucide-react";
+import { CircleCheck, Home, Wrench } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
@@ -36,15 +36,11 @@ export default function OnboardingPage() {
 
   const [step, setStep] = useState<1 | 2>(1);
   const [role, setRole] = useState<"worker" | "employer" | null>(null);
-
-  // Worker fields
   const [trade, setTrade] = useState("");
   const [wLocation, setWLocation] = useState("");
   const [dailyRate, setDailyRate] = useState("");
-  // Employer fields
   const [eLocation, setELocation] = useState("");
   const [interested, setInterested] = useState<string[]>([]);
-  // Shared
   const [terms, setTerms] = useState(false);
 
   // Guard: not signed in → login; already complete → dashboard.
@@ -73,7 +69,7 @@ export default function OnboardingPage() {
         location: wLocation.trim(),
         dailyRate: dailyRate ? Number(dailyRate.replace(/[^0-9]/g, "")) : undefined,
       });
-      await update(); // refresh the JWT so middleware sees isProfileComplete=true
+      await update(); // refresh JWT so middleware sees isProfileComplete=true
       router.push("/worker/dashboard?welcome=true");
     } catch {
       toastError("Could not complete setup. Please try again.");
@@ -86,7 +82,7 @@ export default function OnboardingPage() {
         location: eLocation.trim(),
         interestedTrades: interested,
       });
-      await update(); // refresh the JWT so middleware sees isProfileComplete=true
+      await update();
       router.push("/employer/dashboard?welcome=true");
     } catch {
       toastError("Could not complete setup. Please try again.");
@@ -102,23 +98,32 @@ export default function OnboardingPage() {
         <div className="ob-progress-fill" style={{ width: `${progress}%` }} />
       </div>
 
+      <div className="ob-logo">
+        Fundi<em>.</em>
+      </div>
+      <p className="ob-tagline">Hire skilled workers. Anywhere. Instantly.</p>
+
       <div className="ob-card">
+        <div className="ob-step">
+          Step {step} of 2 — {step === 1 ? "Almost there" : "Last step"}
+        </div>
+
+        {/* Google prefill banner */}
+        <div className="ob-prefill">
+          <span className="ob-avatar">{initialsOf(name)}</span>
+          <div className="ob-prefill-who">
+            <span className="ob-prefill-name">{name}</span>
+            <span className="ob-prefill-email">{email}</span>
+          </div>
+          <span className="ob-verified">
+            <CircleCheck size={9} /> Google verified
+          </span>
+        </div>
+
         {step === 1 && (
           <>
-            <h1 className="ob-title">Welcome to Fundi</h1>
-            <p className="ob-sub">Let&apos;s set up your account. First, how will you use Fundi?</p>
-
-            {/* Google prefill banner */}
-            <div className="ob-prefill">
-              <span className="ob-avatar">{initialsOf(name)}</span>
-              <div className="ob-prefill-who">
-                <span className="ob-prefill-name">{name}</span>
-                <span className="ob-prefill-email">{email}</span>
-              </div>
-              <span className="ob-verified">
-                <CircleCheck size={11} /> Google verified
-              </span>
-            </div>
+            <h1 className="ob-title">How will you use Fundi?</h1>
+            <p className="ob-sub">Choose your role. You can&apos;t change this later.</p>
 
             <div className="ob-roles">
               <button
@@ -126,7 +131,9 @@ export default function OnboardingPage() {
                 className={`ob-role${role === "worker" ? " selected" : ""}`}
                 onClick={() => setRole("worker")}
               >
-                <span className="ob-role-emoji">🔧</span>
+                <span className="ob-role-icon">
+                  <Wrench size={20} />
+                </span>
                 <div className="ob-role-title">I am a fundi</div>
                 <div className="ob-role-sub">I offer skilled services and want to find work</div>
               </button>
@@ -135,7 +142,9 @@ export default function OnboardingPage() {
                 className={`ob-role${role === "employer" ? " selected" : ""}`}
                 onClick={() => setRole("employer")}
               >
-                <span className="ob-role-emoji">🏠</span>
+                <span className="ob-role-icon">
+                  <Home size={20} />
+                </span>
                 <div className="ob-role-title">I need a fundi</div>
                 <div className="ob-role-sub">I want to hire skilled workers for jobs</div>
               </button>
@@ -206,7 +215,7 @@ export default function OnboardingPage() {
             </label>
 
             <button type="button" className="ob-btn" disabled={!workerValid || saving} onClick={submitWorker}>
-              <CircleCheck size={16} /> {saving ? "Creating…" : "Create my account"}
+              <CircleCheck size={15} /> {saving ? "Creating…" : "Create my account"}
             </button>
             <button type="button" className="ob-back" onClick={() => setStep(1)}>← Back</button>
           </>
@@ -254,11 +263,15 @@ export default function OnboardingPage() {
             </label>
 
             <button type="button" className="ob-btn" disabled={!employerValid || saving} onClick={submitEmployer}>
-              <CircleCheck size={16} /> {saving ? "Creating…" : "Create my account"}
+              <CircleCheck size={15} /> {saving ? "Creating…" : "Create my account"}
             </button>
             <button type="button" className="ob-back" onClick={() => setStep(1)}>← Back</button>
           </>
         )}
+      </div>
+
+      <div className="ob-footer">
+        © 2026 Fundi · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a>
       </div>
     </div>
   );
