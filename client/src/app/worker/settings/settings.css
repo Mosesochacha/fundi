@@ -9,7 +9,6 @@
   gap: 20px;
   font-family: var(--dm);
   color: var(--ink2);
-  max-width: 860px;
 }
 
 /* ── Page header ──────────────────────────────────────────────────────────── */
@@ -31,82 +30,7 @@
   margin: 0;
 }
 
-/* ── Left navigation ──────────────────────────────────────────────────────── */
-.ws-nav {
-  align-self: start;
-  position: sticky;
-  top: 0;
-  background: #fff;
-  border: 0.5px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
-}
-.ws-nav-head {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink3);
-  padding: 14px 16px;
-  border-bottom: 0.5px solid var(--border);
-}
-.ws-navitem {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  text-align: left;
-  background: none;
-  border: none;
-  border-left: 2px solid transparent;
-  border-bottom: 0.5px solid var(--cream2);
-  padding: 10px 14px;
-  font-family: var(--dm);
-  font-size: 13px;
-  color: var(--ink2);
-  cursor: pointer;
-  transition:
-    background 0.15s,
-    color 0.15s;
-}
-.ws-navitem:last-child {
-  border-bottom: none;
-}
-.ws-navitem:hover {
-  background: var(--cream);
-  color: var(--ink);
-}
-.ws-navitem.active {
-  background: var(--gold-light);
-  color: var(--gold-dark);
-  border-left-color: var(--gold);
-}
-.ws-navitem svg {
-  flex-shrink: 0;
-}
-.ws-navlabel {
-  flex: 1;
-  min-width: 0;
-}
-.ws-nav-flag {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #dc2626;
-  color: #fff;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 16px;
-  text-align: center;
-  flex-shrink: 0;
-}
-
-/* Mobile select — hidden on desktop/tablet. */
-.ws-nav-select {
-  display: none;
-}
-
-/* ── Right column ─────────────────────────────────────────────────────────── */
+/* ── Panels column ────────────────────────────────────────────────────────── */
 .ws-panels {
   min-width: 0;
   display: flex;
@@ -651,50 +575,8 @@
 }
 
 /* ── Responsive ───────────────────────────────────────────────────────────── */
-/* Tablet: left nav collapses to a horizontal scrollable tab strip. */
-@media (max-width: 1023px) {
-  .ws {
-    grid-template-columns: 1fr;
-  }
-  .ws-nav {
-    position: static;
-    display: flex;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  .ws-nav-head {
-    display: none;
-  }
-  .ws-navitem {
-    border-left: none;
-    border-bottom: 2px solid transparent;
-    white-space: nowrap;
-  }
-  .ws-navitem.active {
-    border-left: none;
-    border-bottom-color: var(--gold);
-  }
-  .ws-navlabel {
-    flex: 0 0 auto;
-  }
-}
-
-/* Mobile: left nav becomes a dropdown select; save bar sticks to the bottom. */
+/* Mobile: stack the two-column field grid; save bar sticks to the bottom. */
 @media (max-width: 640px) {
-  .ws-nav {
-    display: none;
-  }
-  .ws-nav-select {
-    display: block;
-    width: 100%;
-    font-family: var(--dm);
-    font-size: 14px;
-    color: var(--ink);
-    padding: 11px 12px;
-    border: 0.5px solid var(--border);
-    border-radius: 10px;
-    background: #fff;
-  }
   .ws-grid2 {
     grid-template-columns: 1fr;
   }
