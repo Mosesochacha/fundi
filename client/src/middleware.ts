@@ -26,7 +26,6 @@ const ROLE_GATED: Record<string, AppRole> = {
 
 /** Any authenticated user. (`/worker/[id]` stays public — it's a profile view.) */
 const AUTH_REQUIRED = [
-  "/setup",
   "/worker/profile",
 ];
 
@@ -38,6 +37,9 @@ export default auth((req) => {
   const path = nextUrl.pathname;
   const session = req.auth;
   const role = session?.user?.role;
+  // OAuth users sign in before choosing worker/employer — they must finish
+  // /onboarding before reaching any role area.
+  const complete = !!session?.backendUser?.isProfileComplete;
 
   const toLogin = () => {
     const url = nextUrl.clone();
@@ -51,16 +53,31 @@ export default auth((req) => {
     url.search = "";
     return NextResponse.redirect(url);
   };
+  const toOnboarding = () => {
+    const url = nextUrl.clone();
+    url.pathname = "/onboarding";
+    url.search = "";
+    return NextResponse.redirect(url);
+  };
+
+  // The onboarding completion flow — logged in, but no role check.
+  if (matches(path, "/onboarding")) {
+    if (!session) return toLogin();
+    if (complete) return toDashboard();
+    return NextResponse.next();
+  }
 
   // Already signed in → keep them out of the auth screens.
   if (AUTH_ONLY.some((p) => matches(path, p))) {
-    return session ? toDashboard() : NextResponse.next();
+    if (!session) return NextResponse.next();
+    return complete ? toDashboard() : toOnboarding();
   }
 
   // Role-gated dashboard areas.
   for (const [prefix, needed] of Object.entries(ROLE_GATED)) {
     if (matches(path, prefix)) {
       if (!session) return toLogin();
+      if (!complete) return toOnboarding();
       if (role !== needed) return toDashboard();
       return NextResponse.next();
     }
@@ -69,6 +86,7 @@ export default auth((req) => {
   // Authenticated-only areas.
   if (AUTH_REQUIRED.some((p) => matches(path, p))) {
     if (!session) return toLogin();
+    if (!complete) return toOnboarding();
     if (matches(path, "/worker/profile") && role !== "worker") {
       return toDashboard();
     }
@@ -80,7 +98,7 @@ export default auth((req) => {
 
 export const config = {
   matcher: [
-    "/setup/:path*",
+    "/onboarding",
     "/worker/profile/:path*",
     "/worker/dashboard/:path*",
     "/worker/messages/:path*",

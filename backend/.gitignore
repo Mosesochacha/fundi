@@ -4,3 +4,7 @@ logs/
 .env
 *.log
 uploads/
+
+# Firebase service-account keys (never commit)
+*firebase-adminsdk*.json
+*-service-account*.json

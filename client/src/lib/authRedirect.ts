@@ -40,8 +40,8 @@ export function dashboardPathForRole(role: AppRole | undefined): string {
 /**
  * Where a user should land after authenticating — their role-based dashboard.
  *
- * Callers should always check `user.isOnboarded` first and send un-onboarded
- * users to /setup; this helper assumes the account is ready to use.
+ * Callers should always check `user.isProfileComplete` first and send
+ * incomplete users to /onboarding; this helper assumes the account is ready.
  */
 export function redirectPathForRole(
   user: AuthUser,

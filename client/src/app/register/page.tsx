@@ -173,9 +173,9 @@ export default function RegisterPage() {
       if (!session) return; // popup closed
       const user = session.backendUser ?? null;
       const profile = session.backendProfile ?? null;
-      // Brand-new Google users have isOnboarded=false → pick worker/employer.
-      if (!user || !user.isOnboarded) {
-        router.push("/setup");
+      // Brand-new Google users have isProfileComplete=false → finish onboarding.
+      if (!user || !user.isProfileComplete) {
+        router.push("/onboarding");
       } else {
         router.push(redirectPathForRole(user, profile));
       }

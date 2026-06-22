@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Shell from "@/components/dashboard/Shell";
+import WelcomeToast from "@/components/WelcomeToast";
 import { useAuth } from "@/features/auth";
 
 const initialsOf = (n: string) =>
@@ -26,6 +27,7 @@ export default function EmployerDashboardPage() {
   return (
     // biome-ignore lint/a11y/useValidAriaRole: `role` is a Shell prop, not an ARIA attribute
     <Shell role="employer" user={shellUser} currentPath={pathname}>
+      <WelcomeToast role="employer" firstName={name.split(" ")[0]} />
       <div style={{ padding: 24 }}>
         <h1 style={{ fontSize: 22, fontWeight: 700, color: "#1c1410" }}>
           Welcome back{name ? `, ${name.split(" ")[0]}` : ""}
