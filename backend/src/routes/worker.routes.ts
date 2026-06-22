@@ -5,7 +5,7 @@ import WorkerRequestsController from '../controllers/workerRequests.controller';
 import WorkerDashboardController from '../controllers/workerDashboard.controller';
 import WorkerReviewsController from '../controllers/workerReviews.controller';
 import verifyJWT from '../middleware/verifyJWT';
-import { uploadAvatar } from '../middleware/upload';
+import { uploadAvatar, uploadWork } from '../middleware/upload';
 
 const router = Router();
 
@@ -31,6 +31,7 @@ router.patch('/worker/profile/services', verifyJWT, WorkerController.updateServi
 router.patch('/worker/profile/rate', verifyJWT, WorkerController.updateRate);
 router.patch('/worker/profile/service-area', verifyJWT, WorkerController.updateServiceArea);
 
+router.post('/worker/profile/photos/upload', verifyJWT, uploadWork, WorkerController.uploadWorkPhoto);
 router.post('/worker/profile/photos', verifyJWT, WorkerController.addPhoto);
 router.delete('/worker/profile/photos/:photoId', verifyJWT, WorkerController.deletePhoto);
 

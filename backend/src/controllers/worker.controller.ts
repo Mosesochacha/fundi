@@ -5,6 +5,7 @@ import db from '../models';
 import { AuthenticatedRequest } from '../middleware/verifyJWT';
 import { sendSuccess, sendError, asyncHandler } from '../utils/helpers';
 import { HTTP_STATUS } from '../utils/constants';
+import { getFileUrl } from '../middleware/upload';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -259,6 +260,14 @@ class WorkerController {
   });
 
   // ── Portfolio ────────────────────────────────────────────────────────────────
+  // POST /worker/profile/photos/upload — upload a work image, return its URL.
+  // The client then creates the portfolio item with this URL via addPhoto.
+  uploadWorkPhoto = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.file) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'No image uploaded');
+    const url = getFileUrl(req.file.filename, 'work');
+    return sendSuccess(res, 'Image uploaded', { url });
+  });
+
   addPhoto = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const { url, caption, jobType, isBefore, afterPhotoId } = req.body;
     if (!caption || typeof caption !== 'string') return sendError(res, HTTP_STATUS.BAD_REQUEST, 'caption is required');

@@ -6,6 +6,7 @@ import {
   CircleCheck,
   CircleDashed,
   GraduationCap,
+  ImagePlus,
   MapPin,
   MessageSquare,
   Pencil,
@@ -17,7 +18,7 @@ import {
   X,
   ZoomIn,
 } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useToastContext } from "@/context/ToastContext";
 import {
   useUpdateAbout,
@@ -25,7 +26,11 @@ import {
   useUpdateRate,
   useUpdateServiceArea,
 } from "@/features/worker/profile";
-import { useAddPhoto, useDeletePhoto } from "@/features/worker/portfolio";
+import {
+  useAddPhoto,
+  useDeletePhoto,
+  useUploadPhoto,
+} from "@/features/worker/portfolio";
 import {
   useAddExperience,
   useDeleteExperience,
@@ -883,10 +888,16 @@ export default function WorkerProfile({
 
 // ── Inline add forms ────────────────────────────────────────────────────────
 
-function FormButtons({ onCancel }: { onCancel: () => void }) {
+function FormButtons({
+  onCancel,
+  disabled,
+}: {
+  onCancel: () => void;
+  disabled?: boolean;
+}) {
   return (
     <div className="wp-editrow">
-      <button type="submit" className="wp-btn wp-btn-sm">
+      <button type="submit" className="wp-btn wp-btn-sm" disabled={disabled}>
         Save
       </button>
       <button type="button" className="wp-link" onClick={onCancel}>
@@ -907,6 +918,22 @@ function PhotoForm({
   const [jobType, setJobType] = useState("");
   const [url, setUrl] = useState("");
   const [isBefore, setIsBefore] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const upload = useUploadPhoto();
+  const { error: toastError } = useToastContext();
+
+  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow re-selecting the same file
+    if (!file) return;
+    try {
+      const res = await upload.mutateAsync(file);
+      setUrl(res.data?.data?.url ?? "");
+    } catch {
+      toastError("Could not upload image. Please try again.");
+    }
+  }
+
   return (
     <form
       className="wp-form"
@@ -921,6 +948,40 @@ function PhotoForm({
           });
       }}
     >
+      {/* Image uploader */}
+      {url ? (
+        <div className="wp-upload-preview">
+          <div
+            className="wp-upload-img"
+            style={{ backgroundImage: `url(${url})` }}
+          />
+          <button
+            type="button"
+            className="wp-link"
+            onClick={() => setUrl("")}
+          >
+            Remove photo
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          className="wp-upload-btn"
+          onClick={() => fileRef.current?.click()}
+          disabled={upload.isPending}
+        >
+          <ImagePlus size={18} />
+          {upload.isPending ? "Uploading…" : "Upload a work photo"}
+        </button>
+      )}
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        hidden
+        onChange={onFile}
+      />
+
       <div className="wp-form-row">
         <input
           className="wp-input"
@@ -935,12 +996,6 @@ function PhotoForm({
           onChange={(e) => setJobType(e.target.value)}
         />
       </div>
-      <input
-        className="wp-input"
-        placeholder="Image URL (optional)"
-        value={url}
-        onChange={(e) => setUrl(e.target.value)}
-      />
       <label className="wp-check todo" style={{ cursor: "pointer" }}>
         <input
           type="checkbox"
@@ -950,7 +1005,7 @@ function PhotoForm({
         />{" "}
         This is a “before” photo
       </label>
-      <FormButtons onCancel={onCancel} />
+      <FormButtons onCancel={onCancel} disabled={upload.isPending} />
     </form>
   );
 }

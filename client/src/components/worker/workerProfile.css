@@ -829,6 +829,48 @@
   border: 1px solid var(--border);
   border-radius: 10px;
 }
+
+/* Portfolio image uploader */
+.wp-upload-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 22px 12px;
+  border: 1.5px dashed var(--border);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink2);
+  font-family: var(--dm);
+  font-size: 13px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
+}
+.wp-upload-btn:hover:not(:disabled) {
+  border-color: var(--gold);
+  color: var(--gold-dark);
+}
+.wp-upload-btn:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+.wp-upload-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+.wp-upload-img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 10px;
+  background: var(--cream2);
+  background-size: cover;
+  background-position: center;
+}
 .wp-form-row {
   display: flex;
   gap: 8px;

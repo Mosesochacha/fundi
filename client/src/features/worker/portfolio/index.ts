@@ -15,6 +15,12 @@ export const portfolioService = {
     client.post("/worker/profile/photos", data),
   deletePhoto: (photoId: string) =>
     client.delete(`/worker/profile/photos/${photoId}`),
+  // Upload an image file; returns { url } to attach to a new portfolio item.
+  uploadPhoto: (file: File) => {
+    const fd = new FormData();
+    fd.append("work", file);
+    return client.post("/worker/profile/photos/upload", fd);
+  },
 };
 
 const invalidate = (qc: ReturnType<typeof useQueryClient>) =>
@@ -25,6 +31,12 @@ export function useAddPhoto() {
   return useMutation({
     mutationFn: (data: AddPhotoInput) => portfolioService.addPhoto(data),
     onSuccess: () => invalidate(qc),
+  });
+}
+
+export function useUploadPhoto() {
+  return useMutation({
+    mutationFn: (file: File) => portfolioService.uploadPhoto(file),
   });
 }
 
