@@ -4,11 +4,31 @@
    All classes are prefixed `ws-` and scoped under `.ws`.
    ───────────────────────────────────────────────────────────────────────── */
 .ws {
-  display: grid;
-  grid-template-columns: 220px 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 20px;
   font-family: var(--dm);
   color: var(--ink2);
+  max-width: 860px;
+}
+
+/* ── Page header ──────────────────────────────────────────────────────────── */
+.ws-pagehead {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ws-pagetitle {
+  font-family: var(--fr);
+  font-size: 26px;
+  font-weight: 400;
+  color: var(--ink);
+  margin: 0;
+}
+.ws-pagesub {
+  font-size: 13px;
+  color: var(--ink3);
+  margin: 0;
 }
 
 /* ── Left navigation ──────────────────────────────────────────────────────── */
