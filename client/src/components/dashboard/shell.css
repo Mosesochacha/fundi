@@ -149,19 +149,20 @@
 }
 .dash-bell {
   position: relative;
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  border: 0.5px solid var(--border);
-  background: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--ink2);
   cursor: pointer;
+  transition: background 0.15s;
 }
 .dash-bell:hover {
-  border-color: var(--gold);
+  background: var(--cream);
 }
 .dash-dot {
   position: absolute;
@@ -180,26 +181,22 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  border: 0.5px solid var(--border);
-  background: var(--cream);
-  border-radius: 8px;
-  padding: 6px 10px;
+  border: none;
+  background: transparent;
+  border-radius: 999px;
+  padding: 4px 6px;
   cursor: pointer;
   font-family: var(--dm);
-  transition:
-    border-color 0.15s,
-    background 0.15s;
+  transition: background 0.15s;
 }
 .dash-userpill:hover {
-  border-color: var(--gold);
-  background: var(--gold-light);
+  background: var(--cream);
 }
 .dash-avatar {
   width: 34px;
   height: 34px;
   border-radius: 50%;
   background: var(--gold-light);
-  border: 1.5px solid rgba(201, 168, 76, 0.3);
   color: var(--gold-dark);
   font-size: 11px;
   font-weight: 600;
