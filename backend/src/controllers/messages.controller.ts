@@ -4,22 +4,49 @@ import { AuthenticatedRequest } from '../middleware/verifyJWT';
 import db from '../models';
 import { sendSuccess, sendError, asyncHandler } from '../utils/helpers';
 import { HTTP_STATUS } from '../utils/constants';
-import { getIo } from '../middleware/websocket';
+import { getIo, isUserOnline } from '../middleware/websocket';
 
 const SENDER_ATTRS = ['id', 'fullName', 'avatarUrl', 'username'];
+
+// Deterministic avatar colour from a name, so the same person is always the same hue.
+const AVATAR_COLORS = ['#c9a84c', '#0d1b2a', '#3b7d6e', '#9c5b3b', '#5a4b8a', '#a8872e', '#2f6f9e'];
+
+function initialsOf(name: string): string {
+  const parts = (name || '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '?';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function avatarColorOf(name: string): string {
+  const seed = (name || '?').split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  return AVATAR_COLORS[seed % AVATAR_COLORS.length];
+}
 
 class MessagesController {
   getConversations = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const profileId = req.user?.profileId;
     if (!profileId) return sendError(res, HTTP_STATUS.UNAUTHORIZED, 'Unauthorized');
 
+    const participantInclude = (as: string) => ({
+      model: db.Profile,
+      as,
+      attributes: [...SENDER_ATTRS, 'userId', 'profession', 'location'],
+      include: [{ model: db.User, as: 'user', attributes: ['accountType'] }],
+    });
+
     const conversations = await (db as any).Conversation.findAll({
       where: {
         [Op.or]: [{ participant1Id: profileId }, { participant2Id: profileId }],
       },
       include: [
-        { model: db.Profile, as: 'participant1', attributes: SENDER_ATTRS },
-        { model: db.Profile, as: 'participant2', attributes: SENDER_ATTRS },
+        participantInclude('participant1'),
+        participantInclude('participant2'),
+        {
+          model: (db as any).JobRequest,
+          as: 'linkedJob',
+          attributes: ['id', 'title', 'location', 'scheduledAt', 'status'],
+        },
         {
           model: (db as any).Message,
           as: 'messages',
@@ -39,7 +66,28 @@ class MessagesController {
         const unreadCount = await (db as any).Message.count({
           where: { conversationId: c.id, senderId: { [Op.ne]: profileId }, readAt: null },
         });
-        return { ...c, other, lastMessage, unreadCount };
+        return {
+          id: c.id,
+          participant: {
+            id: other?.id,
+            userId: other?.userId ?? null,
+            name: other?.fullName ?? 'Unknown',
+            initials: initialsOf(other?.fullName),
+            role: other?.user?.accountType ?? null,
+            isOnline: isUserOnline(other?.userId),
+            avatarColor: avatarColorOf(other?.fullName),
+          },
+          lastMessage: lastMessage
+            ? {
+                content: lastMessage.content,
+                createdAt: lastMessage.createdAt,
+                isRead: !!lastMessage.readAt,
+                senderId: lastMessage.senderId,
+              }
+            : null,
+          unreadCount,
+          linkedJob: c.linkedJob ?? undefined,
+        };
       })
     );
 

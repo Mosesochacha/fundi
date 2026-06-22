@@ -53,6 +53,34 @@ export const generateProfile = async ({ fullName, profession, location, yearsExp
   };
 };
 
+/**
+ * Free-text "find a fundi" helper. The customer describes their job; we tell
+ * them which trade they need, what to look for, and a question or two to ask.
+ * Returns plain text (no JSON), kept short for the Ask-AI modal.
+ */
+export const findFundi = async (jobDescription: string): Promise<string> => {
+  const trades =
+    'Plumber, Electrician, Carpenter, Painter, Mason, Welder, Mechanic, Gardener, Cleaner, House help, AC Technician, Solar Technician, Tiler, Chef';
+
+  const completion = await getGroq().chat.completions.create({
+    model: 'llama-3.1-8b-instant',
+    messages: [
+      {
+        role: 'system',
+        content: `You are Fundi's friendly assistant, helping a customer find the right tradesperson (a "fundi"). Available trades: ${trades}. In 3 to 4 short sentences, tell the customer which trade they need, what to look for in a good fundi for that job, and one or two useful questions to ask before hiring. Be warm and concise. Do not invent specific prices. Return only the advice as plain text, no preamble.`,
+      },
+      {
+        role: 'user',
+        content: `The customer describes their job: "${jobDescription}". Which fundi do they need?`,
+      },
+    ],
+    temperature: 0.6,
+    max_tokens: 260,
+  });
+
+  return completion.choices[0].message.content?.trim() ?? '';
+};
+
 export const polishPost = async (roughText: string, profession: string, postType: string) => {
   const completion = await getGroq().chat.completions.create({
     model: 'llama-3.1-8b-instant',

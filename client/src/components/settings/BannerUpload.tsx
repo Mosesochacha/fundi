@@ -3,9 +3,7 @@
 import { useRef, useState } from "react";
 import { Camera, X } from "lucide-react";
 import { useToastContext } from "@/context/ToastContext";
-import { useAppSelector } from "@/store/hooks";
-
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:9000/api/v1";
+import client from "@/lib/axios";
 
 interface BannerUploadProps {
   bannerUrl?: string | null;
@@ -17,7 +15,6 @@ export default function BannerUpload({ bannerUrl, onSuccess, onRemove }: BannerU
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [removing, setRemoving] = useState(false);
-  const { accessToken } = useAppSelector((s) => s.auth);
   const { success, error } = useToastContext();
 
   const handleFile = async (file: File) => {
@@ -34,13 +31,8 @@ export default function BannerUpload({ bannerUrl, onSuccess, onRemove }: BannerU
     try {
       const formData = new FormData();
       formData.append("banner", file);
-      const res = await fetch(`${API}/photos/banner`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${accessToken}` },
-        credentials: "include",
-        body: formData,
-      });
-      const data = await res.json();
+      const res = await client.post("/photos/banner", formData);
+      const data = res.data;
       if (!data.success) throw new Error(data.message);
       onSuccess(data.data.bannerUrl);
       success("Banner updated");
@@ -54,12 +46,8 @@ export default function BannerUpload({ bannerUrl, onSuccess, onRemove }: BannerU
   const handleRemove = async () => {
     setRemoving(true);
     try {
-      const res = await fetch(`${API}/photos/banner`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${accessToken}` },
-        credentials: "include",
-      });
-      const data = await res.json();
+      const res = await client.delete("/photos/banner");
+      const data = res.data;
       if (!data.success) throw new Error(data.message);
       onRemove?.();
       success("Banner removed");

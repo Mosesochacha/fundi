@@ -3,13 +3,13 @@
 import posthog from "posthog-js";
 import { PostHogProvider as PHProvider } from "posthog-js/react";
 import { useEffect } from "react";
-import { useAppSelector } from "@/store/hooks";
+import { useAuth } from "@/features/auth";
 
 const POSTHOG_KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY;
 const POSTHOG_HOST = process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://app.posthog.com";
 
 function PostHogIdentifier() {
-  const { isLoggedIn, user } = useAppSelector((s) => s.auth);
+  const { isLoggedIn, user } = useAuth();
 
   useEffect(() => {
     if (isLoggedIn && user?.id) {

@@ -30,6 +30,10 @@ export class Profile extends Model<
   declare workPhotos: CreationOptional<string[] | null>;
   declare education: CreationOptional<object[] | null>;
   declare experience: CreationOptional<object[] | null>;
+  declare portfolio: CreationOptional<object[] | null>;
+  declare certifications: CreationOptional<object[] | null>;
+  declare serviceAreas: CreationOptional<string[] | null>;
+  declare isAvailable: CreationOptional<boolean>;
   // Notification preferences
   declare emailProfileViewed: CreationOptional<boolean>;
   declare emailNewFollower: CreationOptional<boolean>;
@@ -46,6 +50,13 @@ export class Profile extends Model<
   declare appearInSearch: CreationOptional<boolean>;
   declare allowComments: CreationOptional<boolean>;
   declare allowFollowers: CreationOptional<boolean>;
+  // Worker-settings privacy toggles (see /worker/settings)
+  declare showRate: CreationOptional<boolean>;
+  declare showOnline: CreationOptional<boolean>;
+  declare allowDirectMessages: CreationOptional<boolean>;
+  // Worker-settings JSON blobs (notifications + availability detail)
+  declare notificationSettings: CreationOptional<Record<string, unknown> | null>;
+  declare availabilitySettings: CreationOptional<Record<string, unknown> | null>;
   // Preferences
   declare language: CreationOptional<string>;
   declare country: CreationOptional<string>;
@@ -101,6 +112,10 @@ export function initModel(sequelize: Sequelize): typeof Profile {
       workPhotos: { type: DataTypes.JSON, allowNull: true, defaultValue: [] },
       education:  { type: DataTypes.JSON, allowNull: true, defaultValue: [] },
       experience: { type: DataTypes.JSON, allowNull: true, defaultValue: [] },
+      portfolio:  { type: DataTypes.JSON, allowNull: true, defaultValue: [] },
+      certifications: { type: DataTypes.JSON, allowNull: true, defaultValue: [] },
+      serviceAreas: { type: DataTypes.JSON, allowNull: true, defaultValue: [] },
+      isAvailable: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
       // Notification preferences
       emailProfileViewed: { type: DataTypes.BOOLEAN, defaultValue: true },
       emailNewFollower: { type: DataTypes.BOOLEAN, defaultValue: true },
@@ -117,6 +132,13 @@ export function initModel(sequelize: Sequelize): typeof Profile {
       appearInSearch: { type: DataTypes.BOOLEAN, defaultValue: true },
       allowComments: { type: DataTypes.BOOLEAN, defaultValue: true },
       allowFollowers: { type: DataTypes.BOOLEAN, defaultValue: true },
+      // Worker-settings privacy toggles
+      showRate: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
+      showOnline: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
+      allowDirectMessages: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
+      // Worker-settings JSON blobs
+      notificationSettings: { type: DataTypes.JSON, allowNull: true, defaultValue: null },
+      availabilitySettings: { type: DataTypes.JSON, allowNull: true, defaultValue: null },
       // Preferences
       language: { type: DataTypes.STRING(10), defaultValue: 'en' },
       country: { type: DataTypes.STRING(10), defaultValue: 'KE' },

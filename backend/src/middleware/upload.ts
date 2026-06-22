@@ -147,7 +147,7 @@ export const cleanupFile = (filePath: string): void => {
   } catch (error) {}
 };
 
-export const getFileUrl = (filename: string, type: 'avatar' | 'receipt' | 'document' | 'logo' | 'banner' | 'favicon' = 'avatar'): string => {
+export const getFileUrl = (filename: string, type: 'avatar' | 'receipt' | 'document' | 'logo' | 'banner' | 'favicon' | 'work' = 'avatar'): string => {
   const baseUrl = process.env.BASE_URL;
   let folder = 'avatars';
   
@@ -170,8 +170,11 @@ export const getFileUrl = (filename: string, type: 'avatar' | 'receipt' | 'docum
     case 'favicon':
       folder = 'favicons';
       break;
+    case 'work':
+      folder = 'work';
+      break;
   }
-  
+
   return `${baseUrl}/uploads/${folder}/${filename}`;
 };
 

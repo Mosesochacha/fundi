@@ -1,17 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { Check, CheckCircle, Copy } from "lucide-react";
 import Link from "next/link";
-import { Check, Copy, CheckCircle } from "lucide-react";
-import { useAppSelector } from "@/store/hooks";
+import { useState } from "react";
+import { useAuth } from "@/features/auth";
+import { dashboardPathForRole } from "@/lib/authRedirect";
 
-const CONFETTI_COLORS = ["#f97316", "#E05A2B", "#22c55e", "#2563eb", "#7c3aed", "#d97706"];
+const CONFETTI_COLORS = [
+  "#f97316",
+  "#E05A2B",
+  "#22c55e",
+  "#2563eb",
+  "#7c3aed",
+  "#d97706",
+];
 
 function Confetti() {
   const pieces = Array.from({ length: 20 }, (_, i) => ({
     id: i,
     color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-    left: `${5 + (i * 5) % 90}%`,
+    left: `${5 + ((i * 5) % 90)}%`,
     delay: `${(i * 0.15) % 2}s`,
     duration: `${1.5 + (i % 5) * 0.3}s`,
     size: 8 + (i % 4) * 4,
@@ -47,10 +55,12 @@ function Confetti() {
 }
 
 export default function SetupCompletePage() {
-  const { profile } = useAppSelector((s) => s.auth);
+  const { profile, role } = useAuth();
   const [copied, setCopied] = useState(false);
 
-  const url = profile?.username ? `fundi.co.ke/${profile.username}` : "fundi.co.ke/you";
+  const url = profile?.username
+    ? `fundi.co.ke/${profile.username}`
+    : "fundi.co.ke/you";
   const fullUrl = `https://${url}`;
 
   const copyUrl = async () => {
@@ -76,7 +86,9 @@ export default function SetupCompletePage() {
           <Check size={40} className="text-white" strokeWidth={3} />
         </div>
 
-        <h1 className="font-playfair text-4xl font-bold text-gray-900 mb-2">You&apos;re live!</h1>
+        <h1 className="font-playfair text-4xl font-bold text-gray-900 mb-2">
+          You&apos;re live!
+        </h1>
         <p className="text-gray-500 mb-4">Your profile is now live at:</p>
 
         {/* Profile URL */}
@@ -87,12 +99,20 @@ export default function SetupCompletePage() {
           style={{ color: "#f97316" }}
         >
           {url}
-          {copied
-            ? <CheckCircle size={18} className="text-green-500" />
-            : <Copy size={16} className="text-gray-400 group-hover:text-[#f97316] transition-colors" />
-          }
+          {copied ? (
+            <CheckCircle size={18} className="text-green-500" />
+          ) : (
+            <Copy
+              size={16}
+              className="text-gray-400 group-hover:text-[#f97316] transition-colors"
+            />
+          )}
         </button>
-        {copied && <p className="text-xs text-green-600 -mt-6 mb-4">Copied to clipboard!</p>}
+        {copied && (
+          <p className="text-xs text-green-600 -mt-6 mb-4">
+            Copied to clipboard!
+          </p>
+        )}
 
         {/* Actions */}
         <div className="w-full space-y-3">
@@ -117,7 +137,7 @@ export default function SetupCompletePage() {
           </button>
 
           <Link
-            href="/feed"
+            href={dashboardPathForRole(role)}
             className="block w-full text-center py-3 text-gray-500 text-sm hover:text-gray-700 transition-colors"
           >
             Go to my dashboard →

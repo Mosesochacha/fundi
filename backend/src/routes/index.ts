@@ -7,12 +7,15 @@ import likeRoutes from './like.routes';
 import commentRoutes from './comment.routes';
 import followRoutes from './follow.routes';
 import aiRoutes from './ai.routes';
+import aiPublicRoutes from './aiPublic.routes';
 import generateRoutes from './generate.routes';
 import settingsRoutes from './settings.routes';
 import sessionsRoutes from './sessions.routes';
 import photosRoutes from './photos.routes';
 import messagesRoutes from './messages.routes';
+import jobsRoutes from './jobs.routes';
 import searchRoutes from './search.routes';
+import workerRoutes from './worker.routes';
 import verifyJWT from '../middleware/verifyJWT';
 import { csrfProtection } from '../middleware/csrfProtection';
 
@@ -27,6 +30,10 @@ router.use(feedRoutes);
 router.use(postRoutes);
 router.use(commentRoutes);
 router.use(searchRoutes);
+// Worker profile — has its own per-route verifyJWT (public GET + auth'd mutations).
+router.use(workerRoutes);
+// Public "Ask AI" helper for /browse (rate-limited inside the router).
+router.use(aiPublicRoutes);
 
 // Routes below require JWT (verifyJWT is not duplicated on individual sub-routers).
 router.use(verifyJWT);
@@ -38,5 +45,6 @@ router.use(settingsRoutes);
 router.use(sessionsRoutes);
 router.use(photosRoutes);
 router.use(messagesRoutes);
+router.use(jobsRoutes);
 
 export default router;

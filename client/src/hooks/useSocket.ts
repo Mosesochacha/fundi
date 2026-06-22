@@ -2,18 +2,20 @@
 
 import { useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
-import { useAppSelector } from "@/store/hooks";
+import { useSession } from "next-auth/react";
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "") || "http://localhost:9000";
 
 let socket: Socket | null = null;
 
 export function useSocket() {
-  const { isLoggedIn, user } = useAppSelector((s) => s.auth);
+  const { data: session, status } = useSession();
+  const isLoggedIn = status === "authenticated";
+  const userId = session?.user?.id;
   const initialised = useRef(false);
 
   useEffect(() => {
-    if (!isLoggedIn || !user?.id || initialised.current) return;
+    if (!isLoggedIn || !userId || initialised.current) return;
     initialised.current = true;
 
     socket = io(SOCKET_URL, {
@@ -22,7 +24,7 @@ export function useSocket() {
     });
 
     socket.on("connect", () => {
-      socket?.emit("join", user.id);
+      socket?.emit("join", userId);
     });
 
     return () => {
@@ -30,7 +32,7 @@ export function useSocket() {
       socket = null;
       initialised.current = false;
     };
-  }, [isLoggedIn, user?.id]);
+  }, [isLoggedIn, userId]);
 
   return socket;
 }

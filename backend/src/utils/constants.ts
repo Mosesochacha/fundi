@@ -27,9 +27,13 @@ const normalizeExpiresIn = (value: string | undefined): string | number => {
 export const JWT_CONFIG = {
   SECRET: process.env.JWT_SECRET,
   REFRESH_SECRET: process.env.JWT_REFRESH_SECRET,
-  ACCESS_EXPIRES: normalizeExpiresIn(process.env.JWT_ACCESS_EXPIRES) || 10, 
+  ACCESS_EXPIRES: normalizeExpiresIn(process.env.JWT_ACCESS_EXPIRES) || 10,
   REFRESH_EXPIRES_DAYS: parseInt(process.env.JWT_REFRESH_EXPIRES_DAYS || "30", 10),
 };
+
+// Grace window during which a just-rotated refresh token may be reused without
+// failing — tolerates concurrent/duplicate refresh calls (multiple tabs, retries).
+export const REFRESH_GRACE_MS = 60_000;
 
 export const USER_ROLES = {
   FAN: "fan",

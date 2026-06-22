@@ -21,10 +21,13 @@ class OTPService {
   private readonly MAX_REQUESTS_PER_WINDOW = 3;
 
   /**
-   * Generate OTP code
+   * Generate a numeric OTP code of the given length.
+   * Password resets use 4 digits; email verification uses 6.
    */
-  private _generateOTPCode(): string {
-    return crypto.randomInt(100000, 999999).toString();
+  private _generateOTPCode(length = 6): string {
+    const min = 10 ** (length - 1);
+    const max = 10 ** length;
+    return crypto.randomInt(min, max).toString();
   }
 
   /**
@@ -86,8 +89,8 @@ class OTPService {
         };
       }
 
-      // Generate OTP
-      const code = this._generateOTPCode();
+      // Generate OTP (4 digits for password reset, 6 for everything else)
+      const code = this._generateOTPCode(purpose === 'reset' ? 4 : 6);
       const otpData: OTPData = {
         code,
         email: email.toLowerCase(),
@@ -186,6 +189,47 @@ class OTPService {
         success: false,
         message: 'Failed to verify OTP. Please try again.',
       };
+    }
+  }
+
+  /**
+   * Validate an OTP WITHOUT consuming it (used by a "verify code" step that
+   * precedes a separate "reset password" step which finally consumes it).
+   * Still counts failed attempts to preserve brute-force protection.
+   */
+  async peekOTP(email: string, code: string, purpose: 'verification' | 'reset' | 'login' = 'reset'): Promise<{
+    success: boolean;
+    message: string;
+    attemptsLeft?: number;
+  }> {
+    try {
+      const key = this.getOTPKey(email, purpose);
+      const otpData: OTPData = await RedisService.get(key);
+
+      if (!otpData) {
+        return { success: false, message: 'OTP has expired or does not exist. Please request a new one.' };
+      }
+
+      if (otpData.attempts >= this.MAX_ATTEMPTS) {
+        await RedisService.delete(key);
+        return { success: false, message: 'Maximum verification attempts exceeded. Please request a new OTP.' };
+      }
+
+      if (otpData.code !== code) {
+        otpData.attempts += 1;
+        await RedisService.setWithExpiry(key, otpData, this.OTP_EXPIRY);
+        return {
+          success: false,
+          message: 'Invalid OTP code.',
+          attemptsLeft: this.MAX_ATTEMPTS - otpData.attempts,
+        };
+      }
+
+      // Valid — intentionally NOT deleted so the reset step can consume it.
+      return { success: true, message: 'OTP verified successfully.' };
+    } catch (error) {
+      logError(error, 'Peek OTP');
+      return { success: false, message: 'Failed to verify OTP. Please try again.' };
     }
   }
 

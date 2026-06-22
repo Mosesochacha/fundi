@@ -1,19 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { logOut } from "@/store/authSlice";
+import { useDeleteAccount, useLogout } from "@/features/auth";
 import { useToastContext } from "@/context/ToastContext";
 import SettingsSection from "./SettingsSection";
 import SettingsRow from "./SettingsRow";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:9000/api/v1";
-
 export default function DangerZone() {
-  const router = useRouter();
-  const dispatch = useAppDispatch();
-  const { accessToken } = useAppSelector((s) => s.auth);
+  const deleteAccount = useDeleteAccount();
+  const logout = useLogout();
   const { error, success } = useToastContext();
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -24,21 +19,10 @@ export default function DangerZone() {
     if (deleteInput !== "DELETE") return;
     setDeleting(true);
     try {
-      const res = await fetch(`${API}/auth/account`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        credentials: "include",
-        body: JSON.stringify({ confirmation: "DELETE" }),
-      });
-      const data = await res.json();
-      if (!data.success) throw new Error(data.message);
-      dispatch(logOut());
-      router.push("/login");
+      await deleteAccount.mutateAsync({ confirmation: "DELETE" });
+      await logout({ callbackUrl: "/login" });
     } catch (e: any) {
-      error(e?.message || "Failed to delete account. Please try again.");
+      error(e?.response?.data?.message || "Failed to delete account. Please try again.");
       setDeleting(false);
     }
   };

@@ -199,6 +199,15 @@ class TypesenseService {
     }
   };
 
+  documentCount = async (collection: string): Promise<number> => {
+    try {
+      const info: any = await this.client.collections(collection).retrieve();
+      return info?.num_documents ?? 0;
+    } catch {
+      return 0;
+    }
+  };
+
   health = async (): Promise<object> => {
     try {
       return await this.client.health.retrieve();

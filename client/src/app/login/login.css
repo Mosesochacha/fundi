@@ -1,0 +1,310 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   Login — navy/gold design. Scoped under `.lg` so it never leaks into the
+   rest of the (orange-themed) app. DM Sans comes from the root layout's
+   next/font; only Fraunces is imported here.
+   ───────────────────────────────────────────────────────────────────────── */
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300&display=swap");
+
+.lg {
+  --fr: "Fraunces", serif;
+  --dm: var(--font-dm-sans), "DM Sans", sans-serif;
+  --ink: #0e0e0d;
+  --ink2: #4a4a47;
+  --ink3: #8a8a85;
+  --cream: #faf8f4;
+  --navy: #0d1b2a;
+  --gold: #c9a84c;
+  --gold-dark: #a8872e;
+  --gold-light: #fdf6e3;
+  --border: #e5e0d5;
+  --err: #dc2626;
+  --err-bg: #fef2f2;
+  font-family: var(--dm);
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px 56px;
+}
+.lg * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.lg .top {
+  text-align: center;
+  margin-bottom: 24px;
+}
+.lg .logo {
+  font-family: var(--fr);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--navy);
+  text-decoration: none;
+}
+.lg .logo span {
+  font-style: italic;
+  color: var(--gold);
+  font-weight: 300;
+}
+.lg .tagline {
+  font-size: 12px;
+  color: var(--ink3);
+  margin-top: 2px;
+}
+
+.lg .card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 32px;
+  width: 100%;
+  max-width: 400px;
+}
+.lg .card-title {
+  font-family: var(--fr);
+  font-size: 26px;
+  font-weight: 400;
+  color: var(--navy);
+  margin-bottom: 4px;
+}
+.lg .card-title em {
+  font-style: italic;
+  font-weight: 300;
+  color: var(--gold-dark);
+}
+.lg .card-sub {
+  font-size: 13px;
+  color: var(--ink3);
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+.lg .card-sub a {
+  color: var(--gold-dark);
+  cursor: pointer;
+  font-weight: 500;
+  text-decoration: none;
+}
+.lg .card-sub a:hover {
+  color: var(--navy);
+}
+
+.lg .btn-google {
+  width: 100%;
+  padding: 11px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: var(--dm);
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+.lg .btn-google:hover {
+  border-color: var(--ink3);
+}
+
+.lg .divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+  font-size: 12px;
+  color: var(--ink3);
+}
+.lg .divider::before,
+.lg .divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.lg .field {
+  margin-bottom: 16px;
+}
+.lg .label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink2);
+  margin-bottom: 5px;
+  display: block;
+  letter-spacing: 0.02em;
+}
+.lg .input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--dm);
+  outline: none;
+  transition: all 0.2s;
+}
+.lg .input:focus {
+  border-color: var(--gold);
+  background: #fff;
+}
+.lg .input::placeholder {
+  color: var(--ink3);
+}
+.lg .input.error {
+  border-color: var(--err);
+  background: var(--err-bg);
+}
+.lg .err {
+  font-size: 12px;
+  color: var(--err);
+  margin-top: 5px;
+}
+
+.lg .pw-wrap {
+  position: relative;
+}
+.lg .pw-wrap .input {
+  padding-right: 42px;
+}
+.lg .pw-eye {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: var(--ink3);
+  line-height: 0;
+  padding: 0;
+}
+.lg .pw-eye svg {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.5;
+}
+
+/* Forgot password — plain underlined link, never a button */
+.lg .forgot-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+.lg .forgot-link {
+  font-size: 12px;
+  color: var(--gold-dark);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--dm);
+}
+.lg .forgot-link:hover {
+  color: var(--navy);
+}
+
+.lg .btn-signin {
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: var(--dm);
+  border: none;
+  background: var(--gold);
+  color: var(--navy);
+  transition: all 0.2s;
+}
+.lg .btn-signin:hover {
+  background: var(--gold-dark);
+}
+.lg .btn-signin:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.lg .terms {
+  font-size: 11px;
+  color: var(--ink3);
+  text-align: center;
+  margin-top: 14px;
+  line-height: 1.6;
+}
+.lg .terms a {
+  color: var(--gold-dark);
+  text-decoration: none;
+}
+.lg .terms a:hover {
+  color: var(--navy);
+}
+
+/* Locked / unverified notices */
+.lg .notice {
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+.lg .notice-lock {
+  background: var(--err-bg);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  color: #b91c1c;
+}
+.lg .notice-lock strong {
+  font-weight: 600;
+}
+.lg .notice-verify {
+  background: var(--gold-light);
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  color: var(--gold-dark);
+}
+.lg .notice-verify a,
+.lg .notice-verify button {
+  color: var(--gold-dark);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+}
+.lg .notice-verify button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.lg .foot {
+  margin-top: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  font-size: 11px;
+  color: var(--ink3);
+}
+.lg .foot a {
+  color: var(--ink3);
+  text-decoration: none;
+}
+.lg .foot a:hover {
+  color: var(--ink2);
+}

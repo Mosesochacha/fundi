@@ -3,7 +3,6 @@
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import PhotoUploadGrid from "../shared/PhotoUploadGrid";
 import type { SetupState } from "@/hooks/useProfileSetup";
-import { useAppSelector } from "@/store/hooks";
 
 interface Props {
   state: SetupState;
@@ -13,8 +12,6 @@ interface Props {
 }
 
 export default function StepPhotos({ state, setField, onNext, onBack }: Props) {
-  const { accessToken } = useAppSelector((s) => s.auth);
-
   return (
     <div className="space-y-5">
       <div>
@@ -26,7 +23,6 @@ export default function StepPhotos({ state, setField, onNext, onBack }: Props) {
         photos={state.photos}
         onAdd={(url) => setField("photos", [...state.photos, url])}
         onRemove={(i) => setField("photos", state.photos.filter((_, idx) => idx !== i))}
-        token={accessToken}
       />
 
       <div className="flex gap-3">

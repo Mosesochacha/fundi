@@ -74,6 +74,8 @@ const initializeServices = async (): Promise<void> => {
   try {
     const { default: typesenseService } = await import("./services/typesense.service");
     await typesenseService.setup();
+    const { reindexIfEmpty } = await import("./jobs/reindex");
+    await reindexIfEmpty();
     logger.info("Typesense initialized");
   } catch (error) {
     logger.error("Typesense initialization failed", { error });

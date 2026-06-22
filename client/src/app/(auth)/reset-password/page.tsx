@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion } from "framer-motion";
-import { useResetPasswordMutation } from "@/store/apiSlice";
+import { useResetPassword } from "@/features/auth";
 import { useToastContext } from "@/context/ToastContext";
 import PasswordInput from "@/components/auth/PasswordInput";
 import Button from "@/components/ui/Button";
@@ -25,10 +26,19 @@ const schema = z
 type FormValues = z.infer<typeof schema>;
 
 export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={null}>
+      <ResetPasswordForm />
+    </Suspense>
+  );
+}
+
+function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token") ?? "";
-  const [resetPassword, { isLoading }] = useResetPasswordMutation();
+  const resetPasswordMutation = useResetPassword();
+  const isLoading = resetPasswordMutation.isPending;
   const { success, error: toastError } = useToastContext();
 
   const {
@@ -40,11 +50,14 @@ export default function ResetPasswordPage() {
 
   const onSubmit = async (data: FormValues) => {
     try {
-      await resetPassword({ token, newPassword: data.newPassword }).unwrap();
+      await resetPasswordMutation.mutateAsync({
+        token,
+        newPassword: data.newPassword,
+      });
       success("Password reset! You can now sign in.");
       router.push("/login");
     } catch (err: any) {
-      const msg = err?.data?.message ?? "";
+      const msg = err?.response?.data?.message ?? "";
       if (msg.toLowerCase().includes("expired") || msg.toLowerCase().includes("invalid")) {
         toastError("This reset link is invalid or has expired. Request a new one.");
       } else {

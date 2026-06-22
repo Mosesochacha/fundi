@@ -1,691 +1,663 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import NavScroll from "@/components/landing/NavScroll";
+import { redirect } from "next/navigation";
+import LandingNav from "@/components/landing/LandingNav";
+import LandingScripts from "@/components/landing/LandingScripts";
+import { auth } from "@/lib/auth";
+import { dashboardPathForRole } from "@/lib/authRedirect";
+import "./landing.css";
 
-// ─── SVG icons (inline, no external library) ───────────────────────────────
+export const metadata: Metadata = {
+  title: "Hire Skilled Workers Near You",
+  description:
+    "Fundi connects you with verified, rated tradespeople — plumbers, electricians, carpenters and more — in minutes, not days.",
+};
 
-function IconCheck() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-      <path d="M4 9l3.5 3.5L14 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
+// ─── Data ────────────────────────────────────────────────────────────────────
 
-function IconPin() {
-  return (
-    <svg width="11" height="13" viewBox="0 0 11 13" fill="none" aria-hidden="true">
-      <path d="M5.5 0C3.015 0 1 2.015 1 4.5c0 3.281 4.5 8.5 4.5 8.5s4.5-5.219 4.5-8.5C10 2.015 7.985 0 5.5 0zm0 6.125a1.625 1.625 0 1 1 0-3.25 1.625 1.625 0 0 1 0 3.25z" fill="currentColor" />
-    </svg>
-  );
-}
-
-function IconSearch() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-      <circle cx="8" cy="8" r="5.5" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M12.5 12.5L16 16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function IconShield() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <path d="M10 2L3 5.5v5C3 14.25 6.1 17.82 10 18.5c3.9-.68 7-4.25 7-8V5.5L10 2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-      <path d="M7 10l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function IconBolt() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <path d="M11 2L4 11h7l-2 7 9-10h-7l2-6z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function IconCamera() {
-  return (
-    <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <rect x="3" y="9" width="26" height="17" rx="3" stroke="currentColor" strokeWidth="2" />
-      <circle cx="16" cy="17" r="5" stroke="currentColor" strokeWidth="2" />
-      <path d="M12 9l2-4h4l2 4" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function IconUsers() {
-  return (
-    <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <circle cx="12" cy="11" r="4" stroke="currentColor" strokeWidth="2" />
-      <circle cx="22" cy="11" r="4" stroke="currentColor" strokeWidth="2" />
-      <path d="M2 27c0-5 4-8 10-8s10 3 10 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <path d="M22 19c4 0 8 2.5 8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function IconChat() {
-  return (
-    <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <path d="M5 5h22a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H10l-7 5V7a2 2 0 0 1 2-2z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-// ─── Data ──────────────────────────────────────────────────────────────────
-
-const professions = [
-  "Architects", "Photographers", "Lawyers", "Electricians", "Designers",
-  "Consultants", "Plumbers", "Engineers", "Therapists", "Accountants",
-  "Carpenters", "Developers", "Teachers", "Nurses", "Chefs", "Stylists",
-];
-
-const cities = [
-  { flag: "🇬🇧", name: "London" },
-  { flag: "🇳🇬", name: "Lagos" },
-  { flag: "🇵🇭", name: "Manila" },
-  { flag: "🇧🇷", name: "São Paulo" },
-  { flag: "🇮🇳", name: "Mumbai" },
-  { flag: "🇿🇦", name: "Cape Town" },
-  { flag: "🇦🇺", name: "Sydney" },
-  { flag: "🇨🇦", name: "Toronto" },
-  { flag: "🇩🇪", name: "Berlin" },
-  { flag: "🇫🇷", name: "Paris" },
-  { flag: "🇰🇪", name: "Nairobi" },
-  { flag: "🇲🇽", name: "Mexico City" },
-  { flag: "🇦🇪", name: "Dubai" },
-  { flag: "🇸🇬", name: "Singapore" },
-  { flag: "🇯🇵", name: "Tokyo" },
-  { flag: "🇪🇬", name: "Cairo" },
-  { flag: "🇬🇭", name: "Accra" },
-  { flag: "🇵🇰", name: "Karachi" },
-  { flag: "🇦🇷", name: "Buenos Aires" },
-  { flag: "🇺🇸", name: "New York" },
-];
-
-const testimonials = [
+const heroCards = [
   {
-    quote: "I had no website and no way to show clients my past work. Now I share one link and they can see everything. My bookings doubled in the first month.",
+    initials: "JK",
+    name: "James K.",
+    trade: "Plumber · Nairobi",
+    av: undefined as React.CSSProperties | undefined,
+  },
+  {
     initials: "MO",
-    name: "Marcus O.",
-    role: "Master Plumber",
-    city: "Lagos, Nigeria",
+    name: "Mary O.",
+    trade: "Electrician · Lagos",
+    av: { background: "#fff3e0", color: "#b45309" },
   },
   {
-    quote: "As a freelance designer I tried everything — Behance, LinkedIn, a personal site. Fundi is the only thing that actually gets me new clients consistently.",
-    initials: "PS",
-    name: "Priya S.",
-    role: "Brand Designer",
-    city: "Mumbai, India",
+    initials: "AN",
+    name: "Amir N.",
+    trade: "Carpenter · Cairo",
+    av: { background: "#ede9fe", color: "#5b21b6" },
   },
   {
-    quote: "My clients used to find me through word of mouth only. Now I get enquiries from people I have never met who found me through search. It changed my business completely.",
-    initials: "ER",
-    name: "Elena R.",
-    role: "Interior Architect",
-    city: "São Paulo, Brazil",
+    initials: "FN",
+    name: "Fatima N.",
+    trade: "Cleaner · Accra",
+    av: { background: "#fce7f3", color: "#9d174d" },
   },
 ];
 
-// ─── Page ──────────────────────────────────────────────────────────────────
+// Reused "Trusted by professionals in every field" marquee content
+const professions = [
+  "Plumbers",
+  "Electricians",
+  "Carpenters",
+  "Masons",
+  "Welders",
+  "Painters",
+  "Mechanics",
+  "Tilers",
+  "Roofers",
+  "Cleaners",
+  "Tailors",
+  "Landscapers",
+  "Chefs",
+  "AC Technicians",
+];
 
-export default function LandingPage() {
-  const marqueeItems = [...professions, ...professions];
+const reasons = [
+  {
+    num: "01",
+    title: (
+      <>
+        Every worker is <em>verified</em>
+      </>
+    ),
+    desc: "Phone-confirmed identity on every profile. No anonymous strangers, no fake accounts. You know exactly who is coming to your door.",
+    icon: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />,
+  },
+  {
+    num: "02",
+    title: (
+      <>
+        Reviews you can <em>actually trust</em>
+      </>
+    ),
+    desc: "Only real employers who completed a job can leave a review. Not friends, not the worker themselves. Every star is earned honestly.",
+    icon: (
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    ),
+  },
+  {
+    num: "03",
+    title: (
+      <>
+        No brokers. <em>No cuts.</em>
+      </>
+    ),
+    desc: "Agents take 20–40% and give you no guarantee. On Fundi you talk directly to the worker, agree your own price, and keep every shilling.",
+    icon: (
+      <>
+        <line x1="12" y1="1" x2="12" y2="23" />
+        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+      </>
+    ),
+  },
+  {
+    num: "04",
+    title: (
+      <>
+        See work <em>before you hire</em>
+      </>
+    ),
+    desc: "Every worker profile shows real photos of past jobs. No more hiring blind and hoping the quality matches the promise.",
+    icon: (
+      <>
+        <rect x="3" y="3" width="18" height="18" rx="2" />
+        <circle cx="8.5" cy="8.5" r="1.5" />
+        <polyline points="21 15 16 10 5 21" />
+      </>
+    ),
+  },
+];
+
+const mapDots = [
+  { left: "52%", top: "55%", navy: false },
+  { left: "42%", top: "48%", navy: false },
+  { left: "47%", top: "42%", navy: true },
+  { left: "55%", top: "38%", navy: false },
+  { left: "60%", top: "44%", navy: true },
+  { left: "48%", top: "60%", navy: false },
+  { left: "38%", top: "52%", navy: true },
+  { left: "65%", top: "50%", navy: false },
+];
+
+const globalStats = [
+  {
+    num: "Kenya",
+    label:
+      "Where we’re launching first — Nairobi and beyond. East Africa next.",
+  },
+  {
+    num: "Founding",
+    label: "Join the first cohort of workers shaping what Fundi becomes.",
+  },
+  {
+    num: "$0",
+    label:
+      "Cost to join as a worker. Free, always — no subscriptions, no fees.",
+  },
+];
+
+const foundingBenefits = [
+  {
+    title: "Founding badge",
+    desc: "Everyone who joins during early access keeps a founding-member badge on their profile — forever.",
+  },
+  {
+    title: "Lifetime free",
+    desc: "Founding workers never pay. No subscriptions, no listing fees, no commission. Locked in from day one.",
+  },
+  {
+    title: "Shape the platform",
+    desc: "Tell us what you need to win more work. Early members directly influence what we build next.",
+  },
+];
+
+const trustItems = [
+  {
+    title: "Identity verified",
+    desc: "Every worker is phone-verified before going live. No fake profiles, no anonymous accounts.",
+    icon: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />,
+  },
+  {
+    title: "Honest ratings",
+    desc: "Only employers who completed a job can leave a review. Every star is earned, never bought.",
+    icon: (
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    ),
+  },
+  {
+    title: "Safe contact",
+    desc: "Your phone number is never shared until you explicitly confirm a job. Full control, always.",
+    icon: (
+      <>
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+      </>
+    ),
+  },
+  {
+    title: "Community moderation",
+    desc: "Workers and employers can flag issues. Our team reviews all reports within 24 hours.",
+    icon: (
+      <>
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      </>
+    ),
+  },
+];
+
+const ctaAvatars = [
+  {
+    initials: "JK",
+    style: { background: "var(--gold-light)", color: "var(--gold-dark)" },
+  },
+  { initials: "MO", style: { background: "#fff3e0", color: "#b45309" } },
+  { initials: "AN", style: { background: "#ede9fe", color: "#5b21b6" } },
+  { initials: "FN", style: { background: "#fce7f3", color: "#9d174d" } },
+  { initials: "BM", style: { background: "#e0f2fe", color: "#0369a1" } },
+];
+
+const marqueeItems = [...professions, ...professions];
+
+// ─── Page ────────────────────────────────────────────────────────────────────
+
+export default async function LandingPage() {
+  // Signed-in users don't see the landing page — send them to their dashboard.
+  const session = await auth();
+  if (session?.user) {
+    redirect(dashboardPathForRole(session.user.role));
+  }
 
   return (
-    <div className="font-dm-sans bg-cream">
-      <NavScroll />
+    <div className="lp">
+      <LandingScripts />
 
-      <main>
-        {/* ── SECTION 2: HERO ─────────────────────────────────────────── */}
-        <section
-          id="hero"
-          aria-label="Hero"
-          className="min-h-[90vh] bg-cream flex items-center justify-center px-6 py-14 md:py-20"
-        >
-          <div className="max-w-[860px] mx-auto text-center w-full">
-            {/* Headline */}
-            <h1 className="font-playfair text-[72px] max-md:text-[42px] leading-[1.1] text-brand-dark font-bold mb-6">
-              Show your work.<br />
-              <span className="text-orange-500">Grow your reputation.</span>
-            </h1>
+      {/* NAV */}
+      <LandingNav />
 
-            {/* Sub-headline */}
-            <p className="font-dm-sans text-xl max-md:text-base text-gray-500 max-w-[580px] mx-auto leading-relaxed mb-10">
-              Create your professional profile in minutes. Join a global community
-              of skilled professionals. Get discovered by clients worldwide.
-            </p>
-
-            {/* CTAs */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-5">
-              <Link
-                href="/register"
-                className="inline-flex w-full sm:w-auto items-center justify-center h-[52px] px-7 font-dm-sans text-[15px] font-semibold text-white bg-orange-500 rounded-[10px] hover:bg-orange-600 transition-colors no-underline"
-              >
-                Create your free profile
-              </Link>
-              <a
-                href="#how-it-works"
-                className="inline-flex w-full sm:w-auto items-center justify-center h-[52px] px-7 font-dm-sans text-[15px] font-semibold text-orange-500 bg-white border-[1.5px] border-orange-500 rounded-[10px] hover:bg-orange-50 transition-colors no-underline"
-              >
-                See how it works
-              </a>
+      {/* HERO */}
+      <section className="hero">
+        <div className="hero-bg" />
+        <h1>
+          Hire skilled workers.
+          <br />
+          <em>Anywhere.</em> Instantly.
+        </h1>
+        <p className="hero-sub">
+          The new home for Kenya’s skilled tradespeople — plumbers,
+          electricians, carpenters and more. Browse profiles and connect
+          directly. No brokers.
+        </p>
+        <div className="hero-actions">
+          <Link href="/browse" className="btn btn-gold btn-lg">
+            Find a fundi near you
+          </Link>
+          <Link href="/register" className="btn btn-outline-navy btn-lg">
+            Join as a worker →
+          </Link>
+        </div>
+        <div className="hero-proof">
+          <div style={{ textAlign: "center" }}>
+            <div className="proof-num">Free</div>
+            <div className="proof-label">For workers, always</div>
+          </div>
+          <div className="proof-div" />
+          <div style={{ textAlign: "center" }}>
+            <div className="proof-num">0%</div>
+            <div className="proof-label">Broker commission</div>
+          </div>
+          <div className="proof-div" />
+          <div style={{ textAlign: "center" }}>
+            <div className="proof-num">Direct</div>
+            <div className="proof-label">No middleman</div>
+          </div>
+          <div className="proof-div" />
+          <div style={{ textAlign: "center" }}>
+            <div className="proof-num">2 min</div>
+            <div className="proof-label">To get listed</div>
+          </div>
+        </div>
+        <div className="hero-card-row">
+          {heroCards.map((c) => (
+            <div className="hero-card" key={c.initials}>
+              <div className="hc-av" style={c.av}>
+                {c.initials}
+              </div>
+              <div>
+                <div className="hc-name">
+                  {c.name}{" "}
+                  <span style={{ fontSize: 10, color: "var(--gold)" }}>✓</span>
+                </div>
+                <div className="hc-trade">{c.trade}</div>
+                <div className="hc-stars">★★★★★</div>
+              </div>
+              <div className="verified-dot" />
             </div>
+          ))}
+        </div>
+      </section>
 
-            {/* Fine print */}
-            <p className="font-dm-sans text-[13px] text-gray-400 mb-16">
-              Free forever · No credit card required · Setup in under 5 minutes
-            </p>
+      {/* TRUSTED-BY MARQUEE (reused) */}
+      <div className="lp-marquee">
+        <p className="lp-marquee-label">
+          Trusted by professionals in every field
+        </p>
+        <div className="space-y-3">
+          <div
+            className="flex animate-marquee whitespace-nowrap"
+            aria-hidden="true"
+          >
+            {marqueeItems.map((name, i) => (
+              <span key={`a-${i}`} className="lp-marquee-item">
+                {name}
+                <span className="lp-marquee-dot">·</span>
+              </span>
+            ))}
+          </div>
+          <div
+            className="flex animate-marquee-reverse whitespace-nowrap"
+            aria-hidden="true"
+          >
+            {[...marqueeItems].reverse().map((name, i) => (
+              <span key={`b-${i}`} className="lp-marquee-item">
+                {name}
+                <span className="lp-marquee-dot">·</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
 
-            {/* Stats bar */}
-            <div className="border-t border-b border-gray-200 py-5">
-              <div className="grid grid-cols-2 md:grid-cols-4">
-                <div className="text-center py-3 px-2">
-                  <p className="font-playfair text-[26px] md:text-[32px] font-bold text-brand-dark leading-none mb-1">10,000+</p>
-                  <p className="font-dm-sans text-[12px] md:text-[13px] text-gray-400">Professionals</p>
-                </div>
-                <div className="text-center py-3 px-2 border-l border-gray-200">
-                  <p className="font-playfair text-[26px] md:text-[32px] font-bold text-brand-dark leading-none mb-1">120+</p>
-                  <p className="font-dm-sans text-[12px] md:text-[13px] text-gray-400">Countries</p>
-                </div>
-                <div className="text-center py-3 px-2 border-t md:border-t-0 border-l md:border-l border-gray-200">
-                  <p className="font-playfair text-[26px] md:text-[32px] font-bold text-brand-dark leading-none mb-1">4.8★</p>
-                  <p className="font-dm-sans text-[12px] md:text-[13px] text-gray-400">Avg. rating</p>
-                </div>
-                <div className="text-center py-3 px-2 border-t md:border-t-0 border-l border-gray-200">
-                  <p className="font-playfair text-[26px] md:text-[32px] font-bold text-brand-dark leading-none mb-1">2 min</p>
-                  <p className="font-dm-sans text-[12px] md:text-[13px] text-gray-400">To go live</p>
-                </div>
+      {/* HOW IT WORKS */}
+      <section id="how" style={{ background: "var(--cream2)" }}>
+        <div className="container">
+          <div className="eyebrow reveal">How it works</div>
+          <h2 className="sec-title reveal">
+            Three steps to
+            <br />
+            <em>a job done right</em>
+          </h2>
+          <div className="how-grid reveal">
+            <div className="how-cell">
+              <div className="how-num">01</div>
+              <div className="how-icon">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.35-4.35" />
+                </svg>
+              </div>
+              <div className="how-title">Search your trade</div>
+              <div className="how-desc">
+                Tell us what you need — plumber, electrician, carpenter. Filter
+                by location, rating, and availability. Find the right person in
+                seconds.
+              </div>
+            </div>
+            <div className="how-cell">
+              <div className="how-num">02</div>
+              <div className="how-icon">
+                <svg viewBox="0 0 24 24">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+              </div>
+              <div className="how-title">Connect &amp; confirm</div>
+              <div className="how-desc">
+                Message directly, agree on price and time. No middlemen, no
+                hidden fees. Every worker shows verified ratings from real past
+                jobs.
+              </div>
+            </div>
+            <div className="how-cell">
+              <div className="how-num">03</div>
+              <div className="how-icon">
+                <svg viewBox="0 0 24 24">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+              </div>
+              <div className="how-title">Job done. Leave a review.</div>
+              <div className="how-desc">
+                Rate the worker after the job. Your review helps the next
+                employer and rewards great workers with more opportunities.
               </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* ── SECTION 3: SOCIAL PROOF LOGOS ───────────────────────────── */}
-        <section aria-label="Trusted by professionals in every field" className="bg-white py-12 overflow-hidden">
-          <p className="font-dm-sans text-xs text-gray-400 uppercase tracking-[0.08em] text-center mb-6">
-            Trusted by professionals in every field
+      {/* WHY FUNDI */}
+      <section id="why" className="why-section">
+        <div className="bg-ring" style={{ width: 300, height: 300 }} />
+        <div className="bg-ring" style={{ width: 500, height: 500 }} />
+        <div className="bg-ring" style={{ width: 700, height: 700 }} />
+        <div className="container" style={{ position: "relative" }}>
+          <div className="eyebrow eyebrow-light reveal">Why Fundi</div>
+          <h2 className="sec-title sec-title-light reveal">
+            Stop guessing.
+            <br />
+            <em>Start hiring right.</em>
+          </h2>
+          <p
+            style={{
+              fontSize: 15,
+              color: "rgba(255,255,255,0.45)",
+              fontWeight: 300,
+              lineHeight: 1.7,
+              maxWidth: 420,
+              marginTop: 16,
+            }}
+            className="reveal"
+          >
+            WhatsApp groups, brokers, and word of mouth leave you hoping for the
+            best. Fundi gives you certainty.
           </p>
-
-          <div className="marquee-wrapper space-y-3">
-            {/* Row 1 — scrolls left */}
-            <div className="flex animate-marquee whitespace-nowrap" aria-hidden="true">
-              {marqueeItems.map((name, i) => (
-                <span key={i} className="font-dm-sans text-[15px] font-medium text-gray-300 flex-shrink-0 mx-4">
-                  {name} <span className="text-orange-300 ml-4">·</span>
-                </span>
-              ))}
-            </div>
-
-            {/* Row 2 — scrolls right */}
-            <div className="flex animate-marquee-reverse whitespace-nowrap" aria-hidden="true">
-              {[...marqueeItems].reverse().map((name, i) => (
-                <span key={i} className="font-dm-sans text-[15px] font-medium text-gray-300 flex-shrink-0 mx-4">
-                  {name} <span className="text-orange-300 ml-4">·</span>
-                </span>
-              ))}
-            </div>
+          <div className="reasons reveal">
+            {reasons.map((r) => (
+              <div className="reason" key={r.num}>
+                <div className="reason-num">{r.num}</div>
+                <div className="reason-title">{r.title}</div>
+                <div className="reason-desc">{r.desc}</div>
+                <div className="reason-icon">
+                  <svg viewBox="0 0 24 24">{r.icon}</svg>
+                </div>
+              </div>
+            ))}
           </div>
-        </section>
-
-        {/* ── SECTION 4: HOW IT WORKS ─────────────────────────────────── */}
-        <section id="how-it-works" aria-label="How it works" className="bg-cream py-14 md:py-24 px-6">
-          <div className="max-w-[1100px] mx-auto">
-            <p className="font-dm-sans text-xs text-orange-500 uppercase tracking-[0.08em] mb-4">
-              Simple by design
+          <div className="bottom-strip reveal">
+            <p className="strip-text">
+              <strong>Still using WhatsApp groups?</strong> You deserve better
+              than hoping someone replies.
             </p>
-            <h2 className="font-playfair text-[48px] max-md:text-[34px] font-bold text-brand-dark leading-[1.15] max-w-[560px] mb-4">
-              Your professional profile,<br />built in three steps.
-            </h2>
-            <p className="font-dm-sans text-[17px] text-gray-500 max-w-[480px] leading-relaxed mb-8 md:mb-14">
-              No designers. No developers. No website builders.<br />
-              Just answer a few questions and go live.
-            </p>
-
-            <div className="relative">
-              {/* Connecting dashed line — desktop only */}
-              <div className="hidden md:block absolute top-[56px] left-[35%] right-[35%] border-t-2 border-dashed border-orange-200 pointer-events-none" />
-
-              <div className="grid md:grid-cols-3 gap-6">
-                {/* Step 1 */}
-                <div className="relative bg-white border border-gray-100 rounded-2xl p-8 shadow-[0_1px_3px_rgba(0,0,0,0.06)] z-10">
-                  <p className="font-playfair text-6xl md:text-7xl font-bold text-orange-100 leading-none mb-5">01</p>
-                  <h3 className="font-dm-sans text-lg font-semibold text-brand-dark mb-3">Tell us about yourself</h3>
-                  <p className="font-dm-sans text-[15px] text-gray-500 leading-relaxed mb-5">
-                    Answer three simple questions about your profession, location, and what makes you stand out. Takes under two minutes.
-                  </p>
-                  <span className="inline-flex items-center px-3 py-1 bg-orange-50 text-orange-700 text-xs font-medium rounded-full">
-                    AI-powered
-                  </span>
-                </div>
-
-                {/* Step 2 */}
-                <div className="relative bg-white border border-gray-100 rounded-2xl p-8 shadow-[0_1px_3px_rgba(0,0,0,0.06)] z-10">
-                  <p className="font-playfair text-6xl md:text-7xl font-bold text-orange-100 leading-none mb-5">02</p>
-                  <h3 className="font-dm-sans text-lg font-semibold text-brand-dark mb-3">Your profile goes live</h3>
-                  <p className="font-dm-sans text-[15px] text-gray-500 leading-relaxed mb-5">
-                    Our AI writes your bio, tagline, and service list instantly. Your profile is live and shareable the moment you publish.
-                  </p>
-                  <span className="inline-flex items-center px-3 py-1 bg-orange-50 text-orange-700 text-xs font-medium rounded-full">
-                    Instant
-                  </span>
-                </div>
-
-                {/* Step 3 */}
-                <div className="relative bg-white border border-gray-100 rounded-2xl p-8 shadow-[0_1px_3px_rgba(0,0,0,0.06)] z-10">
-                  <p className="font-playfair text-6xl md:text-7xl font-bold text-orange-100 leading-none mb-5">03</p>
-                  <h3 className="font-dm-sans text-lg font-semibold text-brand-dark mb-3">Clients find you</h3>
-                  <p className="font-dm-sans text-[15px] text-gray-500 leading-relaxed mb-5">
-                    Share your profile link anywhere. Get discovered through our global search. Build your reputation through community posts and reviews.
-                  </p>
-                  <span className="inline-flex items-center px-3 py-1 bg-orange-50 text-orange-700 text-xs font-medium rounded-full">
-                    Global reach
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── SECTION 5: FOR PROFESSIONALS ────────────────────────────── */}
-        <section id="professionals" aria-label="For professionals" className="bg-brand-dark py-14 md:py-24 px-6">
-          <div className="max-w-[1100px] mx-auto">
-            <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
-              {/* Left — text */}
-              <div>
-                <p className="font-dm-sans text-xs text-orange-300 uppercase tracking-[0.08em] mb-4">
-                  For professionals
-                </p>
-                <h2 className="font-playfair text-[48px] max-md:text-[34px] font-bold text-white leading-[1.15] mb-6">
-                  Everything you need.<br />Nothing you don&apos;t.
-                </h2>
-                <p className="font-dm-sans text-[17px] text-orange-200 leading-relaxed max-w-[420px] mb-8 md:mb-10">
-                  Your Fundi profile is your professional home on the internet.
-                  Share it everywhere. Update it anytime. Let your work speak.
-                </p>
-
-                <ul className="space-y-4 mb-10">
-                  {[
-                    "AI-generated bio from your answers",
-                    "Portfolio gallery for your work photos",
-                    "Searchable by clients worldwide",
-                    "Community feed to showcase your projects",
-                    "One shareable link for all your channels",
-                  ].map((item) => (
-                    <li key={item} className="flex items-center gap-3 font-dm-sans text-[15px] text-white">
-                      <span className="text-orange-400 flex-shrink-0">
-                        <IconCheck />
-                      </span>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-
-                <Link
-                  href="/register"
-                  className="font-dm-sans text-[15px] font-semibold text-orange-300 hover:text-orange-200 transition-colors no-underline"
-                >
-                  Start building your profile →
-                </Link>
-              </div>
-
-              {/* Right — profile card mockup */}
-              <div className="flex justify-center md:justify-end">
-                <div className="relative bg-white rounded-2xl p-6 w-full max-w-[340px] shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
-                  {/* Verified badge */}
-                  <div className="absolute top-3 right-3 bg-white text-green-600 border border-green-100 text-[11px] font-medium px-[10px] py-[3px] rounded-full shadow-sm font-dm-sans">
-                    ✓ Verified
-                  </div>
-
-                  {/* Avatar + identity */}
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-14 h-14 rounded-full bg-orange-500 flex items-center justify-center text-white font-dm-sans font-semibold text-lg flex-shrink-0">
-                      JK
-                    </div>
-                    <div>
-                      <p className="font-dm-sans text-base font-semibold text-gray-900">James K.</p>
-                      <p className="font-dm-sans text-sm text-orange-500">Master Electrician</p>
-                      <p className="font-dm-sans text-xs text-gray-400 flex items-center gap-1 mt-0.5">
-                        <span className="text-gray-300"><IconPin /></span>
-                        London, UK
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="border-t border-gray-100 mb-4" />
-
-                  {/* Bio */}
-                  <p className="font-dm-sans text-[13px] text-gray-500 leading-relaxed line-clamp-2 mb-4">
-                    10+ years specialising in residential and commercial electrical installations. Certified and fully insured.
-                  </p>
-
-                  {/* Service tags */}
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {["Wiring", "Fault Finding", "Solar"].map((tag) => (
-                      <span key={tag} className="font-dm-sans text-xs bg-orange-50 text-orange-700 rounded-full px-[10px] py-1">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-
-                  {/* Action buttons */}
-                  <div className="flex gap-2">
-                    <button className="flex-1 h-10 bg-orange-500 text-white font-dm-sans text-[13px] font-medium rounded-lg hover:bg-orange-600 transition-colors cursor-default">
-                      Call
-                    </button>
-                    <button className="flex-1 h-10 bg-orange-500 text-white font-dm-sans text-[13px] font-medium rounded-lg hover:bg-orange-600 transition-colors cursor-default">
-                      WhatsApp
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── SECTION 6: FOR CLIENTS ──────────────────────────────────── */}
-        <section aria-label="For clients" className="bg-white py-14 md:py-24 px-6">
-          <div className="max-w-[1100px] mx-auto">
-            <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
-              {/* Left — search mockup */}
-              <div className="flex justify-center md:justify-start">
-                <div className="w-full max-w-md bg-white border border-gray-200 rounded-xl shadow-[0_4px_16px_rgba(0,0,0,0.08)] overflow-hidden">
-                  {/* Search bar */}
-                  <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
-                    <span className="text-gray-400 flex-shrink-0"><IconSearch /></span>
-                    <span className="font-dm-sans text-sm text-gray-400">Find a plumber near me</span>
-                  </div>
-
-                  {/* Results */}
-                  {[
-                    { initials: "AK", bg: "bg-orange-500", name: "Amara K.", role: "Plumber", city: "London", rating: 48 },
-                    { initials: "JM", bg: "bg-orange-500", name: "Joel M.", role: "Plumber", city: "Manchester", rating: 31 },
-                    { initials: "SP", bg: "bg-orange-700", name: "Sara P.", role: "Plumber", city: "Birmingham", rating: 56 },
-                  ].map((r, i) => (
-                    <div key={i} className="flex items-center gap-3 px-5 py-3 border-b border-gray-50 last:border-0">
-                      <div className={`w-10 h-10 rounded-full ${r.bg} flex items-center justify-center text-white font-dm-sans text-sm font-semibold flex-shrink-0`}>
-                        {r.initials}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-dm-sans text-sm font-semibold text-gray-900">{r.name}</p>
-                        <p className="font-dm-sans text-xs text-gray-500">{r.role} · {r.city}</p>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <p className="text-amber-400 text-xs leading-none">★★★★★</p>
-                        <p className="font-dm-sans text-[11px] text-gray-400">({r.rating})</p>
-                      </div>
-                      <span className="font-dm-sans text-xs text-orange-500 font-medium flex-shrink-0">
-                        View
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Right — text */}
-              <div>
-                <p className="font-dm-sans text-xs text-orange-500 uppercase tracking-[0.08em] mb-4">
-                  For clients
-                </p>
-                <h2 className="font-playfair text-[48px] max-md:text-[34px] font-bold text-brand-dark leading-[1.15] mb-6">
-                  Find trusted professionals<br />anywhere in the world.
-                </h2>
-                <p className="font-dm-sans text-[17px] text-gray-500 leading-relaxed mb-10">
-                  Search thousands of verified professionals by skill and location.
-                  See their real work, read reviews, and connect instantly.
-                </p>
-
-                <div className="space-y-7">
-                  {[
-                    {
-                      icon: <IconSearch />,
-                      title: "Search by skill and location",
-                      desc: "Find exactly who you need with powerful filters and instant results.",
-                    },
-                    {
-                      icon: <IconShield />,
-                      title: "Verified profiles only",
-                      desc: "Every professional is real. See their work portfolio and client reviews.",
-                    },
-                    {
-                      icon: <IconBolt />,
-                      title: "Connect in seconds",
-                      desc: "Message, call, or WhatsApp directly from their profile. No middleman.",
-                    },
-                  ].map(({ icon, title, desc }) => (
-                    <div key={title} className="flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-orange-500 flex-shrink-0">
-                        {icon}
-                      </div>
-                      <div>
-                        <p className="font-dm-sans text-base font-semibold text-brand-dark mb-1">{title}</p>
-                        <p className="font-dm-sans text-[15px] text-gray-500 leading-relaxed">{desc}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── SECTION 7: COMMUNITY ────────────────────────────────────── */}
-        <section id="community" aria-label="Community" className="bg-cream py-14 md:py-24 px-6">
-          <div className="max-w-[1100px] mx-auto">
-            <div className="text-center mb-8 md:mb-14">
-              <p className="font-dm-sans text-xs text-orange-500 uppercase tracking-[0.08em] mb-4">
-                Built for connection
-              </p>
-              <h2 className="font-playfair text-[48px] max-md:text-[34px] font-bold text-brand-dark leading-[1.15] mb-5">
-                A global community of<br />skilled professionals.
-              </h2>
-              <p className="font-dm-sans text-[17px] text-gray-500 max-w-[560px] mx-auto leading-relaxed">
-                Share your latest projects. Learn from others. Build your reputation
-                through a feed that puts your work front and centre.
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-6">
-              {[
-                {
-                  icon: <IconCamera />,
-                  title: "Post your work",
-                  desc: "Share photos of completed projects, behind-the-scenes moments, and professional tips with your followers.",
-                },
-                {
-                  icon: <IconUsers />,
-                  title: "Build your following",
-                  desc: "Grow an audience of clients and peers who follow your work and recommend you to others.",
-                },
-                {
-                  icon: <IconChat />,
-                  title: "Learn and connect",
-                  desc: "Ask questions, share knowledge, and connect with professionals in your field from around the world.",
-                },
-              ].map(({ icon, title, desc }) => (
-                <div key={title} className="bg-white border border-gray-100 rounded-2xl p-8 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-                  <div className="w-14 h-14 rounded-full bg-orange-50 flex items-center justify-center text-orange-500 mb-4">
-                    {icon}
-                  </div>
-                  <h3 className="font-dm-sans text-lg font-semibold text-brand-dark mb-3">{title}</h3>
-                  <p className="font-dm-sans text-[15px] text-gray-500 leading-relaxed">{desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── SECTION 8: GLOBAL REACH ─────────────────────────────────── */}
-        <section aria-label="Global reach" className="bg-white py-14 md:py-24 px-6">
-          <div className="max-w-[1100px] mx-auto text-center">
-            <h2 className="font-playfair text-[52px] max-md:text-[36px] font-bold text-brand-dark leading-[1.1] mb-5">
-              From Lagos to London.<br />
-              <span className="text-orange-500">Manila to São Paulo.</span>
-            </h2>
-            <p className="font-dm-sans text-lg text-gray-500 max-w-[560px] mx-auto leading-relaxed mb-12">
-              Fundi works for every skill, in every city, in every country.
-              Your profile is your global professional passport.
-            </p>
-
-            <div className="flex flex-wrap justify-center gap-[10px] mb-12">
-              {cities.map(({ flag, name }) => (
-                <span
-                  key={name}
-                  className="inline-flex items-center gap-1.5 bg-white border border-gray-200 rounded-full px-4 py-2 font-dm-sans text-[13px] text-gray-600"
-                >
-                  {flag} {name}
-                </span>
-              ))}
-            </div>
-
-            <Link
-              href="/register"
-              className="inline-flex w-full sm:w-auto items-center justify-center h-14 px-10 font-dm-sans text-base font-semibold text-white bg-orange-500 rounded-xl hover:bg-orange-600 transition-colors no-underline"
-            >
-              Join professionals in 120+ countries →
+            <Link href="/browse" className="btn btn-gold btn-lg">
+              Find a verified fundi →
             </Link>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* ── SECTION 9: TESTIMONIALS ─────────────────────────────────── */}
-        <section aria-label="Testimonials" className="bg-brand-dark py-14 md:py-24 px-6">
-          <div className="max-w-[1100px] mx-auto">
-            <div className="text-center mb-8 md:mb-14">
-              <p className="font-dm-sans text-xs text-orange-300 uppercase tracking-[0.08em] mb-4">
-                What professionals say
-              </p>
-              <h2 className="font-playfair text-[44px] max-md:text-[32px] font-bold text-white leading-[1.15]">
-                Real people. Real results.
-              </h2>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-6">
-              {testimonials.map(({ quote, initials, name, role, city }) => (
-                <div
-                  key={name}
-                  className="bg-white/[0.06] border border-white/10 rounded-2xl p-8"
-                >
-                  <p className="font-playfair text-[64px] leading-[0.8] text-orange-700 mb-4 select-none">&ldquo;</p>
-                  <p className="font-dm-sans text-base text-white leading-[1.7] italic mb-6">{quote}</p>
-                  <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-full bg-orange-500 flex items-center justify-center text-white font-dm-sans font-semibold text-base flex-shrink-0">
-                      {initials}
-                    </div>
-                    <div>
-                      <p className="font-dm-sans text-[15px] font-semibold text-white">{name}</p>
-                      <p className="font-dm-sans text-[13px] text-orange-300">{role} · {city}</p>
-                    </div>
-                  </div>
-                  <p className="text-amber-400 text-sm mt-4">★★★★★</p>
+      {/* GLOBAL */}
+      <section id="global" className="global-section">
+        <div className="global-inner">
+          <div className="reveal">
+            <div className="eyebrow">Where we start</div>
+            <h2 className="sec-title">
+              Built for
+              <br />
+              <em>Kenya’s workers</em>
+            </h2>
+            <p className="sec-sub">
+              Starting in Nairobi and built to scale across East Africa. Join
+              early and grow with us from day one.
+            </p>
+            <div className="global-stats">
+              {globalStats.map((s) => (
+                <div className="global-stat" key={s.num}>
+                  <div className="global-stat-num">{s.num}</div>
+                  <div className="global-stat-label">{s.label}</div>
                 </div>
               ))}
             </div>
           </div>
-        </section>
-
-        {/* ── SECTION 10: FINAL CTA ────────────────────────────────────── */}
-        <section aria-label="Get started" className="bg-cream py-16 md:py-[120px] px-6">
-          <div className="max-w-[860px] mx-auto text-center">
-            <h2 className="font-playfair text-[64px] max-md:text-[42px] font-bold text-brand-dark leading-[1.1] mb-6">
-              Your work deserves<br />
-              <span className="text-orange-500">to be seen.</span>
-            </h2>
-            <p className="font-dm-sans text-lg text-gray-500 max-w-[560px] mx-auto leading-relaxed mb-10">
-              Join thousands of professionals who are building their reputation,
-              finding new clients, and growing their career on Fundi.
-            </p>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-4">
-              <Link
-                href="/register"
-                className="inline-flex w-full sm:w-auto items-center justify-center h-14 px-9 font-dm-sans text-base font-semibold text-white bg-orange-500 rounded-xl hover:bg-orange-600 transition-colors no-underline"
+          <div className="global-map reveal">
+            <div className="map-grid-bg" />
+            {mapDots.map((d, i) => (
+              <div
+                key={i}
+                className={`map-dot${d.navy ? " navy" : ""}`}
+                style={{ left: d.left, top: d.top }}
+              />
+            ))}
+            <div
+              style={{ position: "relative", textAlign: "center", zIndex: 2 }}
+            >
+              <div
+                style={{
+                  fontFamily: "var(--fr)",
+                  fontSize: 32,
+                  fontWeight: 400,
+                  color: "var(--navy)",
+                }}
               >
-                Create your free profile
-              </Link>
-              <Link
-                href="/browse"
-                className="inline-flex w-full sm:w-auto items-center justify-center h-14 px-9 font-dm-sans text-base font-semibold text-orange-600 bg-white border-2 border-orange-500 rounded-xl hover:bg-orange-50 transition-colors duration-200 no-underline"
+                Kenya
+              </div>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "var(--ink3)",
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  marginTop: 4,
+                }}
               >
-                Browse professionals
-              </Link>
-            </div>
-
-            <p className="font-dm-sans text-[13px] text-gray-400">
-              Free forever · No credit card · Cancel anytime
-            </p>
-          </div>
-        </section>
-      </main>
-
-      {/* ── SECTION 11: FOOTER ──────────────────────────────────────── */}
-      <footer aria-label="Site footer" className="bg-gray-50 border-t border-gray-200 pt-16 pb-8 px-6">
-        <div className="max-w-[1100px] mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10 lg:gap-12">
-            {/* Brand */}
-            <div>
-              <p className="font-playfair text-xl font-bold text-gray-900">Fundi</p>
-              <p className="font-dm-sans text-sm text-gray-500 leading-relaxed mt-2 max-w-[180px]">
-                The professional identity platform.
-              </p>
-              <div className="flex gap-4 mt-4">
-                <a href="#" className="font-dm-sans text-sm text-gray-400 hover:text-orange-500 transition-colors no-underline">Twitter</a>
-                <a href="#" className="font-dm-sans text-sm text-gray-400 hover:text-orange-500 transition-colors no-underline">LinkedIn</a>
+                Launching 2026
               </div>
             </div>
+          </div>
+        </div>
+      </section>
 
-            {/* Platform */}
-            <div>
-              <p className="font-dm-sans text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Platform</p>
-              <ul>
-                {[
-                  { label: "How it works", href: "#how-it-works" },
-                  { label: "Browse professionals", href: "/browse" },
-                  { label: "Community", href: "#community" },
-                  { label: "Pricing", href: "#" },
-                ].map(({ label, href }) => (
-                  <li key={label}>
-                    <a href={href} className="font-dm-sans text-sm text-gray-600 hover:text-orange-500 transition-colors block leading-loose no-underline">
-                      {label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+      {/* FOUNDING MEMBERS */}
+      <section style={{ background: "var(--cream)" }}>
+        <div className="container">
+          <div className="eyebrow reveal">Founding members</div>
+          <h2 className="sec-title reveal">
+            Get in early.
+            <br />
+            <em>Grow with us.</em>
+          </h2>
+          <div className="testi-grid reveal">
+            {foundingBenefits.map((b) => (
+              <div className="testi-card" key={b.title}>
+                <div className="founding-badge">
+                  <span style={{ color: "var(--gold)" }}>★</span> Founding
+                </div>
+                <div className="founding-title">{b.title}</div>
+                <p className="founding-desc">{b.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* TRUST */}
+      <section id="trust" style={{ background: "var(--cream2)" }}>
+        <div className="container">
+          <div className="eyebrow reveal">Trust &amp; safety</div>
+          <h2 className="sec-title reveal">
+            We take trust
+            <br />
+            <em>seriously</em>
+          </h2>
+          <div className="trust-grid reveal">
+            {trustItems.map((t) => (
+              <div className="trust-item" key={t.title}>
+                <div className="trust-icon">
+                  <svg viewBox="0 0 24 24">{t.icon}</svg>
+                </div>
+                <div className="trust-title">{t.title}</div>
+                <div className="trust-desc">{t.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="cta-section">
+        <div className="cta-ring" style={{ width: 320, height: 320 }} />
+        <div className="cta-ring" style={{ width: 520, height: 520 }} />
+        <div className="cta-ring" style={{ width: 720, height: 720 }} />
+        <div style={{ position: "relative" }}>
+          <h2 className="cta-title reveal">
+            Ready to find your
+            <br />
+            <em>next great fundi?</em>
+          </h2>
+          <p className="cta-sub reveal">
+            Be one of the first fundis on the platform. Free to start, always —
+            and free to stay.
+          </p>
+          <div className="cta-actions reveal">
+            <Link href="/browse" className="btn btn-gold btn-lg">
+              Find a fundi now
+            </Link>
+            <Link href="/register" className="btn btn-outline-navy btn-lg">
+              Join as a worker →
+            </Link>
+          </div>
+          <div className="cta-note reveal">
+            Free forever for workers · No hidden fees · Cancel anytime
+          </div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              marginTop: 44,
+            }}
+            className="reveal"
+          >
+            <div className="proof-avatars">
+              {ctaAvatars.map((a) => (
+                <div className="pa" style={a.style} key={a.initials}>
+                  {a.initials}
+                </div>
+              ))}
             </div>
-
-            {/* Company */}
-            <div>
-              <p className="font-dm-sans text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Company</p>
-              <ul>
-                {["About", "Blog", "Careers", "Press"].map((link) => (
-                  <li key={link}>
-                    <a href="#" className="font-dm-sans text-sm text-gray-600 hover:text-orange-500 transition-colors block leading-loose no-underline">
-                      {link}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Legal */}
-            <div>
-              <p className="font-dm-sans text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Legal</p>
-              <ul>
-                {["Privacy Policy", "Terms of Service", "Cookie Policy"].map((link) => (
-                  <li key={link}>
-                    <a href="#" className="font-dm-sans text-sm text-gray-600 hover:text-orange-500 transition-colors block leading-loose no-underline">
-                      {link}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+            <div style={{ marginLeft: 14, textAlign: "left" }}>
+              <div style={{ fontSize: 12, color: "var(--ink2)" }}>
+                Founding workers are joining now — add your trade today.
+              </div>
             </div>
           </div>
+        </div>
+      </section>
 
-          <div className="border-t border-gray-200 mt-12 pt-6 flex flex-col md:flex-row justify-between items-center gap-2">
-            <p className="font-dm-sans text-sm text-gray-400">&copy; 2026 Fundi. All rights reserved.</p>
-            <p className="font-dm-sans text-sm text-gray-400">Made for professionals worldwide.</p>
+      {/* FOOTER */}
+      <footer>
+        <div className="footer-inner">
+          <div className="footer-top">
+            <div>
+              <div className="footer-logo">
+                Fundi<span>.</span>
+              </div>
+              <p className="footer-desc">
+                The home for blue-collar workers in Kenya — built for the people
+                who build the world.
+              </p>
+              <div className="footer-flags">
+                🇰🇪 Launching in Kenya · East Africa next
+              </div>
+            </div>
+            <div>
+              <div className="footer-col-title">Platform</div>
+              <Link href="/browse" className="footer-link">
+                Find a worker
+              </Link>
+              <a href="#" className="footer-link">
+                Post a job
+              </a>
+              <Link href="/register" className="footer-link">
+                Join as a worker
+              </Link>
+              <a href="#" className="footer-link">
+                Pricing
+              </a>
+            </div>
+            <div>
+              <div className="footer-col-title">Trades</div>
+              <Link href="/browse" className="footer-link">
+                Plumbers
+              </Link>
+              <Link href="/browse" className="footer-link">
+                Electricians
+              </Link>
+              <Link href="/browse" className="footer-link">
+                Carpenters
+              </Link>
+              <Link href="/browse" className="footer-link">
+                All categories
+              </Link>
+            </div>
+            <div>
+              <div className="footer-col-title">Company</div>
+              <a href="#" className="footer-link">
+                About
+              </a>
+              <a href="#" className="footer-link">
+                Blog
+              </a>
+              <a href="#" className="footer-link">
+                Careers
+              </a>
+              <a href="#" className="footer-link">
+                Contact
+              </a>
+            </div>
+          </div>
+          <div className="footer-bottom">
+            <div>© 2026 Fundi Technologies Ltd. All rights reserved.</div>
+            <div className="footer-legal">
+              <a href="#" className="footer-link" style={{ margin: 0 }}>
+                Privacy
+              </a>
+              <a href="#" className="footer-link" style={{ margin: 0 }}>
+                Terms
+              </a>
+              <a href="#" className="footer-link" style={{ margin: 0 }}>
+                Safety
+              </a>
+            </div>
           </div>
         </div>
       </footer>
