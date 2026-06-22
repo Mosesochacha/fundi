@@ -111,11 +111,12 @@ export default function NotFound() {
 
       <footer
         style={{
+          background: "#faf8f4",
           padding: "20px 48px",
           borderTop: "0.5px solid #e5e0d5",
           textAlign: "center",
           fontSize: 11,
-          color: "#c2bdb0",
+          color: "#8a8a85",
         }}
       >
         Privacy · Terms
