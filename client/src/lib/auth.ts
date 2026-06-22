@@ -153,7 +153,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       // Credentials sign-in (password or firebase-google): seed the token.
       // authorize() always sets these on first sign-in.
       if (user?.accessToken && user.backendUser) {
@@ -165,6 +165,31 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.user = user.backendUser;
         token.profile = user.backendProfile ?? null;
         token.error = undefined;
+        return token;
+      }
+
+      // Explicit refresh (e.g. after onboarding via useSession().update()):
+      // re-pull the backend user so isProfileComplete/role are current. Without
+      // this the middleware keeps seeing the stale sign-in snapshot.
+      if (trigger === "update") {
+        try {
+          const res = await fetch(`${API_BASE}/auth/me`, {
+            headers: { Authorization: `Bearer ${token.accessToken}` },
+            cache: "no-store",
+          });
+          if (res.ok) {
+            const json = (await res.json()) as {
+              data: { user: LoginResult["user"]; profile: LoginResult["profile"] };
+            };
+            if (json.data?.user) {
+              token.user = json.data.user;
+              token.profile = json.data.profile ?? null;
+              token.role = roleForUser(json.data.user);
+            }
+          }
+        } catch {
+          // best-effort; keep the existing token
+        }
         return token;
       }
 
