@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, Bell, Lock, Shield, User } from "lucide-react";
+import { AlertTriangle, Bell, Lock, Shield } from "lucide-react";
 import { usePathname } from "next/navigation";
 import type { ComponentType } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -15,12 +15,10 @@ import AccountPanel from "./_panels/AccountPanel";
 import AvailabilityPrivacyPanel from "./_panels/AvailabilityPrivacyPanel";
 import DangerPanel from "./_panels/DangerPanel";
 import NotificationsPanel from "./_panels/NotificationsPanel";
-import ProfilePanel from "./_panels/ProfilePanel";
 import "./settings.css";
 
 type IconType = ComponentType<{ size?: number | string }>;
 type PanelKey =
-  | "profile"
   | "account"
   | "notifications"
   | "availability"
@@ -28,7 +26,6 @@ type PanelKey =
 
 const NAV: { key: PanelKey; label: string; icon: IconType; flag?: boolean }[] =
   [
-    { key: "profile", label: "Profile", icon: User },
     { key: "account", label: "Account & security", icon: Lock },
     { key: "notifications", label: "Notifications", icon: Bell },
     { key: "availability", label: "Availability & privacy", icon: Shield },
@@ -53,7 +50,7 @@ export default function WorkerSettingsPage() {
 
   const settings: WorkerSettings = data ?? DEFAULT_SETTINGS;
 
-  const [active, setActive] = useState<PanelKey>("profile");
+  const [active, setActive] = useState<PanelKey>("account");
   const [dirty, setDirty] = useState(false);
   const panelsRef = useRef<HTMLDivElement>(null);
 
@@ -151,8 +148,6 @@ export default function WorkerSettingsPage() {
         <div className="ws-panels" ref={panelsRef}>
           {isLoading ? (
             <PanelSkeleton />
-          ) : active === "profile" ? (
-            <ProfilePanel settings={settings} onDirty={onDirty} />
           ) : active === "account" ? (
             <AccountPanel settings={settings} />
           ) : active === "notifications" ? (
