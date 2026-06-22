@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, Bell, Clock, Lock, Shield, User } from "lucide-react";
+import { AlertTriangle, Bell, Lock, Shield, User } from "lucide-react";
 import { usePathname } from "next/navigation";
 import type { ComponentType } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -12,10 +12,9 @@ import {
   type WorkerSettings,
 } from "@/features/worker/settings";
 import AccountPanel from "./_panels/AccountPanel";
-import AvailabilityPanel from "./_panels/AvailabilityPanel";
+import AvailabilityPrivacyPanel from "./_panels/AvailabilityPrivacyPanel";
 import DangerPanel from "./_panels/DangerPanel";
 import NotificationsPanel from "./_panels/NotificationsPanel";
-import PrivacyPanel from "./_panels/PrivacyPanel";
 import ProfilePanel from "./_panels/ProfilePanel";
 import "./settings.css";
 
@@ -24,7 +23,6 @@ type PanelKey =
   | "profile"
   | "account"
   | "notifications"
-  | "privacy"
   | "availability"
   | "danger";
 
@@ -33,8 +31,7 @@ const NAV: { key: PanelKey; label: string; icon: IconType; flag?: boolean }[] =
     { key: "profile", label: "Profile", icon: User },
     { key: "account", label: "Account & security", icon: Lock },
     { key: "notifications", label: "Notifications", icon: Bell },
-    { key: "privacy", label: "Privacy", icon: Shield },
-    { key: "availability", label: "Availability", icon: Clock },
+    { key: "availability", label: "Availability & privacy", icon: Shield },
     { key: "danger", label: "Danger zone", icon: AlertTriangle, flag: true },
   ];
 
@@ -160,10 +157,8 @@ export default function WorkerSettingsPage() {
             <AccountPanel settings={settings} />
           ) : active === "notifications" ? (
             <NotificationsPanel settings={settings} />
-          ) : active === "privacy" ? (
-            <PrivacyPanel settings={settings} onDirty={onDirty} />
           ) : active === "availability" ? (
-            <AvailabilityPanel settings={settings} onDirty={onDirty} />
+            <AvailabilityPrivacyPanel settings={settings} onDirty={onDirty} />
           ) : (
             <DangerPanel />
           )}
