@@ -48,6 +48,36 @@ async function refreshBackendToken(token: JWT): Promise<JWT> {
   }
 }
 
+/**
+ * Re-pull the backend user/profile into the JWT (e.g. after onboarding sets
+ * isProfileComplete=true). Bounded by a timeout so a slow/unreachable backend
+ * can never hang the auth flow. Mutates `token` in place.
+ */
+async function refreshBackendUser(token: JWT): Promise<void> {
+  if (!token.accessToken) return;
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 4000);
+    const res = await fetch(`${API_BASE}/auth/me`, {
+      headers: { Authorization: `Bearer ${token.accessToken}` },
+      cache: "no-store",
+      signal: ctrl.signal,
+    });
+    clearTimeout(t);
+    if (!res.ok) return;
+    const json = (await res.json()) as {
+      data: { user: LoginResult["user"]; profile: LoginResult["profile"] };
+    };
+    if (json.data?.user) {
+      token.user = json.data.user;
+      token.profile = json.data.profile ?? null;
+      token.role = roleForUser(json.data.user);
+    }
+  } catch {
+    // best-effort; keep the existing token
+  }
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
   pages: { signIn: "/login" },
@@ -153,7 +183,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       // Credentials sign-in (password or firebase-google): seed the token.
       // authorize() always sets these on first sign-in.
       if (user?.accessToken && user.backendUser) {
@@ -166,6 +196,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.profile = user.backendProfile ?? null;
         token.error = undefined;
         return token;
+      }
+
+      // Refresh the cached backend user when explicitly asked (update()) or
+      // while the snapshot is still incomplete — so onboarding completion is
+      // reflected on the very next request (middleware runs this via auth()),
+      // without a re-login. Once isProfileComplete flips true this stops firing.
+      if (trigger === "update" || (token.user && !token.user.isProfileComplete)) {
+        await refreshBackendUser(token);
       }
 
       // Still valid — reuse.

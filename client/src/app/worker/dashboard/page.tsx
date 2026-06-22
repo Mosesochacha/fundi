@@ -18,6 +18,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback } from "react";
 import Shell from "@/components/dashboard/Shell";
+import WelcomeToast from "@/components/WelcomeToast";
 import { useAuth } from "@/features/auth";
 import type {
   ChecklistItem,
@@ -96,6 +97,7 @@ export default function WorkerDashboardPage() {
   return (
     // biome-ignore lint/a11y/useValidAriaRole: `role` is a Shell prop, not an ARIA attribute
     <Shell role="worker" user={shellUser} currentPath={pathname}>
+      <WelcomeToast role="worker" firstName={firstName} />
       <div className="wd">
         {/* ── Welcome row ─────────────────────────────────────────────── */}
         <div className="wd-welcome">

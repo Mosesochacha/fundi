@@ -1,0 +1,85 @@
+import { Response } from 'express';
+import { AuthenticatedRequest } from '../middleware/verifyJWT';
+import db from '../models';
+import { sendSuccess, sendError, asyncHandler } from '../utils/helpers';
+import { HTTP_STATUS } from '../utils/constants';
+
+/* ─────────────────────────────────────────────────────────────────────────
+   First-time onboarding completion for OAuth (Google) users.
+
+   Google sign-in creates a user with accountType=null and
+   isProfileComplete=false. These endpoints capture the worker/employer choice
+   + minimal details and mark the account complete, so the onboarding guard
+   stops redirecting them to /onboarding.
+   ───────────────────────────────────────────────────────────────────────── */
+
+async function loadUserAndProfile(userId: string) {
+  const user = await db.User.findByPk(userId);
+  const profile = await db.Profile.findOne({ where: { userId } });
+  return { user, profile };
+}
+
+class OnboardingController {
+  /** PATCH /worker/onboarding — { trade, location, dailyRate? } */
+  completeWorker = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const userId = req.user?.id;
+    if (!userId) return sendError(res, HTTP_STATUS.UNAUTHORIZED, 'Unauthorized');
+
+    const trade = String(req.body.trade ?? '').trim();
+    const location = String(req.body.location ?? '').trim();
+    const rawRate = req.body.dailyRate;
+    if (!trade) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'trade is required');
+    if (!location) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'location is required');
+
+    const { user, profile } = await loadUserAndProfile(userId);
+    if (!user || !profile) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Account not found');
+
+    const dailyRate =
+      rawRate === undefined || rawRate === null || rawRate === ''
+        ? user.dailyRate
+        : Number(String(rawRate).replace(/[^0-9.]/g, '')) || null;
+
+    await user.update({
+      accountType: 'worker',
+      dailyRate,
+      isProfileComplete: true,
+      isOnboarded: true,
+    });
+    await profile.update({ profession: trade, location });
+
+    return sendSuccess(res, 'Onboarding complete', {
+      user: user.toJSON(),
+      profile: profile.toJSON(),
+    });
+  });
+
+  /** PATCH /employer/onboarding — { location, interestedTrades?: string[] } */
+  completeEmployer = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const userId = req.user?.id;
+    if (!userId) return sendError(res, HTTP_STATUS.UNAUTHORIZED, 'Unauthorized');
+
+    const location = String(req.body.location ?? '').trim();
+    const interestedTrades = Array.isArray(req.body.interestedTrades)
+      ? (req.body.interestedTrades as unknown[]).map((t) => String(t).trim()).filter(Boolean)
+      : [];
+    if (!location) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'location is required');
+
+    const { user, profile } = await loadUserAndProfile(userId);
+    if (!user || !profile) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Account not found');
+
+    await user.update({
+      accountType: 'employer',
+      interestedTrades,
+      isProfileComplete: true,
+      isOnboarded: true,
+    });
+    await profile.update({ location });
+
+    return sendSuccess(res, 'Onboarding complete', {
+      user: user.toJSON(),
+      profile: profile.toJSON(),
+    });
+  });
+}
+
+export default new OnboardingController();

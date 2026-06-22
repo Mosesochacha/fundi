@@ -137,9 +137,9 @@ export default function VerifyEmailPage() {
       setVerified(true);
       const user = session?.backendUser ?? null;
       const dest = user
-        ? user.isOnboarded
+        ? user.isProfileComplete
           ? redirectPathForRole(user, session?.backendProfile ?? null)
-          : "/setup"
+          : "/onboarding"
         : dashboardFor(pending?.accountType ?? null);
       setTimeout(() => router.push(dest), 1500);
     } catch {

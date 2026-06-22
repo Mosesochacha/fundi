@@ -77,8 +77,8 @@ export default function LoginPage() {
       localStorage.removeItem(ATTEMPTS_KEY);
       localStorage.removeItem(LOCKED_KEY);
       setUnverifiedEmail(null);
-      if (user && !user.isOnboarded) {
-        router.push("/setup");
+      if (user && !user.isProfileComplete) {
+        router.push("/onboarding");
       } else {
         success("Welcome back!");
         router.push(
@@ -123,8 +123,8 @@ export default function LoginPage() {
       if (!session) return; // popup closed
       const user = session.backendUser ?? null;
       const profile = session.backendProfile ?? null;
-      if (user && !user.isOnboarded) {
-        router.push("/setup");
+      if (user && !user.isProfileComplete) {
+        router.push("/onboarding");
       } else {
         success("Welcome back!");
         router.push(
