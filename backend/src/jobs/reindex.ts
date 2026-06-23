@@ -64,6 +64,10 @@ export async function reindexPosts(): Promise<number> {
 
 /** Reindex both collections. Never throws — logs and continues. */
 export async function reindexAll(): Promise<void> {
+  if (!typesenseService.isAvailable()) {
+    logger.info('Typesense unavailable — skipping reindex');
+    return;
+  }
   try {
     const profiles = await reindexProfiles();
     const posts = await reindexPosts();
@@ -79,6 +83,10 @@ export async function reindexAll(): Promise<void> {
  * but a fresh Typesense volume gets seeded automatically.
  */
 export async function reindexIfEmpty(): Promise<void> {
+  if (!typesenseService.isAvailable()) {
+    logger.info('Typesense unavailable — skipping startup reindex');
+    return;
+  }
   try {
     const [profiles, posts] = await Promise.all([
       typesenseService.documentCount('profiles'),

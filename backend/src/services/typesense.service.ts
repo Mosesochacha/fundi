@@ -55,25 +55,59 @@ class TypesenseService {
     });
   }
 
+  /**
+   * Circuit breaker. Flips to false when Typesense is disabled, unconfigured or
+   * unreachable, so we stop hammering it (and flooding the logs) on every write.
+   * Re-checked on process restart. Set `TYPESENSE_ENABLED=false` to opt out.
+   */
+  private available = process.env.TYPESENSE_ENABLED !== 'false';
+
+  isAvailable = (): boolean => this.available;
+
+  private disable = (reason: string): void => {
+    if (!this.available) return;
+    this.available = false;
+    logger.warn(`Typesense disabled — ${reason}; search indexing is off until restart`);
+  };
+
+  /** Network/DNS failures mean the server is unreachable, not a bad document. */
+  private isConnError = (e: any): boolean => {
+    const code = e?.code ?? e?.cause?.code ?? '';
+    const msg = String(e?.message ?? e);
+    return (
+      ['ENOTFOUND', 'ECONNREFUSED', 'ETIMEDOUT', 'EAI_AGAIN'].includes(code) ||
+      /ENOTFOUND|ECONNREFUSED|ETIMEDOUT|getaddrinfo|connect ECONN/i.test(msg)
+    );
+  };
+
+  /** Shared catch handler for write ops: self-disable on connection loss. */
+  private onWriteError = (label: string, e: unknown): void => {
+    if (this.isConnError(e)) this.disable('connection error');
+    else logger.warn(`Typesense ${label} failed`, { error: e });
+  };
+
   upsertProfile = async (profile: Record<string, any>): Promise<void> => {
+    if (!this.available) return;
     try {
       await this.client.collections('profiles').documents().upsert(profile);
     } catch (e) {
-      logger.warn('Typesense upsertProfile failed', { error: e });
+      this.onWriteError('upsertProfile', e);
     }
   };
 
   updateProfile = (id: string, data: Record<string, any>): void => {
+    if (!this.available) return;
     this.client.collections('profiles').documents().upsert({ id, ...data }).catch((e: unknown) => {
-      logger.warn('Typesense updateProfile failed', { error: e });
+      this.onWriteError('updateProfile', e);
     });
   };
 
   removeProfile = async (id: string): Promise<void> => {
+    if (!this.available) return;
     try {
       await this.client.collections('profiles').documents(id).delete();
     } catch (e) {
-      logger.warn('Typesense removeProfile failed', { error: e });
+      this.onWriteError('removeProfile', e);
     }
   };
 
@@ -83,6 +117,7 @@ class TypesenseService {
     profession?: string,
     page = 1,
   ): Promise<{ hits: any[]; total: number }> => {
+    if (!this.available) return { hits: [], total: 0 };
     try {
       const filters: string[] = ['isPublished:=true'];
       if (profession) filters.push(`profession:=${profession}`);
@@ -108,24 +143,27 @@ class TypesenseService {
   };
 
   upsertPost = async (post: Record<string, any>): Promise<void> => {
+    if (!this.available) return;
     try {
       await this.client.collections('posts').documents().upsert(post);
     } catch (e) {
-      logger.warn('Typesense upsertPost failed', { error: e });
+      this.onWriteError('upsertPost', e);
     }
   };
 
   updatePost = (id: string, data: Record<string, any>): void => {
+    if (!this.available) return;
     this.client.collections('posts').documents().upsert({ id, ...data }).catch((e: unknown) => {
-      logger.warn('Typesense updatePost failed', { error: e });
+      this.onWriteError('updatePost', e);
     });
   };
 
   removePost = async (id: string): Promise<void> => {
+    if (!this.available) return;
     try {
       await this.client.collections('posts').documents(id).delete();
     } catch (e) {
-      logger.warn('Typesense removePost failed', { error: e });
+      this.onWriteError('removePost', e);
     }
   };
 
@@ -134,6 +172,7 @@ class TypesenseService {
     postType?: string,
     page = 1,
   ): Promise<{ hits: any[]; total: number }> => {
+    if (!this.available) return { hits: [], total: 0 };
     try {
       const filters: string[] = ['status:=PUBLISHED'];
       if (postType && postType !== 'all') filters.push(`postType:=${postType.toUpperCase()}`);
@@ -164,6 +203,7 @@ class TypesenseService {
     profession?: string;
     location?:   string;
   }): Promise<{ ids: string[]; total: number }> => {
+    if (!this.available) return { ids: [], total: 0 };
     try {
       const { type, page, limit, profession, location } = opts;
       const filters: string[] = ['status:=PUBLISHED'];
@@ -189,17 +229,33 @@ class TypesenseService {
   };
 
   setup = async (): Promise<void> => {
+    if (!this.available) {
+      logger.info('Typesense disabled (TYPESENSE_ENABLED=false) — skipping setup');
+      return;
+    }
+    // Probe reachability once up front. If the server is unconfigured/unreachable
+    // we disable cleanly here instead of failing on every later write + reindex.
+    const health: any = await this.client.health
+      .retrieve()
+      .catch((e) => ({ ok: false, _err: e }));
+    if (!health?.ok) {
+      this.disable(
+        this.isConnError(health?._err) ? 'unreachable' : 'health check not ok',
+      );
+      return;
+    }
     try {
       await this._ensureCollection('profiles', PROFILES_SCHEMA);
       await this._ensureCollection('posts', POSTS_SCHEMA);
       await this._printSearchKey();
       logger.info('Typesense setup complete');
     } catch (e) {
-      logger.error('Typesense setup failed', { error: e });
+      this.onWriteError('setup', e);
     }
   };
 
   documentCount = async (collection: string): Promise<number> => {
+    if (!this.available) return 0;
     try {
       const info: any = await this.client.collections(collection).retrieve();
       return info?.num_documents ?? 0;
