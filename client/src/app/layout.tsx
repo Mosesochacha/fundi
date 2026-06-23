@@ -39,8 +39,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className={`${playfair.variable} ${dmSans.variable} antialiased font-dm-sans text-[color:var(--ink)]`} style={{ background: "var(--orange-25)" }}>
+    <html lang="en" suppressHydrationWarning>
+      <body
+        suppressHydrationWarning
+        className={`${playfair.variable} ${dmSans.variable} antialiased font-dm-sans text-[color:var(--ink)]`}
+        style={{ background: "var(--orange-25)" }}
+      >
         <PostHogProvider>
           <ToastProvider>
             <Providers>
