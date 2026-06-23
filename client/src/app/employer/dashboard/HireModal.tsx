@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useToastContext } from "@/context/ToastContext";
 import { useHireWorker } from "@/features/employer/dashboard";
+import "./modal.css";
 
 interface HireTarget {
   id: string;

@@ -4,6 +4,7 @@ import { Star, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useToastContext } from "@/context/ToastContext";
 import { useSubmitReview } from "@/features/employer/dashboard";
+import "./modal.css";
 
 interface ReviewTarget {
   jobId: string;
