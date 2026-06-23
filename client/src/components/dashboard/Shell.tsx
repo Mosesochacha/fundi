@@ -252,13 +252,15 @@ export default function Shell({
               </button>
               {menuOpen && (
                 <div className="dash-menu">
-                  <Link
-                    href={`/${role}/profile`}
-                    className="dash-menuitem"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    <User size={15} /> Profile
-                  </Link>
+                  {role === "worker" && (
+                    <Link
+                      href={`/${role}/profile`}
+                      className="dash-menuitem"
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      <User size={15} /> Profile
+                    </Link>
+                  )}
                   <Link
                     href={`/${role}/settings`}
                     className="dash-menuitem"

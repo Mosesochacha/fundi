@@ -26,9 +26,10 @@
 /* Inside the dashboard shell (own profile) the content fills the full width of
    the shell's content area — no centering. The public profile (employer view)
    keeps a centered, capped column via `.wp-public` below. */
+/* Public profile fills the shell content area (no centered cap), matching the
+   worker's own full-width view. */
 .wp-public {
-  max-width: 1100px;
-  margin: 0 auto;
+  width: 100%;
 }
 
 /* Layout */

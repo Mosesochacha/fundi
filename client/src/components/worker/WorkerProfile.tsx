@@ -77,9 +77,14 @@ function eduIcon(type: EducationItem["type"]) {
 export default function WorkerProfile({
   mode,
   initialData,
+  onMessage,
+  onHire,
 }: {
   mode: Mode;
   initialData: WorkerProfileData;
+  /** Public-view actions (employer/visitor). Wired by the page. */
+  onMessage?: () => void;
+  onHire?: () => void;
 }) {
   const own = mode === "own";
   const { success } = useToastContext();
@@ -389,10 +394,18 @@ export default function WorkerProfile({
               </>
             ) : (
               <>
-                <button type="button" className="wp-btn-outline wp-btn-sm">
+                <button
+                  type="button"
+                  className="wp-btn-outline wp-btn-sm"
+                  onClick={onMessage}
+                >
                   <MessageSquare size={13} /> Message
                 </button>
-                <button type="button" className="wp-btn wp-btn-sm">
+                <button
+                  type="button"
+                  className="wp-btn wp-btn-sm"
+                  onClick={onHire}
+                >
                   Request hire
                 </button>
               </>
@@ -929,10 +942,14 @@ export default function WorkerProfile({
       {/* Sticky mobile employer actions */}
       {!own && (
         <div className="wp-stickybar">
-          <button type="button" className="wp-btn-outline">
+          <button
+            type="button"
+            className="wp-btn-outline"
+            onClick={onMessage}
+          >
             <MessageSquare size={14} /> Message
           </button>
-          <button type="button" className="wp-btn">
+          <button type="button" className="wp-btn" onClick={onHire}>
             Request hire
           </button>
         </div>
