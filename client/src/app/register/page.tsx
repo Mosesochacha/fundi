@@ -635,7 +635,7 @@ export default function RegisterPage() {
               style={{ width: "100%" }}
               onClick={() => router.push("/verify-email")}
             >
-              Go to dashboard →
+              Verify your email →
             </button>
           </div>
         )}
