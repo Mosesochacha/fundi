@@ -6,7 +6,6 @@ import {
   FileText,
   Flag,
   LayoutDashboard,
-  LogOut,
   MessageSquare,
   Search,
   Settings,
@@ -105,10 +104,6 @@ export const NAV_CONFIG: Record<DashboardRole, RoleNav> = {
           { label: "Settings", href: "/worker/settings", icon: Settings },
         ],
       },
-      {
-        label: "Other",
-        items: [{ label: "Logout", href: "/logout", icon: LogOut }],
-      },
     ],
     bottomNav: [
       { label: "Dashboard", href: "/worker/dashboard", icon: LayoutDashboard },
@@ -158,9 +153,7 @@ export const NAV_CONFIG: Record<DashboardRole, RoleNav> = {
       {
         label: "Other",
         items: [
-          { label: "Settings", href: "/employer/settings", icon: Settings },
-          { label: "Logout", href: "/logout", icon: LogOut },
-        ],
+          { label: "Settings", href: "/employer/settings", icon: Settings },        ],
       },
     ],
     bottomNav: [
@@ -217,9 +210,7 @@ export const NAV_CONFIG: Record<DashboardRole, RoleNav> = {
       {
         label: "System",
         items: [
-          { label: "Settings", href: "/admin/settings", icon: Settings },
-          { label: "Logout", href: "/logout", icon: LogOut },
-        ],
+          { label: "Settings", href: "/admin/settings", icon: Settings },        ],
       },
     ],
     bottomNav: [
@@ -263,9 +254,7 @@ export const NAV_CONFIG: Record<DashboardRole, RoleNav> = {
       {
         label: "Other",
         items: [
-          { label: "Settings", href: "/moderator/settings", icon: Settings },
-          { label: "Logout", href: "/logout", icon: LogOut },
-        ],
+          { label: "Settings", href: "/moderator/settings", icon: Settings },        ],
       },
     ],
     bottomNav: [

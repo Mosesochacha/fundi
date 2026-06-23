@@ -284,10 +284,15 @@
 
 /* ── Mobile topbar ────────────────────────────────────────────────────────── */
 .dash-mtop {
-  background: var(--navy);
+  background: #fff;
+  border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
   z-index: 30;
+}
+/* White mobile top bar — flip the logo + controls to dark. */
+.dash-mtop .dash-logo-sm {
+  color: var(--navy);
 }
 .dash-mtop-row {
   height: 52px;
@@ -299,7 +304,7 @@
 .dash-hamburger {
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--ink2);
   display: flex;
   padding: 8px;
   cursor: pointer;
@@ -312,9 +317,9 @@
   width: 34px;
   height: 34px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #fff;
+  background: var(--cream);
+  border: 1px solid var(--border);
+  color: var(--ink2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -331,10 +336,10 @@
   height: 36px;
 }
 .dash-muser .dash-username {
-  color: #fff;
+  color: var(--ink);
 }
 .dash-muser .dash-userrole {
-  color: rgba(255, 255, 255, 0.45);
+  color: var(--ink3);
 }
 .dash-muser .dash-verified {
   background: rgba(201, 168, 76, 0.15);
