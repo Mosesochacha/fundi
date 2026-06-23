@@ -210,7 +210,9 @@ html { scroll-behavior: smooth; }
 
 @media (max-width: 480px) {
   .lp .trust-grid { grid-template-columns: 1fr; }
-  .lp .footer-top { grid-template-columns: 1fr; }
+  /* Two-column footer on phones (was a single stacked column with big gaps). */
+  .lp .footer-top { grid-template-columns: 1fr 1fr; gap: 28px 20px; }
+  .lp .footer-desc { max-width: none; }
   .lp .footer-bottom { flex-direction: column; align-items: flex-start; }
   .lp .hero-proof { gap: 12px 20px; }
 }
