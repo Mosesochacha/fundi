@@ -9,5 +9,6 @@ router.post('/jobs/:id/accept', JobsController.acceptJob);
 router.post('/jobs/:id/decline', JobsController.declineJob);
 router.post('/jobs/:id/complete', JobsController.completeJob);
 router.post('/jobs/:id/cancel', JobsController.cancelJob);
+router.patch('/jobs/:id/review', JobsController.reviewJob);
 
 export default router;

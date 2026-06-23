@@ -125,15 +125,23 @@ class JobsController {
       const job: any = await (db as any).JobRequest.findByPk(req.params.id);
       if (!job) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Job request not found');
 
-      const allowedId = actorRole === 'worker' ? job.workerId : job.employerId;
-      if (allowedId !== profileId) {
+      // Completing is allowed for either party (worker finishes, or employer
+      // confirms from their dashboard); every other transition is role-locked.
+      const allowed =
+        action === 'complete'
+          ? profileId === job.workerId || profileId === job.employerId
+          : profileId === (actorRole === 'worker' ? job.workerId : job.employerId);
+      if (!allowed) {
         return sendError(res, HTTP_STATUS.FORBIDDEN, `Only the ${actorRole} can ${action} this request`);
       }
       if (job.status !== 'pending' && !(action === 'complete' && job.status === 'accepted')) {
         return sendError(res, HTTP_STATUS.BAD_REQUEST, `Cannot ${action} a ${job.status} request`);
       }
 
-      await job.update({ status: nextStatus });
+      await job.update({
+        status: nextStatus,
+        ...(nextStatus === 'completed' ? { completedAt: new Date() } : {}),
+      });
 
       const conv = await (db as any).Conversation.findOne({ where: { linkedJobId: job.id } });
       if (conv) {
@@ -148,6 +156,37 @@ class JobsController {
   declineJob = this.transition('decline', 'declined', 'worker', (n) => `Job declined by ${n}`);
   completeJob = this.transition('complete', 'completed', 'worker', () => `Job marked as complete`);
   cancelJob = this.transition('cancel', 'cancelled', 'employer', (n) => `Request cancelled by ${n}`);
+
+  /** PATCH /jobs/:id/review — the employer rates/reviews the worker after completion. */
+  reviewJob = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const profileId = req.user?.profileId;
+    if (!profileId) return sendError(res, HTTP_STATUS.UNAUTHORIZED, 'Unauthorized');
+
+    const job: any = await (db as any).JobRequest.findByPk(req.params.id);
+    if (!job) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Job request not found');
+    if (job.employerId !== profileId) {
+      return sendError(res, HTTP_STATUS.FORBIDDEN, 'Only the employer can review this job');
+    }
+    if (job.status !== 'completed') {
+      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'You can only review a completed job');
+    }
+
+    const rating = Number(req.body.rating);
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'rating must be a whole number from 1 to 5');
+    }
+    const text = typeof req.body.text === 'string' ? req.body.text.trim().slice(0, 2000) : null;
+
+    await job.update({ reviewRating: rating, reviewText: text || null, reviewedAt: new Date() });
+
+    const conv = await (db as any).Conversation.findOne({ where: { linkedJobId: job.id } });
+    if (conv) {
+      const actor = await db.Profile.findByPk(profileId, { attributes: ['fullName'] });
+      await createSystemMessage(conv, profileId, `${(actor as any)?.fullName ?? 'The employer'} left a ${rating}★ review`);
+    }
+
+    return sendSuccess(res, 'Review submitted', { job: job.get({ plain: true }) });
+  });
 
   getJob = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const profileId = req.user?.profileId;
