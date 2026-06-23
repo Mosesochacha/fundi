@@ -8,6 +8,7 @@ import {
   Settings,
   ShieldCheck,
   User,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -179,34 +180,27 @@ export default function Shell({
         {availabilityFooter}
       </aside>
 
-      {/* ── Mobile topbar ── */}
+      {/* ── Mobile topbar: logo left, avatar + hamburger right ── */}
       <header className="dash-mtop">
         <div className="dash-mtop-row">
-          <button
-            type="button"
-            className="dash-hamburger"
-            onClick={() => setDrawerOpen(true)}
-            aria-label="Open menu"
+          <Link
+            href={`/${role}/dashboard`}
+            className="dash-logo-mark"
+            aria-label="Fundi home"
           >
-            <Menu size={22} />
-          </button>
-          <Logo small />
-          <button
-            type="button"
-            className="dash-mbell"
-            aria-label="Notifications"
-          >
-            <Bell size={17} />
-            {hasNotifications && <span className="dash-dot" />}
-          </button>
-        </div>
-        <div className="dash-muser">
-          <span className="dash-avatar">{user.initials}</span>
-          <div className="dash-userinfo">
-            <span className="dash-username">{user.name}</span>
-            <span className="dash-userrole">{ROLE_LABELS[role]}</span>
+            F
+          </Link>
+          <div className="dash-mtop-right">
+            <span className="dash-mtop-avatar">{user.initials}</span>
+            <button
+              type="button"
+              className="dash-hamburger"
+              onClick={() => setDrawerOpen(true)}
+              aria-label="Open menu"
+            >
+              <Menu size={22} />
+            </button>
           </div>
-          {showVerified && <VerifiedBadge />}
         </div>
       </header>
 
@@ -218,7 +212,17 @@ export default function Shell({
         onClick={() => setDrawerOpen(false)}
       />
       <aside className={`dash-drawer${drawerOpen ? " open" : ""}`}>
-        <Logo />
+        <div className="dash-drawer-head">
+          <Logo />
+          <button
+            type="button"
+            className="dash-drawer-close"
+            onClick={() => setDrawerOpen(false)}
+            aria-label="Close menu"
+          >
+            <X size={22} />
+          </button>
+        </div>
         {renderNav(() => setDrawerOpen(false))}
         {availabilityFooter}
       </aside>
@@ -305,6 +309,17 @@ export default function Shell({
             </Link>
           );
         })}
+        <button
+          type="button"
+          className="dash-bottomitem"
+          aria-label="Notifications"
+        >
+          <span className="dash-bottomicon">
+            <Bell size={19} />
+            {hasNotifications && <span className="dash-bottombadge" />}
+          </span>
+          Alerts
+        </button>
       </nav>
     </div>
   );

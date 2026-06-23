@@ -413,19 +413,73 @@
   top: 0;
   left: 0;
   bottom: 0;
-  width: 220px;
+  right: 0;
+  width: 100%;
   background: var(--navy);
   z-index: 50;
   display: flex;
   flex-direction: column;
   transform: translateX(-100%);
   transition: transform 0.25s ease;
+  overflow-y: auto;
 }
 .dash-drawer.open {
   transform: translateX(0);
 }
+.dash-drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 6px;
+}
+.dash-drawer-close {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
 .dash-drawer .dash-logo {
-  padding: 18px 20px 10px;
+  padding: 4px 4px 0;
+}
+
+/* ── Mobile top bar: logo mark (left) + avatar & hamburger (right) ─────────── */
+.dash-logo-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: var(--gold);
+  color: var(--navy);
+  font-family: var(--fr);
+  font-size: 19px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.dash-mtop-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.dash-mtop-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--gold-light);
+  color: var(--gold-dark);
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* ── Desktop breakpoint ───────────────────────────────────────────────────── */
