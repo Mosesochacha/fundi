@@ -30,7 +30,10 @@ async function refreshBackendToken(token: JWT): Promise<JWT> {
   try {
     const res = await fetch(`${API_BASE}/auth/refresh`, {
       method: "POST",
-      headers: { Cookie: `lot_r1=${token.refreshToken}` },
+      headers: {
+        "User-Agent": "Frontend-API-Proxy",
+        Cookie: `lot_r1=${token.refreshToken}`,
+      },
       cache: "no-store",
     });
     if (!res.ok) throw new Error(`refresh failed: ${res.status}`);
@@ -59,7 +62,10 @@ async function refreshBackendUser(token: JWT): Promise<void> {
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 4000);
     const res = await fetch(`${API_BASE}/auth/me`, {
-      headers: { Authorization: `Bearer ${token.accessToken}` },
+      headers: {
+        "User-Agent": "Frontend-API-Proxy",
+        Authorization: `Bearer ${token.accessToken}`,
+      },
       cache: "no-store",
       signal: ctrl.signal,
     });
@@ -93,7 +99,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials) {
         const res = await fetch(`${API_BASE}/auth/login`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "User-Agent": "Frontend-API-Proxy",
+          },
           body: JSON.stringify({
             identifier: credentials?.identifier,
             password: credentials?.password,
@@ -130,7 +139,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const cookie = request?.headers?.get?.("cookie") ?? "";
         const res = await fetch(`${API_BASE}/auth/verify-email`, {
           method: "POST",
-          headers: { "Content-Type": "application/json", Cookie: cookie },
+          headers: {
+            "Content-Type": "application/json",
+            "User-Agent": "Frontend-API-Proxy",
+            Cookie: cookie,
+          },
           body: JSON.stringify({ code }),
           cache: "no-store",
         });
@@ -161,7 +174,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!idToken) return null;
         const res = await fetch(`${API_BASE}/auth/google`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "User-Agent": "Frontend-API-Proxy",
+          },
           body: JSON.stringify({ idToken }),
           cache: "no-store",
         });
