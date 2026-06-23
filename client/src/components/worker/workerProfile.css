@@ -48,6 +48,12 @@
     grid-template-columns: 1.5fr 1fr;
     align-items: start;
   }
+  /* Public profile with no right-column content (certs/education): keep the
+     left column full-width instead of leaving an empty second column. */
+  .wp-grid.wp-grid-single {
+    grid-template-columns: 1fr;
+    max-width: 720px;
+  }
 }
 
 /* Card + section heads */

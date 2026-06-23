@@ -250,6 +250,15 @@ export default function WorkerProfile({
 
   const money = (n: number) => `${data.currency} ${n.toLocaleString()}`;
 
+  // Public-view polish: soften zero-states and hide empty sections so a sparse
+  // profile reads as "new" rather than broken. Own view always shows every
+  // section (with its add/edit controls) so the worker can fill them in.
+  const rateText = data.dailyRate > 0 ? money(data.dailyRate) : "Rate on request";
+  const hasRightCol =
+    data.certifications.length > 0 || data.education.length > 0;
+  const hideIfEmpty = (has: boolean) =>
+    own || has ? undefined : ({ display: "none" } as const);
+
   return (
     <div className={`wp${own ? "" : " wp-public"}`}>
       {/* ── HEADER CARD ── */}
@@ -265,7 +274,10 @@ export default function WorkerProfile({
 
           <div className="wp-name">{data.name}</div>
           <div className="wp-trade">
-            {data.trade} · {data.yearsExperience} yrs experience
+            {data.trade}
+            {data.yearsExperience > 0
+              ? ` · ${data.yearsExperience} yrs experience`
+              : ""}
           </div>
           <div className="wp-loc">
             <MapPin size={12} />
@@ -282,24 +294,32 @@ export default function WorkerProfile({
               <span className="wp-badge wp-badge-available">Available now</span>
             )}
             <span className="wp-badge wp-badge-rating">
-              <span className="wp-star">★</span> {data.rating} ·{" "}
-              {data.reviewCount} reviews
+              {data.reviewCount > 0 ? (
+                <>
+                  <span className="wp-star">★</span> {data.rating} ·{" "}
+                  {data.reviewCount} reviews
+                </>
+              ) : (
+                "New"
+              )}
             </span>
           </div>
 
           <div className="wp-stats">
             <div className="wp-stat">
-              <div className="wp-stat-num">{data.jobsDone}</div>
+              <div className="wp-stat-num">{data.jobsDone || "—"}</div>
               <div className="wp-stat-label">Jobs done</div>
             </div>
             <span className="wp-stat-sep" />
             <div className="wp-stat">
-              <div className="wp-stat-num">{data.rating}</div>
+              <div className="wp-stat-num">
+                {data.reviewCount > 0 ? data.rating : "—"}
+              </div>
               <div className="wp-stat-label">Rating</div>
             </div>
             <span className="wp-stat-sep" />
             <div className="wp-stat">
-              <div className="wp-stat-num">{data.yearsExperience}</div>
+              <div className="wp-stat-num">{data.yearsExperience || "—"}</div>
               <div className="wp-stat-label">Years exp.</div>
             </div>
             <span className="wp-stat-sep" />
@@ -333,7 +353,7 @@ export default function WorkerProfile({
                       : undefined
                   }
                 >
-                  {money(data.dailyRate)}
+                  {rateText}
                   {own && (
                     <button
                       type="button"
@@ -382,11 +402,16 @@ export default function WorkerProfile({
       </div>
 
       {/* ── TWO COLUMNS ── */}
-      <div className="wp-grid">
+      <div
+        className={`wp-grid${!own && !hasRightCol ? " wp-grid-single" : ""}`}
+      >
         {/* LEFT */}
         <div className="wp-col">
           {/* About */}
-          <section className="wp-card">
+          <section
+            className="wp-card"
+            style={hideIfEmpty(data.about.trim().length > 0)}
+          >
             <div className="wp-cardhead">
               <span className="wp-title">About</span>
               {own && !editAbout && (
@@ -434,7 +459,10 @@ export default function WorkerProfile({
           </section>
 
           {/* Services */}
-          <section className="wp-card">
+          <section
+            className="wp-card"
+            style={hideIfEmpty(data.services.length > 0)}
+          >
             <div className="wp-cardhead">
               <span className="wp-title">Services</span>
               {own && (
@@ -493,7 +521,10 @@ export default function WorkerProfile({
           </section>
 
           {/* Portfolio */}
-          <section className="wp-card">
+          <section
+            className="wp-card"
+            style={hideIfEmpty(data.portfolio.length > 0)}
+          >
             <div className="wp-cardhead">
               <span className="wp-title">Portfolio</span>
               {own && (
@@ -592,7 +623,10 @@ export default function WorkerProfile({
           </section>
 
           {/* Experience */}
-          <section className="wp-card">
+          <section
+            className="wp-card"
+            style={hideIfEmpty(data.experience.length > 0)}
+          >
             <div className="wp-cardhead">
               <span className="wp-title">Experience</span>
               {own && (
@@ -637,7 +671,10 @@ export default function WorkerProfile({
           </section>
 
           {/* Service area */}
-          <section className="wp-card">
+          <section
+            className="wp-card"
+            style={hideIfEmpty(data.serviceAreas.length > 0)}
+          >
             <div className="wp-cardhead">
               <span className="wp-title">Service area</span>
               {own && (
@@ -699,11 +736,16 @@ export default function WorkerProfile({
           <section className="wp-card">
             <div className="wp-cardhead">
               <span className="wp-title">Reviews</span>
-              <button type="button" className="wp-link">
-                See all →
-              </button>
+              {data.reviewCount > 0 && (
+                <button type="button" className="wp-link">
+                  See all →
+                </button>
+              )}
             </div>
-            <div className="wp-rev-summary">
+            <div
+              className="wp-rev-summary"
+              style={hideIfEmpty(data.reviewCount > 0)}
+            >
               <div className="wp-rev-bigwrap">
                 <div className="wp-rev-big">{data.rating}</div>
                 <Stars value={data.rating} />
@@ -740,11 +782,18 @@ export default function WorkerProfile({
                 </div>
               </div>
             ))}
+            {data.reviewCount === 0 && (
+              <p
+                style={{ fontSize: 13, color: "#8a8a85", padding: "2px 2px 4px" }}
+              >
+                No reviews yet.
+              </p>
+            )}
           </section>
         </div>
 
         {/* RIGHT */}
-        <div className="wp-col">
+        <div className="wp-col" style={hideIfEmpty(hasRightCol)}>
           {/* Profile strength (own only) */}
           {own && (
             <section className="wp-card wp-strength">
@@ -775,7 +824,10 @@ export default function WorkerProfile({
           )}
 
           {/* Certifications */}
-          <section className="wp-card wp-certs">
+          <section
+            className="wp-card wp-certs"
+            style={hideIfEmpty(data.certifications.length > 0)}
+          >
             <div className="wp-cardhead">
               <span className="wp-title">Certifications</span>
               {own && (
@@ -827,7 +879,10 @@ export default function WorkerProfile({
           </section>
 
           {/* Education & training */}
-          <section className="wp-card wp-edu-card">
+          <section
+            className="wp-card wp-edu-card"
+            style={hideIfEmpty(data.education.length > 0)}
+          >
             <div className="wp-cardhead">
               <span className="wp-title">Education &amp; training</span>
               {own && (
