@@ -180,6 +180,11 @@ class AuthService {
         throw new Error("Account is deactivated");
       }
 
+      if (user.status === 'suspended') {
+        logger.warn('Login failed: account suspended', { userId: user.id, ipAddress });
+        throw new Error("Your account has been suspended. Contact support.");
+      }
+
       // Account lock check
       if (user.lockedUntil && user.lockedUntil > new Date()) {
         const minutesLeft = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000);
@@ -303,6 +308,10 @@ class AuthService {
 
     if (!user.isActive) {
       throw new Error('Account is deactivated');
+    }
+
+    if (user.status === 'suspended') {
+      throw new Error('Your account has been suspended. Contact support.');
     }
 
     const tokens = await this.generateTokens(user, ipAddress, userAgent);

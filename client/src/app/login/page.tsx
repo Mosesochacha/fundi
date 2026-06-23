@@ -20,6 +20,18 @@ function getRemainingLockSeconds(): number {
   return remaining > 0 ? remaining : 0;
 }
 
+/**
+ * The `?next=` param set by middleware, but only when it's a safe same-site
+ * relative path. Rejects absolute URLs and protocol-relative `//host` to
+ * prevent open redirects. Read from the URL directly (in handlers) so the page
+ * needn't be wrapped in a Suspense boundary for `useSearchParams`.
+ */
+function getSafeNext(): string | null {
+  if (typeof window === "undefined") return null;
+  const n = new URLSearchParams(window.location.search).get("next");
+  return n && n.startsWith("/") && !n.startsWith("//") ? n : null;
+}
+
 function EyeIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -82,9 +94,10 @@ export default function LoginPage() {
       } else {
         success("Welcome back!");
         router.push(
-          user
-            ? redirectPathForRole(user, profile)
-            : dashboardPathForRole(undefined),
+          getSafeNext() ??
+            (user
+              ? redirectPathForRole(user, profile)
+              : dashboardPathForRole(undefined)),
         );
       }
     } catch {
@@ -128,9 +141,10 @@ export default function LoginPage() {
       } else {
         success("Welcome back!");
         router.push(
-          user
-            ? redirectPathForRole(user, profile)
-            : dashboardPathForRole(undefined),
+          getSafeNext() ??
+            (user
+              ? redirectPathForRole(user, profile)
+              : dashboardPathForRole(undefined)),
         );
       }
     } catch (err) {
