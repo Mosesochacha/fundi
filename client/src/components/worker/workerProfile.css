@@ -924,3 +924,24 @@
     padding-bottom: 72px;
   }
 }
+
+/* ── Loading skeleton (mirrors the profile while data fetches) ───────────────── */
+.wp-skel {
+  background: #ece8df;
+  border-radius: 6px;
+  animation: wp-pulse 1.4s ease-in-out infinite;
+}
+@keyframes wp-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+.wp-skel-row {
+  display: flex;
+  gap: 24px;
+  align-items: flex-end;
+}

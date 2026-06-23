@@ -3,6 +3,7 @@
 import { useParams, usePathname } from "next/navigation";
 import Shell from "@/components/dashboard/Shell";
 import WorkerProfile from "@/components/worker/WorkerProfile";
+import WorkerProfileSkeleton from "@/components/worker/WorkerProfileSkeleton";
 import {
   MOCK_PROFILE,
   type WorkerProfileData,
@@ -40,9 +41,7 @@ export default function PublicWorkerProfilePage() {
       {data ? (
         <WorkerProfile mode="public" initialData={data} />
       ) : (
-        <div style={{ padding: 24, color: "#8a8a85", fontSize: 14 }}>
-          Loading…
-        </div>
+        <WorkerProfileSkeleton />
       )}
     </Shell>
   );
