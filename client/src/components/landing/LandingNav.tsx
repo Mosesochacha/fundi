@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, ChevronDown } from "lucide-react";
+import { Bell, ChevronDown, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -31,6 +31,7 @@ export default function LandingNav() {
   const pathname = usePathname();
   const { isLoggedIn, user, role } = useAuth();
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -65,31 +66,61 @@ export default function LandingNav() {
         })}
       </div>
 
-      {isLoggedIn ? (
-        <div className="nav-auth">
-          <button type="button" className="nav-bell" aria-label="Notifications">
-            <Bell size={18} strokeWidth={1.75} />
-            <span className="nav-bell-dot" />
-          </button>
-          <Link href={dashboardPathForRole(role)} className="nav-avatar-pill">
-            <span className="nav-avatar">{initials}</span>
-            <span className="nav-avatar-meta">
-              <span className="nav-avatar-name">{fullName}</span>
-              <span className="nav-avatar-role">
-                {role ? (ROLE_LABEL[role] ?? role) : ""}
+      <div className="nav-right">
+        {isLoggedIn ? (
+          <div className="nav-auth">
+            <button
+              type="button"
+              className="nav-bell"
+              aria-label="Notifications"
+            >
+              <Bell size={18} strokeWidth={1.75} />
+              <span className="nav-bell-dot" />
+            </button>
+            <Link href={dashboardPathForRole(role)} className="nav-avatar-pill">
+              <span className="nav-avatar">{initials}</span>
+              <span className="nav-avatar-meta">
+                <span className="nav-avatar-name">{fullName}</span>
+                <span className="nav-avatar-role">
+                  {role ? (ROLE_LABEL[role] ?? role) : ""}
+                </span>
               </span>
-            </span>
-            <ChevronDown size={14} className="nav-avatar-chev" />
-          </Link>
-        </div>
-      ) : (
-        <div style={{ display: "flex", gap: 10 }}>
-          <Link href="/login" className="btn btn-outline">
-            Sign in
-          </Link>
-          <Link href="/register" className="btn btn-gold">
-            Get started free
-          </Link>
+              <ChevronDown size={14} className="nav-avatar-chev" />
+            </Link>
+          </div>
+        ) : (
+          <>
+            <Link href="/login" className="btn btn-outline">
+              Sign in
+            </Link>
+            <Link href="/register" className="btn btn-gold">
+              Sign up
+            </Link>
+          </>
+        )}
+        <button
+          type="button"
+          className="lp-burger"
+          onClick={() => setMenuOpen((o) => !o)}
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={menuOpen}
+        >
+          {menuOpen ? <X size={22} /> : <Menu size={22} />}
+        </button>
+      </div>
+
+      {menuOpen && (
+        <div className="lp-nav-menu">
+          {NAV_LINKS.map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              className="lp-nav-menu-link"
+              onClick={() => setMenuOpen(false)}
+            >
+              {l.label}
+            </Link>
+          ))}
         </div>
       )}
     </nav>

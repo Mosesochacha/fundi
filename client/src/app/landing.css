@@ -31,6 +31,11 @@ html { scroll-behavior: smooth; }
 .lp .nav-links { display: flex; align-items: center; gap: 32px; }
 .lp .nav-link { font-size: 13px; color: var(--ink2); text-decoration: none; background: none; border: none; cursor: pointer; font-family: var(--dm); transition: color 0.2s; }
 .lp .nav-link:hover { color: var(--ink); }
+.lp .nav-right { display: flex; align-items: center; gap: 10px; }
+.lp .lp-burger { display: none; background: none; border: none; color: var(--ink); cursor: pointer; padding: 6px; align-items: center; justify-content: center; }
+.lp .lp-nav-menu { position: fixed; top: 64px; left: 0; right: 0; background: #fff; border-bottom: 1px solid var(--border); box-shadow: 0 12px 28px -16px rgba(0,0,0,0.2); z-index: 99; display: flex; flex-direction: column; padding: 8px; }
+.lp .lp-nav-menu-link { padding: 13px 16px; font-size: 15px; color: var(--ink); text-decoration: none; border-radius: 8px; }
+.lp .lp-nav-menu-link:hover { background: var(--cream); }
 .lp .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 20px; border-radius: 4px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: var(--dm); text-decoration: none; border: 1px solid transparent; transition: all 0.2s; letter-spacing: 0.01em; }
 .lp .btn-outline { border-color: var(--border); background: transparent; color: var(--ink); }
 .lp .btn-outline:hover { border-color: var(--ink2); }
@@ -170,8 +175,11 @@ html { scroll-behavior: smooth; }
 
 /* RESPONSIVE — the source design shipped desktop-only; stack grids on mobile */
 @media (max-width: 860px) {
-  .lp nav { padding: 0 20px; }
+  .lp nav { padding: 0 16px; }
   .lp .nav-links { display: none; }
+  .lp .lp-burger { display: flex; }
+  .lp .nav-right .btn { padding: 7px 12px; font-size: 12px; }
+  .lp .nav-right { gap: 8px; }
   .lp section { padding: 64px 20px; }
   .lp .hero { padding: 100px 20px 64px; }
   .lp .why-section, .lp .global-section, .lp .cta-section { padding: 64px 20px; }

@@ -550,9 +550,6 @@ export default async function LandingPage() {
                 The home for blue-collar workers in Kenya — built for the people
                 who build the world.
               </p>
-              <div className="footer-flags">
-                🇰🇪 Launching in Kenya · East Africa next
-              </div>
             </div>
             <div>
               <div className="footer-col-title">Platform</div>
