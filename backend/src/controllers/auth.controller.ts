@@ -171,6 +171,9 @@ class AuthController {
       if (msg === 'Account is deactivated') {
         return sendError(res, HTTP_STATUS.FORBIDDEN, 'Your account has been deactivated.');
       }
+      if (msg.startsWith('Your account has been suspended')) {
+        return sendError(res, HTTP_STATUS.FORBIDDEN, msg);
+      }
       if (msg.startsWith('Account locked')) {
         return sendError(res, HTTP_STATUS.TOO_MANY_REQUESTS, msg);
       }
@@ -228,6 +231,9 @@ class AuthController {
     } catch (err: any) {
       if (err?.message === 'Account is deactivated') {
         return sendError(res, HTTP_STATUS.FORBIDDEN, 'Your account has been deactivated.');
+      }
+      if (typeof err?.message === 'string' && err.message.startsWith('Your account has been suspended')) {
+        return sendError(res, HTTP_STATUS.FORBIDDEN, err.message);
       }
       logger.error('Google login error', { error: err?.message });
       return sendError(res, HTTP_STATUS.INTERNAL_SERVER_ERROR, RESPONSE_MESSAGES.SERVER_ERROR);

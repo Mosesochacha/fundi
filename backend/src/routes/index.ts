@@ -16,6 +16,7 @@ import messagesRoutes from './messages.routes';
 import jobsRoutes from './jobs.routes';
 import searchRoutes from './search.routes';
 import workerRoutes from './worker.routes';
+import employerRoutes from './employer.routes';
 import onboardingRoutes from './onboarding.routes';
 import verifyJWT from '../middleware/verifyJWT';
 import { csrfProtection } from '../middleware/csrfProtection';
@@ -33,6 +34,8 @@ router.use(commentRoutes);
 router.use(searchRoutes);
 // Worker profile — has its own per-route verifyJWT (public GET + auth'd mutations).
 router.use(workerRoutes);
+// Employer dashboard — per-route verifyJWT.
+router.use(employerRoutes);
 // Onboarding completion (worker/employer) — per-route verifyJWT.
 router.use(onboardingRoutes);
 // Public "Ask AI" helper for /browse (rate-limited inside the router).

@@ -13,24 +13,38 @@ const AUTH_ONLY = [
 ];
 
 /**
- * Role dashboards — gated by exact role. `/worker` can't be blanket-gated
- * (`/worker/[id]` is a public profile), so only its dashboard is listed.
+ * Role areas blanket-gated by exact role. `/worker` can't go here —
+ * `/worker/[id]` is a public profile — so worker routes use WORKER_PROTECTED below.
  */
 const ROLE_GATED: Record<string, AppRole> = {
-  "/worker/dashboard": "worker",
-  "/worker/messages": "worker",
   "/employer": "employer",
   "/admin": "admin",
   "/moderator": "moderator",
 };
 
-/** Any authenticated user. (`/worker/[id]` stays public — it's a profile view.) */
-const AUTH_REQUIRED = [
-  "/worker/profile",
+/**
+ * Worker app routes that require `role === 'worker'`. Anything else under
+ * `/worker/` (e.g. `/worker/123`) is a public profile view.
+ * ADD new worker pages here, otherwise they ship unguarded.
+ */
+const WORKER_PROTECTED = [
+  "dashboard",
+  "messages",
+  "profile",
+  "requests",
+  "reviews",
+  "settings",
 ];
 
 const matches = (path: string, prefix: string) =>
   path === prefix || path.startsWith(prefix + "/");
+
+/** True for protected worker routes; false for `/worker/[id]` public profiles. */
+const isProtectedWorkerPath = (path: string) => {
+  if (!matches(path, "/worker")) return false;
+  const seg = path.split("/")[2]; // "/worker/<seg>/..."
+  return !!seg && WORKER_PROTECTED.includes(seg);
+};
 
 export default auth((req) => {
   const { nextUrl } = req;
@@ -73,7 +87,15 @@ export default auth((req) => {
     return complete ? toDashboard() : toOnboarding();
   }
 
-  // Role-gated dashboard areas.
+  // Protected worker app routes (public `/worker/[id]` profiles fall through).
+  if (isProtectedWorkerPath(path)) {
+    if (!session) return toLogin();
+    if (!complete) return toOnboarding();
+    if (role !== "worker") return toDashboard();
+    return NextResponse.next();
+  }
+
+  // Blanket role-gated areas (employer/admin/moderator).
   for (const [prefix, needed] of Object.entries(ROLE_GATED)) {
     if (matches(path, prefix)) {
       if (!session) return toLogin();
@@ -83,32 +105,12 @@ export default auth((req) => {
     }
   }
 
-  // Authenticated-only areas.
-  if (AUTH_REQUIRED.some((p) => matches(path, p))) {
-    if (!session) return toLogin();
-    if (!complete) return toOnboarding();
-    if (matches(path, "/worker/profile") && role !== "worker") {
-      return toDashboard();
-    }
-    return NextResponse.next();
-  }
-
   return NextResponse.next();
 });
 
 export const config = {
-  matcher: [
-    "/onboarding",
-    "/worker/profile/:path*",
-    "/worker/dashboard/:path*",
-    "/worker/messages/:path*",
-    "/employer/:path*",
-    "/admin/:path*",
-    "/moderator/:path*",
-    "/login",
-    "/register",
-    "/forgot-password",
-    "/reset-password",
-    "/verify-email",
-  ],
+  // Run on every route except static assets and files with an extension.
+  // The handler allow-lists public paths via fallthrough, so broad coverage
+  // here is defense-in-depth: a new protected page can't ship unguarded.
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|icons|images|.*\\.).*)"],
 };

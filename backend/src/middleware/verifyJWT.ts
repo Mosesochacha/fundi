@@ -81,6 +81,17 @@ const verifyJWT: RequestHandler = async (
       return;
     }
 
+    // Suspended accounts can't act even with a still-valid token.
+    if (user.status === "suspended") {
+      sendError(
+        res,
+        HTTP_STATUS.FORBIDDEN,
+        "Your account has been suspended. Contact support.",
+        { errorType: "ACCOUNT_SUSPENDED" }
+      );
+      return;
+    }
+
     const profile = await db.Profile.findOne({ where: { userId: id } });
     req.user = {
       id,
@@ -151,10 +162,10 @@ export const optionalVerifyJWT: RequestHandler = async (
 
     const { id, role, username } = decoded;
 
-    // Verify user still exists and is active
+    // Verify user still exists and is active (and not suspended)
     const user = await db.User.findByPk(id);
-    if (!user || !user.isActive) {
-      // User not found or inactive, continue without authentication
+    if (!user || !user.isActive || user.status === "suspended") {
+      // User not found, inactive, or suspended — continue without authentication
       return next();
     }
 
