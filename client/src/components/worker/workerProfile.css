@@ -52,7 +52,6 @@
      left column full-width instead of leaving an empty second column. */
   .wp-grid.wp-grid-single {
     grid-template-columns: 1fr;
-    max-width: 720px;
   }
 }
 
