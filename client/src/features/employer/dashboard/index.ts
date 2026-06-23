@@ -54,14 +54,17 @@ export function useGetEmployerDashboard() {
   });
 }
 
-/** Shared mutation factory — every employer action refreshes the dashboard. */
+/**
+ * Shared mutation factory — every employer action refreshes all employer
+ * queries (dashboard aggregate + jobs lists) via the ["employer"] key prefix.
+ */
 function useDashboardMutation<TInput>(
   mutationFn: (input: TInput) => Promise<unknown>,
 ) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn,
-    onSuccess: () => qc.invalidateQueries({ queryKey: DASHBOARD_KEY }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["employer"] }),
   });
 }
 

@@ -221,6 +221,58 @@ class EmployerDashboardController {
       recentHires,
     });
   });
+
+  /**
+   * GET /employer/jobs[?status=] — the employer's full job list with worker
+   * details and review fields. Powers /employer/jobs, /hires (completed) and
+   * /reviews (reviewed) by client-side filtering of one payload.
+   */
+  getJobs = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const userId = req.user?.id;
+    if (!userId) return sendError(res, HTTP_STATUS.UNAUTHORIZED, 'Unauthorized');
+
+    const profile: any = await db.Profile.findOne({ where: { userId } });
+    if (!profile) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Profile not found');
+
+    const status = String(req.query.status ?? '').trim();
+    const valid = ['pending', 'accepted', 'completed', 'cancelled', 'declined'];
+    const where: any = { employerId: profile.id };
+    if (status && valid.includes(status)) where.status = status;
+
+    const jobs: any[] = await (db as any).JobRequest.findAll({
+      where,
+      include: [
+        {
+          model: db.Profile,
+          as: 'worker',
+          attributes: ['id', 'fullName', 'username', 'profession', 'location', 'avatarUrl'],
+        },
+      ],
+      order: [['createdAt', 'DESC']],
+    });
+
+    const items = jobs.map((r) => ({
+      id: r.id,
+      workerId: r.workerId,
+      workerName: r.worker?.fullName?.trim() || 'Worker',
+      workerUsername: r.worker?.username ?? null,
+      trade: r.worker?.profession || '',
+      avatarUrl: r.worker?.avatarUrl ?? null,
+      jobType: r.title,
+      location: r.location,
+      description: r.description ?? '',
+      status: r.status,
+      scheduledAt: r.scheduledAt ? r.scheduledAt.toISOString() : null,
+      completedAt: r.completedAt ? r.completedAt.toISOString() : null,
+      agreedRate: r.agreedRate ?? null,
+      rating: r.reviewRating ?? null,
+      reviewText: r.reviewText ?? null,
+      reviewedAt: r.reviewedAt ? r.reviewedAt.toISOString() : null,
+      createdAt: r.createdAt.toISOString(),
+    }));
+
+    return sendSuccess(res, 'Jobs retrieved', { jobs: items });
+  });
 }
 
 export default new EmployerDashboardController();
