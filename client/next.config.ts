@@ -12,6 +12,13 @@ const nextConfig: NextConfig = {
         headers: [
           { key: "X-Frame-Options", value: "DENY" },
           { key: "X-Content-Type-Options", value: "nosniff" },
+          // Allow the Google/Firebase sign-in popup to keep an opener reference
+          // (signInWithPopup polls window.closed). Plain "same-origin" would sever
+          // that link and break the popup; "...-allow-popups" keeps it working.
+          {
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin-allow-popups",
+          },
           {
             key: "Referrer-Policy",
             value: "strict-origin-when-cross-origin",
