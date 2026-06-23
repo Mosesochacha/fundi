@@ -15,33 +15,6 @@ export const metadata: Metadata = {
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
-const heroCards = [
-  {
-    initials: "JK",
-    name: "James K.",
-    trade: "Plumber · Nairobi",
-    av: undefined as React.CSSProperties | undefined,
-  },
-  {
-    initials: "MO",
-    name: "Mary O.",
-    trade: "Electrician · Lagos",
-    av: { background: "#fff3e0", color: "#b45309" },
-  },
-  {
-    initials: "AN",
-    name: "Amir N.",
-    trade: "Carpenter · Cairo",
-    av: { background: "#ede9fe", color: "#5b21b6" },
-  },
-  {
-    initials: "FN",
-    name: "Fatima N.",
-    trade: "Cleaner · Accra",
-    av: { background: "#fce7f3", color: "#9d174d" },
-  },
-];
-
 // Reused "Trusted by professionals in every field" marquee content
 const professions = [
   "Plumbers",
@@ -266,24 +239,6 @@ export default async function LandingPage() {
             <div className="proof-num">2 min</div>
             <div className="proof-label">To get listed</div>
           </div>
-        </div>
-        <div className="hero-card-row">
-          {heroCards.map((c) => (
-            <div className="hero-card" key={c.initials}>
-              <div className="hc-av" style={c.av}>
-                {c.initials}
-              </div>
-              <div>
-                <div className="hc-name">
-                  {c.name}{" "}
-                  <span style={{ fontSize: 10, color: "var(--gold)" }}>✓</span>
-                </div>
-                <div className="hc-trade">{c.trade}</div>
-                <div className="hc-stars">★★★★★</div>
-              </div>
-              <div className="verified-dot" />
-            </div>
-          ))}
         </div>
       </section>
 
