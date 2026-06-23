@@ -49,39 +49,46 @@ const DISTANCE_OPTIONS: { value: MaxDistance; label: string }[] = [
   { value: "any", label: "Any distance" },
 ];
 
-const PRIVACY_ROWS: { key: keyof PrivacySettings; title: string; sub: string }[] =
-  [
-    {
-      key: "publicProfile",
-      title: "Public profile",
-      sub: "Your profile is visible to anyone browsing Fundi",
-    },
-    {
-      key: "showPhone",
-      title: "Show phone number",
-      sub: "Phone number shared only after a job is confirmed",
-    },
-    {
-      key: "showRate",
-      title: "Show daily rate",
-      sub: "Display your rate on your public profile",
-    },
-    {
-      key: "showOnline",
-      title: "Show online status",
-      sub: "Let employers see when you are active",
-    },
-    {
-      key: "allowDirectMessages",
-      title: "Allow direct messages",
-      sub: "Employers can message you without a job request",
-    },
-    {
-      key: "appearInSearch",
-      title: "Appear in search results",
-      sub: "Show up when employers search for your trade",
-    },
-  ];
+const PRIVACY_ROWS: {
+  key: keyof PrivacySettings;
+  title: string;
+  sub: string;
+  /** Worker-only concept — hidden for employers. */
+  workerOnly?: boolean;
+}[] = [
+  {
+    key: "publicProfile",
+    title: "Public profile",
+    sub: "Your profile is visible to anyone browsing Fundi",
+  },
+  {
+    key: "showPhone",
+    title: "Show phone number",
+    sub: "Phone number shared only after a job is confirmed",
+  },
+  {
+    key: "showRate",
+    title: "Show daily rate",
+    sub: "Display your rate on your public profile",
+    workerOnly: true,
+  },
+  {
+    key: "showOnline",
+    title: "Show online status",
+    sub: "Let employers see when you are active",
+  },
+  {
+    key: "allowDirectMessages",
+    title: "Allow direct messages",
+    sub: "Employers can message you without a job request",
+  },
+  {
+    key: "appearInSearch",
+    title: "Appear in search results",
+    sub: "Show up when employers search for your trade",
+    workerOnly: true,
+  },
+];
 
 const sameAvail = (a: AvailabilitySettings, b: AvailabilitySettings) =>
   (Object.keys(a) as (keyof AvailabilitySettings)[]).every((k) => a[k] === b[k]);
@@ -91,9 +98,12 @@ const samePriv = (a: PrivacySettings, b: PrivacySettings) =>
 export default function AvailabilityPrivacyPanel({
   settings,
   onDirty,
+  showAvailability = true,
 }: {
   settings: WorkerSettings;
   onDirty: (dirty: boolean) => void;
+  /** Availability is worker-only; employers see just the privacy controls. */
+  showAvailability?: boolean;
 }) {
   const { success, error: toastError } = useToastContext();
   const updateAvail = useUpdateAvailability();
@@ -134,13 +144,18 @@ export default function AvailabilityPrivacyPanel({
   return (
     <Panel
       id="availability"
-      title="Availability & privacy"
-      subtitle="Set when and where you take on work, and what employers can see."
+      title={showAvailability ? "Availability & privacy" : "Privacy"}
+      subtitle={
+        showAvailability
+          ? "Set when and where you take on work, and what employers can see."
+          : "Control what others can see on your profile."
+      }
     >
       <PanelBody>
-        {/* ── Availability ── */}
-        <div className="ws-group">
-          <div className="ws-group-title">Availability</div>
+        {/* ── Availability (workers only) ── */}
+        {showAvailability && (
+          <div className="ws-group">
+            <div className="ws-group-title">Availability</div>
           <ToggleRow
             title="Available for work"
             sub="Turn off to pause all new job requests"
@@ -212,12 +227,15 @@ export default function AvailabilityPrivacyPanel({
               </select>
             </Field>
           </div>
-        </div>
+          </div>
+        )}
 
         {/* ── Privacy ── */}
         <div className="ws-group">
           <div className="ws-group-title">Privacy</div>
-          {PRIVACY_ROWS.map((row) => (
+          {PRIVACY_ROWS.filter(
+            (row) => showAvailability || !row.workerOnly,
+          ).map((row) => (
             <ToggleRow
               key={row.key}
               title={row.title}
