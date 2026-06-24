@@ -2,7 +2,6 @@
 
 import { ChevronDown, MapPin, Sparkles, Wrench, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { CURRENCIES } from "@/lib/currency";
 import { cn } from "@/lib/utils";
 import { SEARCH_DEFAULTS, useSearchStore } from "@/store/searchStore";
 import {
@@ -39,12 +38,10 @@ export default function FilterBar({ onAskAi }: Props) {
   const minRating = useSearchStore((s) => s.minRating);
   const minExp = useSearchStore((s) => s.minExp);
   const sortBy = useSearchStore((s) => s.sortBy);
-  const displayCurrency = useSearchStore((s) => s.displayCurrency);
 
   const toggleTrade = useSearchStore((s) => s.toggleTrade);
   const setFilter = useSearchStore((s) => s.setFilter);
   const setSortBy = useSearchStore((s) => s.setSortBy);
-  const setDisplayCurrency = useSearchStore((s) => s.setDisplayCurrency);
   const resetFilters = useSearchStore((s) => s.resetFilters);
 
   const [open, setOpen] = useState<OpenPanel>(null);
@@ -273,25 +270,6 @@ export default function FilterBar({ onAskAi }: Props) {
             <Sparkles size={15} aria-hidden />
             Ask AI
           </button>
-          <div className="relative">
-            <select
-              value={displayCurrency}
-              onChange={(e) => setDisplayCurrency(e.target.value)}
-              aria-label="Display currency"
-              className="cursor-pointer appearance-none rounded-[11px] border border-border bg-white py-2.5 pl-3.5 pr-[38px] text-sm text-ink-2 outline-none"
-            >
-              {CURRENCIES.map((c) => (
-                <option key={c.code} value={c.code}>
-                  {c.code} ({c.symbol})
-                </option>
-              ))}
-            </select>
-            <ChevronDown
-              size={13}
-              className="pointer-events-none absolute right-[13px] top-1/2 -translate-y-1/2 text-ink-3"
-              aria-hidden
-            />
-          </div>
           <div className="relative">
             <select
               value={sortBy}
