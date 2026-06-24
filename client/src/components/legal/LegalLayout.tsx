@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import LandingNav from "@/components/landing/LandingNav";
@@ -39,14 +40,25 @@ export default function LegalLayout({
         </p>
       </main>
 
-      <footer className="border-t-[0.5px] border-border px-6 py-5 flex gap-4 justify-center text-sm text-ink-3">
-        <span>© 2026 Tesilix</span>
-        <Link href="/privacy" className="text-ink-3">
-          Privacy
+      <footer className="border-t-[0.5px] border-border px-6 py-6 flex flex-col items-center gap-3 text-sm text-ink-3">
+        <Link href="/" className="inline-flex items-center no-underline">
+          <Image
+            src="/brand/lightlogo.png"
+            alt="Tesilix"
+            width={1027}
+            height={219}
+            className="h-7 w-auto"
+          />
         </Link>
-        <Link href="/terms" className="text-ink-3">
-          Terms
-        </Link>
+        <div className="flex gap-4 justify-center">
+          <span>© 2026 Tesilix</span>
+          <Link href="/privacy" className="text-ink-3 hover:text-ink-2">
+            Privacy
+          </Link>
+          <Link href="/terms" className="text-ink-3 hover:text-ink-2">
+            Terms
+          </Link>
+        </div>
       </footer>
 
       {/* Scoped typography for the article body (raw <h2>/<p>/<ul> from the
