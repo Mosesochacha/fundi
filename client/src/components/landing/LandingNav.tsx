@@ -74,8 +74,8 @@ export default function LandingNav() {
       <nav
         id="lp-navbar"
         className={cn(
-          "fixed top-0 left-0 right-0 z-[100] h-16 flex items-center justify-between px-4 md:px-12 backdrop-blur-[14px] border-b transition-colors",
-          isBrowse ? "bg-cream/[0.86]" : "bg-cream/[0.94]",
+          "fixed top-0 left-0 right-0 z-[100] h-16 backdrop-blur-[14px] border-b transition-colors",
+          isBrowse ? "bg-cream/86" : "bg-cream/94",
           scrolled
             ? isBrowse
               ? "border-border"
@@ -83,119 +83,121 @@ export default function LandingNav() {
             : "border-transparent",
         )}
       >
-        <Link
-          href="/"
-          className={cn(
-            "inline-flex items-center gap-2 font-serif text-[22px] font-medium no-underline tracking-[-0.5px]",
-            isBrowse ? "text-ink" : "text-navy",
-          )}
-        >
-          <LogoMark size={26} variant="navy" />
-          <span>
-            Tesilix
-            <span
-              className={cn(
-                isBrowse
-                  ? "text-gold-dark font-medium"
-                  : "italic font-light text-gold",
-              )}
-            >
-              .
+        <div className="mx-auto flex h-full w-full max-w-[1080px] items-center justify-between px-4 md:px-8">
+          <Link
+            href="/"
+            className={cn(
+              "inline-flex items-center gap-2 font-serif text-[22px] font-medium no-underline tracking-[-0.5px]",
+              isBrowse ? "text-ink" : "text-navy",
+            )}
+          >
+            <LogoMark size={26} variant="navy" />
+            <span>
+              Tesilix
+              <span
+                className={cn(
+                  isBrowse
+                    ? "text-gold-dark font-medium"
+                    : "italic font-light text-gold",
+                )}
+              >
+                .
+              </span>
             </span>
-          </span>
-        </Link>
+          </Link>
 
-        <div className="hidden md:flex items-center gap-8">
-          {NAV_LINKS.map((l) => {
-            const active = l.href === "/browse" && pathname === "/browse";
-            return (
-              <Link
-                key={l.href}
-                href={l.href}
-                className={cn(
-                  "text-[13px] no-underline transition-colors",
-                  isBrowse
-                    ? "text-ink-2 text-sm hover:text-ink"
-                    : "text-ink-2 hover:text-ink",
-                  active &&
-                    (isBrowse
-                      ? "text-gold-dark font-semibold"
-                      : "text-gold-dark font-medium"),
-                )}
-              >
-                {l.label}
-              </Link>
-            );
-          })}
-        </div>
-
-        <div className="flex items-center gap-2 md:gap-2.5">
-          {isLoggedIn ? (
-            <div className="flex items-center gap-3">
-              <NotificationBell variant="nav" />
-              <Link
-                href={dashboardPathForRole(role)}
-                className={cn(
-                  "flex items-center gap-2.5 pl-[5px] pr-2.5 py-[5px] border rounded-full bg-white no-underline transition-all",
-                  isBrowse
-                    ? "border-border hover:border-gold-dark"
-                    : "border-border hover:border-gold",
-                )}
-              >
-                <span
+          <div className="hidden md:flex items-center gap-8">
+            {NAV_LINKS.map((l) => {
+              const active = l.href === "/browse" && pathname === "/browse";
+              return (
+                <Link
+                  key={l.href}
+                  href={l.href}
                   className={cn(
-                    "w-[30px] h-[30px] rounded-full flex items-center justify-center text-[11px] font-semibold flex-none",
+                    "text-[13px] no-underline transition-colors",
                     isBrowse
-                      ? "bg-gold-light text-gold-dark"
-                      : "bg-gold-light text-gold-dark",
+                      ? "text-ink-2 text-sm hover:text-ink"
+                      : "text-ink-2 hover:text-ink",
+                    active &&
+                      (isBrowse
+                        ? "text-gold-dark font-semibold"
+                        : "text-gold-dark font-medium"),
                   )}
                 >
-                  {initials}
-                </span>
-                <span className="hidden md:flex flex-col leading-[1.15]">
-                  <span className="text-[12.5px] font-medium text-ink">
-                    {fullName}
+                  {l.label}
+                </Link>
+              );
+            })}
+          </div>
+
+          <div className="flex items-center gap-2 md:gap-2.5">
+            {isLoggedIn ? (
+              <div className="flex items-center gap-3">
+                <NotificationBell variant="nav" />
+                <Link
+                  href={dashboardPathForRole(role)}
+                  className={cn(
+                    "flex items-center gap-2.5 pl-[5px] pr-2.5 py-[5px] border rounded-full bg-white no-underline transition-all",
+                    isBrowse
+                      ? "border-border hover:border-gold-dark"
+                      : "border-border hover:border-gold",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "w-[30px] h-[30px] rounded-full flex items-center justify-center text-[11px] font-semibold flex-none",
+                      isBrowse
+                        ? "bg-gold-light text-gold-dark"
+                        : "bg-gold-light text-gold-dark",
+                    )}
+                  >
+                    {initials}
                   </span>
-                  <span className="text-[10px] text-ink-3 uppercase tracking-[0.04em]">
-                    {role ? (ROLE_LABEL[role] ?? role) : ""}
+                  <span className="hidden md:flex flex-col leading-[1.15]">
+                    <span className="text-[12.5px] font-medium text-ink">
+                      {fullName}
+                    </span>
+                    <span className="text-[10px] text-ink-3 uppercase tracking-[0.04em]">
+                      {role ? (ROLE_LABEL[role] ?? role) : ""}
+                    </span>
                   </span>
-                </span>
-                <ChevronDown size={14} className="text-ink-3 flex-none" />
-              </Link>
-            </div>
-          ) : (
-            <>
-              <Link
-                href="/login"
-                className={cn(
-                  btnBase,
-                  btnOutline,
-                  "max-md:px-3 max-md:py-[7px] max-md:text-xs",
-                )}
-              >
-                Sign in
-              </Link>
-              <Link
-                href="/register"
-                className={cn(
-                  btnBase,
-                  btnGold,
-                  "max-md:px-3 max-md:py-[7px] max-md:text-xs",
-                )}
-              >
-                Sign up
-              </Link>
-            </>
-          )}
-          <button
-            type="button"
-            className="md:hidden flex items-center justify-center p-1.5 bg-transparent border-none text-ink cursor-pointer"
-            onClick={() => setMenuOpen(true)}
-            aria-label="Open menu"
-            aria-expanded={menuOpen}
-          >
-            <Menu size={22} />
-          </button>
+                  <ChevronDown size={14} className="text-ink-3 flex-none" />
+                </Link>
+              </div>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className={cn(
+                    btnBase,
+                    btnOutline,
+                    "max-md:px-3 max-md:py-[7px] max-md:text-xs",
+                  )}
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/register"
+                  className={cn(
+                    btnBase,
+                    btnGold,
+                    "max-md:px-3 max-md:py-[7px] max-md:text-xs",
+                  )}
+                >
+                  Sign up
+                </Link>
+              </>
+            )}
+            <button
+              type="button"
+              className="md:hidden flex items-center justify-center p-1.5 bg-transparent border-none text-ink cursor-pointer"
+              onClick={() => setMenuOpen(true)}
+              aria-label="Open menu"
+              aria-expanded={menuOpen}
+            >
+              <Menu size={22} />
+            </button>
+          </div>
         </div>
       </nav>
 
