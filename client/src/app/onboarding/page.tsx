@@ -1,6 +1,7 @@
 "use client";
 
 import { CircleCheck, Home, Wrench } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
@@ -171,7 +172,7 @@ export default function OnboardingPage() {
               How will you use Tesilix?
             </h1>
             <p className="text-[13px] text-ink-3 leading-normal mb-[22px]">
-              Choose your role — this can&apos;t be changed later.
+              Choose your role - this can&apos;t be changed later.
             </p>
 
             <div className="grid grid-cols-2 gap-3 mb-6 max-[380px]:grid-cols-1">
@@ -298,7 +299,7 @@ export default function OnboardingPage() {
             <div className="mb-[18px]">
               <label className={FIELD_LABEL} htmlFor="w-rate">
                 Daily rate (KSh){" "}
-                <span className="font-normal text-ink-3">— optional</span>
+                <span className="font-normal text-ink-3">- optional</span>
               </label>
               <input
                 id="w-rate"
@@ -322,19 +323,19 @@ export default function OnboardingPage() {
               />
               <span>
                 I agree to Tesilix&apos;s{" "}
-                <a
+                <Link
                   href="/terms"
                   className="text-gold-dark no-underline hover:underline"
                 >
                   Terms of Service
-                </a>{" "}
+                </Link>{" "}
                 and{" "}
-                <a
+                <Link
                   href="/privacy"
                   className="text-gold-dark no-underline hover:underline"
                 >
                   Privacy Policy
-                </a>
+                </Link>
                 .
               </span>
             </label>
@@ -384,7 +385,7 @@ export default function OnboardingPage() {
             <div className="mb-[18px]">
               <span className={FIELD_LABEL}>
                 What do you usually need?{" "}
-                <span className="font-normal text-ink-3">— optional</span>
+                <span className="font-normal text-ink-3">- optional</span>
               </span>
               <div className="flex flex-wrap gap-2">
                 {EMPLOYER_TRADES.map((t) => (
@@ -414,19 +415,19 @@ export default function OnboardingPage() {
               />
               <span>
                 I agree to Tesilix&apos;s{" "}
-                <a
+                <Link
                   href="/terms"
                   className="text-gold-dark no-underline hover:underline"
                 >
                   Terms of Service
-                </a>{" "}
+                </Link>{" "}
                 and{" "}
-                <a
+                <Link
                   href="/privacy"
                   className="text-gold-dark no-underline hover:underline"
                 >
                   Privacy Policy
-                </a>
+                </Link>
                 .
               </span>
             </label>
@@ -454,12 +455,18 @@ export default function OnboardingPage() {
 
       <div className="mt-7 flex items-center gap-3.5 text-[11px] text-ink-3">
         <span>© 2026 Tesilix</span>
-        <a href="/privacy" className="text-ink-3 no-underline hover:text-ink-2">
+        <Link
+          href="/privacy"
+          className="text-ink-3 no-underline hover:text-ink-2"
+        >
           Privacy
-        </a>
-        <a href="/terms" className="text-ink-3 no-underline hover:text-ink-2">
+        </Link>
+        <Link
+          href="/terms"
+          className="text-ink-3 no-underline hover:text-ink-2"
+        >
           Terms
-        </a>
+        </Link>
       </div>
     </div>
   );
