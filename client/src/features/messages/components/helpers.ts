@@ -8,6 +8,26 @@ export const initialsOf = (n: string) =>
     .map((w) => w[0]?.toUpperCase() ?? "")
     .join("") || "?";
 
+// Keep in sync with the backend (messages.controller.ts) so a draft
+// conversation keeps the same avatar colour once it's created server-side.
+const AVATAR_COLORS = [
+  "#c9a84c",
+  "#0d1b2a",
+  "#3b7d6e",
+  "#9c5b3b",
+  "#5a4b8a",
+  "#a8872e",
+  "#2f6f9e",
+];
+
+/** Deterministic avatar colour derived from a display name. */
+export const avatarColorOf = (name: string) => {
+  const seed = (name || "?")
+    .split("")
+    .reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  return AVATAR_COLORS[seed % AVATAR_COLORS.length];
+};
+
 /** "9:14 AM" */
 export const timeLabel = (iso: string) =>
   new Date(iso).toLocaleTimeString("en-GB", {

@@ -38,7 +38,10 @@ export default function PublicWorkerProfilePage() {
   // Public worker profile (employer view). Falls back to MOCK_PROFILE on failure.
   const data: WorkerProfileData | null = query.isLoading
     ? null
-    : ((query.data as WorkerProfileData | undefined) ?? { ...MOCK_PROFILE, id });
+    : ((query.data as WorkerProfileData | undefined) ?? {
+        ...MOCK_PROFILE,
+        id,
+      });
 
   // Chrome shows the signed-in viewer (an employer); content is the viewed worker.
   const viewerName = profile?.fullName ?? "Employer";
@@ -55,8 +58,11 @@ export default function PublicWorkerProfilePage() {
   const onMessage = () =>
     requireAuth(() => {
       if (!data) return;
-      const base = role === "employer" ? "/employer/messages" : "/worker/messages";
-      router.push(`${base}?to=${data.id}`);
+      const base =
+        role === "employer" ? "/employer/messages" : "/worker/messages";
+      router.push(
+        `${base}?to=${data.id}&name=${encodeURIComponent(data.name)}`,
+      );
     });
 
   const onHire = () =>

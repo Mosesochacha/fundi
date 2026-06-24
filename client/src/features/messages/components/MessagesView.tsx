@@ -10,9 +10,10 @@ import { useJobAction } from "../hooks/useJobActions";
 import { useMarkRead, useSendMessage } from "../hooks/useMessageActions";
 import { useMessages } from "../hooks/useMessages";
 import type { JobAction } from "../services/jobs.service";
-import type { Conversation, Message } from "../types";
+import type { Conversation, ConversationParticipant, Message } from "../types";
 import ChatPanel from "./ChatPanel";
 import ConversationList from "./ConversationList";
+import { avatarColorOf, initialsOf } from "./helpers";
 import "./messages.css";
 
 type Role = "worker" | "employer";
@@ -22,6 +23,29 @@ function onlineOf(c: Conversation | null, presence: Record<string, boolean>) {
   const uid = c.participant.userId;
   if (uid && uid in presence) return presence[uid];
   return c.participant.isOnline;
+}
+
+/**
+ * Build a placeholder participant for a brand-new conversation opened via
+ * `?to={profileId}` before any message exists. `userId` is null (no presence
+ * yet); the real participant — with colour, presence and any linked job —
+ * replaces this once the first message creates the conversation server-side.
+ */
+function draftParticipantOf(
+  toProfileId: string,
+  name: string | null,
+  viewerRole: Role,
+): ConversationParticipant {
+  const display = name?.trim() || "New message";
+  return {
+    id: toProfileId,
+    userId: null,
+    name: display,
+    initials: initialsOf(display),
+    role: viewerRole === "employer" ? "worker" : "employer",
+    isOnline: false,
+    avatarColor: avatarColorOf(display),
+  };
 }
 
 export default function MessagesView({
@@ -43,6 +67,10 @@ export default function MessagesView({
     useConversations();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  // A pending first-contact conversation (from `?to=`) that has no server row
+  // yet. Also kept as a header fallback in the gap between sending the first
+  // message and the conversation list refetching to include it.
+  const [draft, setDraft] = useState<ConversationParticipant | null>(null);
   const [search, setSearch] = useState("");
   const [presence, setPresence] = useState<Record<string, boolean>>({});
   const [othersTyping, setOthersTyping] = useState(false);
@@ -64,6 +92,19 @@ export default function MessagesView({
     [conversations, selectedId],
   );
 
+  // What the chat panel renders: the real conversation when it's in the list,
+  // otherwise the draft placeholder (pre-send, or during the post-send gap).
+  const active: Conversation | null =
+    selected ??
+    (draft
+      ? {
+          id: selectedId ?? "",
+          participant: draft,
+          lastMessage: null,
+          unreadCount: 0,
+        }
+      : null);
+
   // Sync server messages into local state (real-time appends layer on top).
   // biome-ignore lint/correctness/useExhaustiveDependencies: re-seed when switching conversations
   useEffect(() => {
@@ -76,35 +117,47 @@ export default function MessagesView({
     setOthersTyping(false);
   }, [selectedId]);
 
+  // Once a sent draft's real conversation lands in the list, drop the
+  // placeholder so the real participant (colour, presence, linked job) wins.
+  useEffect(() => {
+    if (selected && draft) setDraft(null);
+  }, [selected, draft]);
+
   const selectConversation = useCallback(
     (id: string) => {
+      setDraft(null);
       setSelectedId(id);
       markRead.mutate(id);
       if (typeof window !== "undefined") {
         const url = new URL(window.location.href);
         url.searchParams.set("c", id);
         url.searchParams.delete("to");
+        url.searchParams.delete("name");
         window.history.replaceState(null, "", url.toString());
       }
     },
     [markRead],
   );
 
-  // Initial selection from the URL (?c=conversationId, or ?to=profileId).
+  // Initial selection from the URL (?c=conversationId, or ?to=profileId). For
+  // a `?to=` with no existing conversation, open a draft compose panel so the
+  // first message can be sent (it creates the conversation via recipientId).
   const didInit = useRef(false);
   useEffect(() => {
-    if (didInit.current || selectedId || conversations.length === 0) return;
+    if (didInit.current || selectedId || draft || convLoading) return;
     didInit.current = true;
     const params = new URLSearchParams(window.location.search);
     const c = params.get("c");
     const to = params.get("to");
+    const name = params.get("name");
     if (c && conversations.some((x) => x.id === c)) {
       selectConversation(c);
     } else if (to) {
       const match = conversations.find((x) => x.participant.id === to);
       if (match) selectConversation(match.id);
+      else setDraft(draftParticipantOf(to, name, role));
     }
-  }, [conversations, selectedId, selectConversation]);
+  }, [convLoading, conversations, selectedId, draft, selectConversation, role]);
 
   // Socket: new messages, typing, presence.
   useEffect(() => {
@@ -154,13 +207,39 @@ export default function MessagesView({
 
   const handleSend = useCallback(
     async (content: string) => {
-      if (!selectedId) return;
+      if (!selectedId && !draft) return;
       try {
-        const res = await sendMutation.mutateAsync({
-          conversationId: selectedId,
-          content,
-        });
+        // Existing conversation → send by id; first contact → send by
+        // recipientId, which finds-or-creates the conversation server-side.
+        const res = await sendMutation.mutateAsync(
+          selectedId
+            ? { conversationId: selectedId, content }
+            : { recipientId: draft?.id, content },
+        );
+        const newConvId = res?.data?.data?.conversationId as string | undefined;
         const msg = res?.data?.data?.message as Message | undefined;
+
+        if (!selectedId && newConvId) {
+          // The draft just became a real conversation. Seed the message cache
+          // so switching to it doesn't flash an empty thread, then select it.
+          if (msg) {
+            qc.setQueryData(["messages", "conversation", newConvId], {
+              data: { data: [msg] },
+            });
+            setMessages([msg]);
+          }
+          setSelectedId(newConvId);
+          if (typeof window !== "undefined") {
+            const url = new URL(window.location.href);
+            url.searchParams.set("c", newConvId);
+            url.searchParams.delete("to");
+            url.searchParams.delete("name");
+            window.history.replaceState(null, "", url.toString());
+          }
+          qc.invalidateQueries({ queryKey: ["messages", "conversations"] });
+          return;
+        }
+
         if (msg)
           setMessages((prev) =>
             prev.some((m) => m.id === msg.id) ? prev : [...prev, msg],
@@ -169,7 +248,7 @@ export default function MessagesView({
         /* surfaced via mutation state; keep the thread intact */
       }
     },
-    [selectedId, sendMutation],
+    [selectedId, draft, sendMutation, qc],
   );
 
   const handleTypingChange = useCallback(
@@ -187,11 +266,13 @@ export default function MessagesView({
 
   const handleBack = useCallback(() => {
     setSelectedId(null);
+    setDraft(null);
     setOthersTyping(false);
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
       url.searchParams.delete("c");
       url.searchParams.delete("to");
+      url.searchParams.delete("name");
       window.history.replaceState(null, "", url.toString());
     }
   }, []);
@@ -215,7 +296,7 @@ export default function MessagesView({
   }, [conversations, search]);
 
   return (
-    <div className={`msg${selectedId ? " has-selection" : ""}`}>
+    <div className={`msg${selectedId || draft ? " has-selection" : ""}`}>
       <ConversationList
         conversations={filtered}
         selectedId={selectedId}
@@ -226,16 +307,16 @@ export default function MessagesView({
         loading={convLoading}
       />
       <div className="msg-panel">
-        {selected ? (
+        {active ? (
           <ChatPanel
-            conversation={selected}
-            messages={messages}
+            conversation={active}
+            messages={selectedId ? messages : []}
             myProfileId={myProfileId}
             myName={myName}
             role={role}
-            online={onlineOf(selected, presence)}
-            othersTyping={othersTyping}
-            loadingMessages={messagesQuery.isLoading}
+            online={selected ? onlineOf(selected, presence) : false}
+            othersTyping={selected ? othersTyping : false}
+            loadingMessages={selectedId ? messagesQuery.isLoading : false}
             onSend={handleSend}
             onJobAction={handleJobAction}
             onTypingChange={handleTypingChange}
