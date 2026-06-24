@@ -11,6 +11,8 @@ export interface RegisterInput {
   trade?: string;
   interestedTrades?: string[];
   dailyRate?: number;
+  /** Preferred display currency (ISO 4217 code, e.g. "USD"). */
+  currency?: string;
   agreedToTerms: boolean;
 }
 

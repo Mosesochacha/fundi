@@ -7,6 +7,7 @@ import { useState } from "react";
 import Shell from "@/components/dashboard/Shell";
 import { useAuth } from "@/features/auth";
 import { type EmployerJob, useGetEmployerJobs } from "@/features/employer/jobs";
+import { symbolOf } from "@/lib/currency";
 import {
   Avatar,
   EL_BTN,
@@ -127,6 +128,8 @@ function HireRow({
   onHireAgain: () => void;
   onReview: () => void;
 }) {
+  const { user } = useAuth();
+  const sym = symbolOf(user?.currency);
   const when = job.completedAt ?? job.createdAt;
   return (
     <div className={EL_ROW}>
@@ -150,7 +153,9 @@ function HireRow({
         </div>
         <div className={EL_ROW_ACTIONS}>
           {job.agreedRate ? (
-            <span className={EL_RATE}>KSh {fmtMoney(job.agreedRate)} paid</span>
+            <span className={EL_RATE}>
+              {sym} {fmtMoney(job.agreedRate)} paid
+            </span>
           ) : null}
         </div>
         <div className={EL_ROW_ACTIONS}>

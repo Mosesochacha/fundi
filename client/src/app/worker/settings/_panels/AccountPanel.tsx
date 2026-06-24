@@ -5,16 +5,20 @@ import { ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { CurrencySelect } from "@/components/ui";
 import { useToastContext } from "@/context/ToastContext";
+import { useAuth } from "@/features/auth";
 import {
   useDisconnectGoogle,
   useUpdateEmail,
   useUpdatePassword,
   useUpdatePhone,
+  useUpdateProfile,
   useVerifyEmail,
   useVerifyPhone,
   type WorkerSettings,
 } from "@/features/worker/settings";
+import { DEFAULT_CURRENCY } from "@/lib/currency";
 import { cn } from "@/lib/utils";
 import {
   apiError,
@@ -80,7 +84,8 @@ export default function AccountPanel({
   settings: WorkerSettings;
 }) {
   const { success, error: toastError } = useToastContext();
-  const { account } = settings;
+  const { account, profile } = settings;
+  const { user } = useAuth();
 
   const updateEmail = useUpdateEmail();
   const verifyEmail = useVerifyEmail();
@@ -88,9 +93,22 @@ export default function AccountPanel({
   const verifyPhone = useVerifyPhone();
   const updatePassword = useUpdatePassword();
   const disconnectGoogle = useDisconnectGoogle();
+  const updateProfile = useUpdateProfile();
 
   const [email, setEmail] = useState(account.email);
   const [phone, setPhone] = useState(account.phone);
+  const initialCurrency =
+    profile.currency || user?.currency || DEFAULT_CURRENCY;
+  const [currency, setCurrency] = useState(initialCurrency);
+
+  async function saveCurrency() {
+    try {
+      await updateProfile.mutateAsync({ currency });
+      success("Currency updated");
+    } catch (e) {
+      toastError(apiError(e, "Could not update currency"));
+    }
+  }
 
   async function saveEmail() {
     const parsed = emailSchema.safeParse({ email });
@@ -262,6 +280,33 @@ export default function AccountPanel({
             >
               {updatePhone.isPending ? "Saving…" : "Save phone"}
             </button>
+          )}
+        </div>
+
+        {/* Currency */}
+        <div className="pt-4 mt-4 border-t-[0.5px] border-border">
+          <Field
+            label="Currency"
+            htmlFor="currency"
+            hint="Used to display your rates and earnings. Changes the symbol only."
+          >
+            <CurrencySelect
+              id="currency"
+              value={currency}
+              onChange={setCurrency}
+            />
+          </Field>
+          {currency !== initialCurrency && (
+            <div className="-mt-1.5">
+              <button
+                type="button"
+                className={btn(BTN_GOLD, true)}
+                onClick={saveCurrency}
+                disabled={updateProfile.isPending}
+              >
+                {updateProfile.isPending ? "Saving…" : "Save currency"}
+              </button>
+            </div>
           )}
         </div>
 

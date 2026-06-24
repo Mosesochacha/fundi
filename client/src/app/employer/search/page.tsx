@@ -17,6 +17,7 @@ import {
   type BrowseWorker,
   useBrowseWorkers,
 } from "@/features/browse";
+import { CURRENCIES } from "@/lib/currency";
 import { useSearchStore } from "@/store/searchStore";
 import HireModal from "../dashboard/HireModal";
 
@@ -61,8 +62,10 @@ export default function EmployerSearchPage() {
   const minRating = useSearchStore((s) => s.minRating);
   const minExp = useSearchStore((s) => s.minExp);
   const sortBy = useSearchStore((s) => s.sortBy);
+  const displayCurrency = useSearchStore((s) => s.displayCurrency);
   const toggleTrade = useSearchStore((s) => s.toggleTrade);
   const setFilter = useSearchStore((s) => s.setFilter);
+  const setDisplayCurrency = useSearchStore((s) => s.setDisplayCurrency);
   const resetFilters = useSearchStore((s) => s.resetFilters);
 
   const [page, setPage] = useState(1);
@@ -236,6 +239,18 @@ export default function EmployerSearchPage() {
           </button>
           <select
             className="text-sm text-ink-2 bg-white border border-border rounded-full px-3 py-1.5 cursor-pointer"
+            value={displayCurrency}
+            onChange={(e) => setDisplayCurrency(e.target.value)}
+            aria-label="Display currency"
+          >
+            {CURRENCIES.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.code} ({c.symbol})
+              </option>
+            ))}
+          </select>
+          <select
+            className="text-sm text-ink-2 bg-white border border-border rounded-full px-3 py-1.5 cursor-pointer"
             value={sortBy}
             onChange={(e) => setFilter("sortBy", e.target.value)}
             aria-label="Sort by"
@@ -289,6 +304,7 @@ export default function EmployerSearchPage() {
                 <WorkerCard
                   key={w.id}
                   worker={w}
+                  displayCurrency={displayCurrency}
                   onView={() => router.push(`/worker/${w.username}`)}
                   onHire={() =>
                     setHireTarget({ id: w.id, name: w.name, trade: w.trade })
@@ -360,10 +376,12 @@ export default function EmployerSearchPage() {
    ───────────────────────────────────────────────────────────────────────── */
 function WorkerCard({
   worker,
+  displayCurrency,
   onView,
   onHire,
 }: {
   worker: BrowseWorker;
+  displayCurrency: string;
   onView: () => void;
   onHire: () => void;
 }) {
@@ -451,7 +469,7 @@ function WorkerCard({
             <strong>{worker.jobsDone}</strong> jobs
           </span>
           <span className="ml-auto bg-gold-light border border-gold/40 text-gold-dark text-[11px] font-semibold rounded-full px-2 py-px">
-            {formatRate(worker.currency, worker.dailyRate)}
+            {formatRate(displayCurrency, worker.dailyRate)}
           </span>
         </div>
 

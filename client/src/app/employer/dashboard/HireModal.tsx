@@ -4,7 +4,9 @@ import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui";
 import { useToastContext } from "@/context/ToastContext";
+import { useAuth } from "@/features/auth";
 import { useHireWorker } from "@/features/employer/dashboard";
+import { symbolOf } from "@/lib/currency";
 
 interface HireTarget {
   id: string;
@@ -33,6 +35,7 @@ function errMessage(e: unknown, fallback: string): string {
  */
 export default function HireModal({ worker, defaultLocation, onClose }: Props) {
   const { success, error: toastError } = useToastContext();
+  const { user } = useAuth();
   const hire = useHireWorker();
 
   const [jobType, setJobType] = useState("");
@@ -211,7 +214,7 @@ export default function HireModal({ worker, defaultLocation, onClose }: Props) {
               inputMode="numeric"
               value={budget}
               onChange={(e) => setBudget(e.target.value)}
-              placeholder="KSh per day"
+              placeholder={`${symbolOf(user?.currency)} per day`}
             />
           </div>
 

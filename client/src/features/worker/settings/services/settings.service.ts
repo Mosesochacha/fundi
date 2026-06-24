@@ -1,4 +1,5 @@
 import client from "@/lib/axios";
+import { DEFAULT_CURRENCY } from "@/lib/currency";
 
 /* ─────────────────────────────────────────────────────────────────────────
    Worker settings - shared types.
@@ -44,6 +45,8 @@ export interface ProfileSettings {
   location: string;
   about: string;
   dailyRate: number | null;
+  /** Preferred display currency (ISO 4217 code, e.g. "USD"). */
+  currency: string;
   avatarUrl: string | null;
 }
 
@@ -163,6 +166,7 @@ export const DEFAULT_SETTINGS: WorkerSettings = {
     location: "",
     about: "",
     dailyRate: null,
+    currency: DEFAULT_CURRENCY,
     avatarUrl: null,
   },
   account: {

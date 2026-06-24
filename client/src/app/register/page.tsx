@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
 import { useMemo, useState } from "react";
 import { Logo } from "@/components/Logo";
+import { CurrencySelect } from "@/components/ui";
 import { useToastContext } from "@/context/ToastContext";
 import { useGoogleAuth, useRegister } from "@/features/auth";
 import { redirectPathForRole } from "@/lib/authRedirect";
+import { DEFAULT_CURRENCY, symbolOf } from "@/lib/currency";
 import { cn } from "@/lib/utils";
 import { accountStepSchema } from "@/lib/validations/auth";
 
@@ -99,6 +101,7 @@ export default function RegisterPage() {
   const [form, setForm] = useState({ ...EMPTY_FORM });
   const [accountType, setAccountType] = useState<AccountType | null>(null);
   const [trade, setTrade] = useState<string>("");
+  const [currency, setCurrency] = useState(DEFAULT_CURRENCY);
   const [interestedTrades, setInterestedTrades] = useState<string[]>([]);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [showPw1, setShowPw1] = useState(false);
@@ -167,6 +170,7 @@ export default function RegisterPage() {
         ...(accountType === "worker" && form.dailyRate
           ? { dailyRate: Number(form.dailyRate.replace(/[^0-9]/g, "")) }
           : {}),
+        currency,
         agreedToTerms,
       });
 
@@ -592,13 +596,18 @@ export default function RegisterPage() {
             </div>
             <div className="mb-4">
               <span className={LABEL_CLASS}>Daily rate (optional)</span>
-              <input
-                className={inputClass("dailyRate")}
-                placeholder="e.g. KSh 2,500"
-                value={form.dailyRate}
-                onChange={set("dailyRate")}
-                inputMode="numeric"
-              />
+              <div className="flex gap-2">
+                <div className="w-[150px] shrink-0">
+                  <CurrencySelect value={currency} onChange={setCurrency} />
+                </div>
+                <input
+                  className={cn(inputClass("dailyRate"), "flex-1")}
+                  placeholder={`e.g. ${symbolOf(currency)} 2,500`}
+                  value={form.dailyRate}
+                  onChange={set("dailyRate")}
+                  inputMode="numeric"
+                />
+              </div>
               <div className={HINT_CLASS}>
                 You can update this anytime on your profile
               </div>

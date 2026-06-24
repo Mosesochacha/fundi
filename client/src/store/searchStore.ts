@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { DEFAULT_CURRENCY } from "@/lib/currency";
 
 export type ViewMode = "list" | "grid";
 
@@ -14,6 +15,9 @@ interface SearchState {
   minExp: number;
   sortBy: string;
   viewMode: ViewMode;
+  /** Display-only currency for the rates shown in the browse / search toolbar.
+   * Not a filter - never reset by `resetFilters`. */
+  displayCurrency: string;
   toggleTrade: (trade: string) => void;
   setFilter: <K extends keyof SearchFilters>(
     key: K,
@@ -22,6 +26,7 @@ interface SearchState {
   resetFilters: () => void;
   setSortBy: (sort: string) => void;
   setViewMode: (mode: ViewMode) => void;
+  setDisplayCurrency: (code: string) => void;
 }
 
 type SearchFilters = Pick<
@@ -63,6 +68,7 @@ const defaults = SEARCH_DEFAULTS;
 
 export const useSearchStore = create<SearchState>((set) => ({
   ...defaults,
+  displayCurrency: DEFAULT_CURRENCY,
   toggleTrade: (trade) =>
     set((s) => ({
       selectedTrades: s.selectedTrades.includes(trade)
@@ -73,4 +79,5 @@ export const useSearchStore = create<SearchState>((set) => ({
   resetFilters: () => set({ ...defaults }),
   setSortBy: (sortBy) => set({ sortBy }),
   setViewMode: (viewMode) => set({ viewMode }),
+  setDisplayCurrency: (displayCurrency) => set({ displayCurrency }),
 }));

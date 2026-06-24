@@ -30,6 +30,7 @@ import {
   useGetEmployerDashboard,
   useMarkComplete,
 } from "@/features/employer/dashboard";
+import { symbolOf } from "@/lib/currency";
 import HireModal from "./HireModal";
 import ReviewModal from "./ReviewModal";
 
@@ -59,7 +60,7 @@ const longDate = (d: Date) =>
 const shortDate = (iso: string) =>
   new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 
-/** Plain KSh amount with thousands separators. */
+/** Plain amount with thousands separators (symbol is prepended by callers). */
 const fmtMoney = (n: number) => n.toLocaleString("en-US");
 
 /** Compact money, e.g. 28400 → "28.4k". */
@@ -203,7 +204,7 @@ export default function EmployerDashboardPage() {
                 accent="purple"
                 number={fmtK(stats?.totalSpent ?? 0)}
                 label="Total spent this month"
-                sub="KSh this month"
+                sub={`${symbolOf(user?.currency)} this month`}
                 trend={
                   (stats?.weekTrend ?? 0) > 0
                     ? `↑ ${stats?.weekTrend} jobs this week`
@@ -594,6 +595,8 @@ function SuggestedFundisCard({
   workers: SuggestedWorker[];
   onHire: (w: SuggestedWorker) => void;
 }) {
+  const { user } = useAuth();
+  const sym = symbolOf(user?.currency);
   return (
     <CardShell>
       <CardHead>
@@ -634,7 +637,7 @@ function SuggestedFundisCard({
                 </span>
                 {w.rate != null && (
                   <span className="bg-gold-light border border-gold/40 text-gold-dark text-[11px] font-semibold rounded-full px-2 py-px">
-                    KSh {fmtMoney(w.rate)}/day
+                    {sym} {fmtMoney(w.rate)}/day
                   </span>
                 )}
               </div>
@@ -729,6 +732,8 @@ function QuickAction({
    Spending this month
    ───────────────────────────────────────────────────────────────────────── */
 function SpendingCard({ items, total }: { items: SpendItem[]; total: number }) {
+  const { user } = useAuth();
+  const sym = symbolOf(user?.currency);
   const max = items.reduce((m, i) => Math.max(m, i.amount), 0) || 1;
   return (
     <CardShell>
@@ -757,7 +762,7 @@ function SpendingCard({ items, total }: { items: SpendItem[]; total: number }) {
                   </span>
                 </span>
                 <span className="text-sm font-medium text-ink-2">
-                  KSh {fmtMoney(it.amount)}
+                  {sym} {fmtMoney(it.amount)}
                 </span>
               </div>
               <div className="h-1 rounded-full bg-cream-2 overflow-hidden mt-1.5">
@@ -773,7 +778,7 @@ function SpendingCard({ items, total }: { items: SpendItem[]; total: number }) {
               Total this month
             </span>
             <span className="font-serif text-base text-gold-dark">
-              KSh {fmtMoney(total)}
+              {sym} {fmtMoney(total)}
             </span>
           </div>
         </>
@@ -792,6 +797,8 @@ function RecentHiresCard({
   hires: RecentHire[];
   onHireAgain: (h: RecentHire) => void;
 }) {
+  const { user } = useAuth();
+  const sym = symbolOf(user?.currency);
   return (
     <CardShell>
       <CardHead>
@@ -829,7 +836,7 @@ function RecentHiresCard({
             <div className="flex flex-col items-end gap-0.5 shrink-0">
               {h.rate > 0 && (
                 <span className="text-[11px] font-medium text-gold-dark">
-                  KSh {fmtMoney(h.rate)}
+                  {sym} {fmtMoney(h.rate)}
                 </span>
               )}
               {h.rating != null && <Stars value={h.rating} />}

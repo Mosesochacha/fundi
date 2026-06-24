@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { Logo } from "@/components/Logo";
+import { CurrencySelect } from "@/components/ui";
 import { useToastContext } from "@/context/ToastContext";
 import { useAuth } from "@/features/auth";
 import {
@@ -13,6 +14,7 @@ import {
   useWorkerOnboarding,
 } from "@/features/onboarding";
 import { dashboardPathForRole, roleForUser } from "@/lib/authRedirect";
+import { DEFAULT_CURRENCY, symbolOf } from "@/lib/currency";
 import { cn } from "@/lib/utils";
 
 const WORKER_TRADES = [
@@ -71,6 +73,7 @@ export default function OnboardingPage() {
   const [trade, setTrade] = useState("");
   const [wLocation, setWLocation] = useState("");
   const [dailyRate, setDailyRate] = useState("");
+  const [currency, setCurrency] = useState(DEFAULT_CURRENCY);
   const [eLocation, setELocation] = useState("");
   const [interested, setInterested] = useState<string[]>([]);
   const [terms, setTerms] = useState(false);
@@ -102,6 +105,7 @@ export default function OnboardingPage() {
         dailyRate: dailyRate
           ? Number(dailyRate.replace(/[^0-9]/g, ""))
           : undefined,
+        currency,
       });
       // JWT auto-heals in the auth jwt callback (re-pulls /auth/me while the
       // cached user is incomplete), so middleware lets the dashboard through.
@@ -116,6 +120,7 @@ export default function OnboardingPage() {
       await employerOnb.mutateAsync({
         location: eLocation.trim(),
         interestedTrades: interested,
+        currency,
       });
       router.push("/employer/dashboard?welcome=true");
     } catch {
@@ -298,17 +303,22 @@ export default function OnboardingPage() {
 
             <div className="mb-[18px]">
               <label className={FIELD_LABEL} htmlFor="w-rate">
-                Daily rate (KSh){" "}
+                Daily rate ({symbolOf(currency)}){" "}
                 <span className="font-normal text-ink-3">- optional</span>
               </label>
-              <input
-                id="w-rate"
-                className={FIELD_INPUT}
-                inputMode="numeric"
-                placeholder="e.g. 2500"
-                value={dailyRate}
-                onChange={(e) => setDailyRate(e.target.value)}
-              />
+              <div className="flex gap-2">
+                <div className="w-[150px] shrink-0">
+                  <CurrencySelect value={currency} onChange={setCurrency} />
+                </div>
+                <input
+                  id="w-rate"
+                  className={cn(FIELD_INPUT, "flex-1")}
+                  inputMode="numeric"
+                  placeholder="e.g. 2500"
+                  value={dailyRate}
+                  onChange={(e) => setDailyRate(e.target.value)}
+                />
+              </div>
               <div className="text-[11px] text-ink-3 mt-1.5">
                 You can set this later from your profile.
               </div>

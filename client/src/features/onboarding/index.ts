@@ -5,10 +5,14 @@ export interface WorkerOnboardingInput {
   trade: string;
   location: string;
   dailyRate?: number;
+  /** Preferred display currency (ISO 4217 code, e.g. "USD"). */
+  currency?: string;
 }
 export interface EmployerOnboardingInput {
   location: string;
   interestedTrades?: string[];
+  /** Preferred display currency (ISO 4217 code, e.g. "USD"). */
+  currency?: string;
 }
 
 export const onboardingService = {

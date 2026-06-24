@@ -15,6 +15,8 @@ export interface AuthUser {
   role: BackendRole;
   accountType?: "employer" | "worker" | null;
   phoneNumber?: string | null;
+  /** Preferred display currency (ISO 4217 code, e.g. "USD"). */
+  currency?: string;
   status: "active" | "inactive" | "suspended";
   emailVerified: boolean;
   isOnboarded: boolean;

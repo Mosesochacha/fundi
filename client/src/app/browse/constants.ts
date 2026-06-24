@@ -1,5 +1,7 @@
 /** Static reference data + helpers for the /browse page UI. */
 
+import { symbolOf } from "@/lib/currency";
+
 export interface TradeOption {
   name: string;
   emoji: string;
@@ -61,9 +63,9 @@ export const BUDGET_PRESETS: {
   max: number;
 }[] = [
   { label: "Any budget", min: 500, max: 10000 },
-  { label: "Under KSh 2,000", min: 500, max: 2000 },
-  { label: "KSh 2,000–4,000", min: 2000, max: 4000 },
-  { label: "KSh 4,000+", min: 4000, max: 10000 },
+  { label: "Under 2,000", min: 500, max: 2000 },
+  { label: "2,000–4,000", min: 2000, max: 4000 },
+  { label: "4,000+", min: 4000, max: 10000 },
 ];
 
 /**
@@ -169,9 +171,9 @@ export function bannerGradient(trade: string): string {
   return `linear-gradient(120deg, ${bannerColor(trade)} 0%, ${avatarTint(trade)} 100%)`;
 }
 
-/** Money formatting for the rate pill. */
+/** Money formatting for the rate pill. `currency` is an ISO 4217 code (e.g.
+ * "USD"); it is mapped to its symbol via `symbolOf` (display-only). */
 export function formatRate(currency: string, dailyRate: number): string {
   if (!dailyRate || dailyRate <= 0) return "Rate on request";
-  const prefix = currency || "KSh";
-  return `${prefix} ${dailyRate.toLocaleString()}`;
+  return `${symbolOf(currency)} ${dailyRate.toLocaleString()}`;
 }

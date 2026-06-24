@@ -11,7 +11,7 @@ export interface HireWorkerInput {
   description?: string;
   /** ISO datetime. */
   scheduledAt?: string;
-  /** Optional budget in KSh → maps to the job's agreedRate. */
+  /** Optional budget (in the user's currency) → maps to the job's agreedRate. */
   budget?: number;
 }
 

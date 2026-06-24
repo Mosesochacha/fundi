@@ -31,7 +31,7 @@ export interface SuggestedWorker {
   /** 0 when no reviews yet. */
   rating: number;
   jobCount: number;
-  /** Daily rate in KSh, or null if unset. */
+  /** Daily rate (in the user's currency), or null if unset. */
   rate: number | null;
   isVerified: boolean;
 }
@@ -62,7 +62,7 @@ export interface EmployerDashboard {
     activeJobs: number;
     pendingResponses: number;
     totalHires: number;
-    /** KSh spent this calendar month. */
+    /** Amount spent this calendar month (in the user's currency). */
     totalSpent: number;
     /** Jobs created in the last 7 days. */
     weekTrend: number;
