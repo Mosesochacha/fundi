@@ -27,7 +27,7 @@ export default function LandingCta() {
           Be one of the first fundis on the platform. Free to start, always -
           and free to stay.
         </p>
-        <div className="reveal flex flex-col sm:flex-row gap-3 justify-center mt-10 flex-wrap w-full max-w-[340px] sm:max-w-none mx-auto">
+        <div className="reveal flex flex-col sm:flex-row gap-3 justify-center mt-10 flex-wrap w-full sm:max-w-none mx-auto">
           <Link href="/browse" className={`${btnGold} max-sm:w-full`}>
             Find a fundi now
           </Link>

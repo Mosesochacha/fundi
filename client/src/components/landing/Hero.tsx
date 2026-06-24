@@ -23,7 +23,7 @@ export default function Hero() {
         electricians, carpenters and more. Browse profiles and connect directly.
         No brokers.
       </p>
-      <div className="reveal flex flex-col sm:flex-row gap-3 mt-10 flex-wrap justify-center w-full max-w-[340px] sm:max-w-none">
+      <div className="reveal flex flex-col sm:flex-row gap-3 mt-10 flex-wrap justify-center w-full sm:max-w-none">
         <Link href="/browse" className={`${btnGold} max-sm:w-full`}>
           Find a fundi near you
         </Link>
