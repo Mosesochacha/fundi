@@ -1,16 +1,15 @@
 "use client";
 
-import { useParams, usePathname, useRouter } from "next/navigation";
+import { notFound, useParams, usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import HireModal from "@/app/employer/dashboard/HireModal";
+import type { DashboardRole } from "@/components/dashboard/navConfig";
 import Shell from "@/components/dashboard/Shell";
 import WorkerProfile from "@/components/worker/WorkerProfile";
 import WorkerProfileSkeleton from "@/components/worker/WorkerProfileSkeleton";
-import {
-  MOCK_PROFILE,
-  type WorkerProfileData,
-} from "@/components/worker/workerProfileData";
+import type { WorkerProfileData } from "@/components/worker/workerProfileData";
 import { useAuth } from "@/features/auth";
+import { useConversations } from "@/features/messages/hooks/useConversations";
 import { useGetProfile } from "@/features/worker/profile";
 
 const initialsOf = (n: string) =>
@@ -25,9 +24,10 @@ export default function PublicWorkerProfilePage() {
   const pathname = usePathname();
   const router = useRouter();
   const params = useParams();
-  const id = String(params?.id ?? MOCK_PROFILE.id);
+  const id = String(params?.id ?? "");
   const { profile, isLoggedIn, role } = useAuth();
   const query = useGetProfile(id);
+  const { data: conversations } = useConversations();
 
   const [hireTarget, setHireTarget] = useState<{
     id: string;
@@ -35,17 +35,18 @@ export default function PublicWorkerProfilePage() {
     trade: string;
   } | null>(null);
 
-  // Public worker profile (employer view). Falls back to MOCK_PROFILE on failure.
-  const data: WorkerProfileData | null = query.isLoading
-    ? null
-    : ((query.data as WorkerProfileData | undefined) ?? {
-        ...MOCK_PROFILE,
-        id,
-      });
+  const data = query.data as WorkerProfileData | undefined;
 
-  // Chrome shows the signed-in viewer (an employer); content is the viewed worker.
-  const viewerName = profile?.fullName ?? "Employer";
+  // Middleware guarantees a signed-in viewer here; an unknown/failed profile 404s.
+  if (!query.isLoading && (query.isError || !data)) notFound();
+
+  // Chrome reflects the signed-in viewer (employer or worker); content is the
+  // viewed worker.
+  const viewerName = profile?.fullName ?? "";
   const viewer = { name: viewerName, initials: initialsOf(viewerName) };
+  const shellRole: DashboardRole = role === "worker" ? "worker" : "employer";
+  const unreadMessages =
+    conversations?.filter((c) => c.unreadCount > 0).length ?? 0;
 
   const requireAuth = (fn: () => void) => {
     if (!isLoggedIn) {
@@ -72,8 +73,12 @@ export default function PublicWorkerProfilePage() {
     });
 
   return (
-    // biome-ignore lint/a11y/useValidAriaRole: `role` is a Shell prop, not an ARIA attribute
-    <Shell role="employer" user={viewer} currentPath={pathname}>
+    <Shell
+      role={shellRole}
+      user={viewer}
+      currentPath={pathname}
+      unreadMessages={unreadMessages}
+    >
       {data ? (
         <WorkerProfile
           mode="public"

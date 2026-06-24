@@ -13,8 +13,9 @@ const AUTH_ONLY = [
 ];
 
 /**
- * Role areas blanket-gated by exact role. `/worker` can't go here -
- * `/worker/[id]` is a public profile - so worker routes use WORKER_PROTECTED below.
+ * Role areas blanket-gated by exact role. `/worker` can't go here - its
+ * `/worker/[id]` profile pages are viewable by any signed-in role (employers
+ * view workers), so worker routes use WORKER_PROTECTED below.
  */
 const ROLE_GATED: Record<string, AppRole> = {
   "/employer": "employer",
@@ -24,8 +25,9 @@ const ROLE_GATED: Record<string, AppRole> = {
 
 /**
  * Worker app routes that require `role === 'worker'`. Anything else under
- * `/worker/` (e.g. `/worker/123`) is a public profile view.
- * ADD new worker pages here, otherwise they ship unguarded.
+ * `/worker/` (e.g. `/worker/123`) is a profile view — login-gated, but open to
+ * any signed-in role. ADD new worker-only pages here, otherwise they ship
+ * accessible to employers too.
  */
 const WORKER_PROTECTED = [
   "dashboard",
@@ -87,11 +89,13 @@ export default auth((req) => {
     return complete ? toDashboard() : toOnboarding();
   }
 
-  // Protected worker app routes (public `/worker/[id]` profiles fall through).
-  if (isProtectedWorkerPath(path)) {
+  // Worker area. All of /worker/* now requires a signed-in, onboarded user.
+  // Worker-only pages (WORKER_PROTECTED) additionally require role==='worker';
+  // /worker/[id] profile pages are open to any signed-in role.
+  if (matches(path, "/worker")) {
     if (!session) return toLogin();
     if (!complete) return toOnboarding();
-    if (role !== "worker") return toDashboard();
+    if (isProtectedWorkerPath(path) && role !== "worker") return toDashboard();
     return NextResponse.next();
   }
 

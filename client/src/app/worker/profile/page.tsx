@@ -3,12 +3,11 @@
 import { usePathname } from "next/navigation";
 import Shell from "@/components/dashboard/Shell";
 import WorkerProfile from "@/components/worker/WorkerProfile";
-import {
-  MOCK_PROFILE,
-  type WorkerProfileData,
-} from "@/components/worker/workerProfileData";
+import type { WorkerProfileData } from "@/components/worker/workerProfileData";
 import { useAuth } from "@/features/auth";
+import { useConversations } from "@/features/messages/hooks/useConversations";
 import { useGetProfile } from "@/features/worker/profile";
+import { useGetRequestStats } from "@/features/worker/requests";
 
 const initialsOf = (n: string) =>
   n
@@ -22,20 +21,26 @@ export default function WorkerProfilePage() {
   const pathname = usePathname();
   const { profile } = useAuth();
   const query = useGetProfile("me");
+  const { data: stats } = useGetRequestStats();
+  const { data: conversations } = useConversations();
 
-  // Load the signed-in worker's CV. Falls back to MOCK_PROFILE when not signed
-  // in / the request fails, so the page is always reviewable.
+  // The signed-in worker's own CV.
   const data: WorkerProfileData | null = query.isLoading
     ? null
-    : ((query.data as WorkerProfileData | undefined) ?? MOCK_PROFILE);
+    : ((query.data as WorkerProfileData | undefined) ?? null);
 
-  const name = profile?.fullName ?? MOCK_PROFILE.name;
+  const name = profile?.fullName ?? "";
   const shellUser = {
     name,
     initials: initialsOf(name),
-    isVerified: data?.isVerified ?? true,
-    isAvailable: data?.isAvailable ?? true,
+    isVerified: data?.isVerified ?? false,
+    isAvailable: data?.isAvailable ?? false,
   };
+
+  // Real unread badges (hidden when zero by the Shell).
+  const unreadMessages =
+    conversations?.filter((c) => c.unreadCount > 0).length ?? 0;
+  const unreadRequests = stats?.new ?? 0;
 
   return (
     // biome-ignore lint/a11y/useValidAriaRole: `role` is a Shell prop, not an ARIA attribute
@@ -43,8 +48,8 @@ export default function WorkerProfilePage() {
       role="worker"
       user={shellUser}
       currentPath={pathname}
-      unreadMessages={2}
-      unreadRequests={3}
+      unreadMessages={unreadMessages}
+      unreadRequests={unreadRequests}
     >
       {data ? (
         <WorkerProfile mode="own" initialData={data} />
