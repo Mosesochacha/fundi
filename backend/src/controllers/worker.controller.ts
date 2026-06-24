@@ -26,7 +26,7 @@ function shapeProfile(profile: any, user: any) {
     trade: profile.profession,
     yearsExperience: profile.yearsExperience ?? 0,
     location: profile.location,
-    currency: 'KSh',
+    currency: user?.currency ?? 'USD',
     isVerified: !!user?.isPhoneVerified,
     isAvailable: profile.isAvailable ?? true,
     phoneVerified: !!user?.isPhoneVerified,
@@ -104,7 +104,7 @@ class WorkerController {
     const userInclude: any = {
       model: db.User,
       as: 'user',
-      attributes: ['dailyRate', 'isPhoneVerified', 'accountType'],
+      attributes: ['dailyRate', 'currency', 'isPhoneVerified', 'accountType'],
       required: verified, // only force the join when filtering by verification
     };
     if (Object.keys(userWhere).length) {
@@ -145,7 +145,7 @@ class WorkerController {
         bio: plain.bio ?? '',
         avatarUrl: plain.avatarUrl ?? null,
         yearsExperience: plain.yearsExperience ?? 0,
-        currency: 'KSh',
+        currency: user.currency ?? 'USD',
         dailyRate: user.dailyRate ?? 0,
         isAvailable: plain.isAvailable ?? true,
         isVerified: !!user.isPhoneVerified,
