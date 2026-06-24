@@ -14,17 +14,40 @@ import { dashboardPathForRole, roleForUser } from "@/lib/authRedirect";
 import "./onboarding.css";
 
 const WORKER_TRADES = [
-  "Plumber", "Electrician", "Carpenter", "Painter", "Mason", "House help",
-  "Mechanic", "Gardener", "Welder", "Cleaner", "AC Tech", "Chef", "Tiler",
+  "Plumber",
+  "Electrician",
+  "Carpenter",
+  "Painter",
+  "Mason",
+  "House help",
+  "Mechanic",
+  "Gardener",
+  "Welder",
+  "Cleaner",
+  "AC Tech",
+  "Chef",
+  "Tiler",
   "Security guard",
 ];
 const EMPLOYER_TRADES = [
-  "Plumber", "Electrician", "Carpenter", "Painter", "Mason", "House help",
-  "Mechanic", "Gardener", "Cleaner",
+  "Plumber",
+  "Electrician",
+  "Carpenter",
+  "Painter",
+  "Mason",
+  "House help",
+  "Mechanic",
+  "Gardener",
+  "Cleaner",
 ];
 
 const initialsOf = (n: string) =>
-  n.trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("") || "U";
+  n
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("") || "U";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -67,7 +90,9 @@ export default function OnboardingPage() {
       await workerOnb.mutateAsync({
         trade,
         location: wLocation.trim(),
-        dailyRate: dailyRate ? Number(dailyRate.replace(/[^0-9]/g, "")) : undefined,
+        dailyRate: dailyRate
+          ? Number(dailyRate.replace(/[^0-9]/g, ""))
+          : undefined,
       });
       // JWT auto-heals in the auth jwt callback (re-pulls /auth/me while the
       // cached user is incomplete), so middleware lets the dashboard through.
@@ -93,22 +118,27 @@ export default function OnboardingPage() {
   const employerValid = !!eLocation.trim() && terms;
 
   return (
-    <div className="ob-root">
-      <div className="ob-progress">
+    <div className="ob">
+      <div className="ob-top">
+        <span className="ob-logo">
+          Fundi<span>.</span>
+        </span>
+        <p className="ob-tagline">Hire skilled workers. Anywhere. Instantly.</p>
+      </div>
+
+      <div className="ob-progress-track">
         <div className="ob-progress-fill" style={{ width: `${progress}%` }} />
       </div>
 
-      <div className="ob-logo">
-        Fundi<em>.</em>
-      </div>
-      <p className="ob-tagline">Hire skilled workers. Anywhere. Instantly.</p>
-
       <div className="ob-card">
-        <div className="ob-step">
-          Step {step} of 2 — {step === 1 ? "Almost there" : "Last step"}
+        <div className="ob-stepline">
+          <span>Step {step} of 2</span>
+          <span className="ob-stepline-hint">
+            {step === 1 ? "Almost there" : "Last step"}
+          </span>
         </div>
 
-        {/* Google prefill banner */}
+        {/* Prefilled identity from the OAuth session */}
         <div className="ob-prefill">
           <span className="ob-avatar">{initialsOf(name)}</span>
           <div className="ob-prefill-who">
@@ -116,43 +146,49 @@ export default function OnboardingPage() {
             <span className="ob-prefill-email">{email}</span>
           </div>
           <span className="ob-verified">
-            <CircleCheck size={9} /> Google verified
+            <CircleCheck size={11} /> Verified
           </span>
         </div>
 
         {step === 1 && (
           <>
             <h1 className="ob-title">How will you use Fundi?</h1>
-            <p className="ob-sub">Choose your role. You can&apos;t change this later.</p>
+            <p className="ob-sub">
+              Choose your role — this can&apos;t be changed later.
+            </p>
 
-            <div className="ob-roles">
+            <div className="ob-role-grid">
               <button
                 type="button"
-                className={`ob-role${role === "worker" ? " selected" : ""}`}
+                className={`ob-role-card${role === "worker" ? " selected" : ""}`}
                 onClick={() => setRole("worker")}
               >
-                <span className="ob-role-icon">
-                  <Wrench size={20} />
+                <span className="ob-role-card-icon">
+                  <Wrench />
                 </span>
-                <div className="ob-role-title">I am a fundi</div>
-                <div className="ob-role-sub">I offer skilled services and want to find work</div>
+                <div className="ob-role-card-title">I am a fundi</div>
+                <div className="ob-role-card-desc">
+                  Offer your skills and find work
+                </div>
               </button>
               <button
                 type="button"
-                className={`ob-role${role === "employer" ? " selected" : ""}`}
+                className={`ob-role-card${role === "employer" ? " selected" : ""}`}
                 onClick={() => setRole("employer")}
               >
-                <span className="ob-role-icon">
-                  <Home size={20} />
+                <span className="ob-role-card-icon">
+                  <Home />
                 </span>
-                <div className="ob-role-title">I need a fundi</div>
-                <div className="ob-role-sub">I want to hire skilled workers for jobs</div>
+                <div className="ob-role-card-title">I need a fundi</div>
+                <div className="ob-role-card-desc">
+                  Hire skilled workers for jobs
+                </div>
               </button>
             </div>
 
             <button
               type="button"
-              className="ob-btn"
+              className="ob-btn-next"
               disabled={!role}
               onClick={() => setStep(2)}
             >
@@ -163,17 +199,19 @@ export default function OnboardingPage() {
 
         {step === 2 && role === "worker" && (
           <>
-            <h1 className="ob-title">Set up your fundi profile</h1>
-            <p className="ob-sub">This is what employers will see when they search for you.</p>
+            <h1 className="ob-title">Set up your profile</h1>
+            <p className="ob-sub">
+              This is what employers see when they search for you.
+            </p>
 
             <div className="ob-field">
-              <span className="ob-label">Trade</span>
-              <div className="ob-pills">
+              <span className="ob-label">Your trade</span>
+              <div className="ob-trade-grid">
                 {WORKER_TRADES.map((t) => (
                   <button
                     key={t}
                     type="button"
-                    className={`ob-pill${trade === t ? " selected" : ""}`}
+                    className={`ob-trade-pill${trade === t ? " selected" : ""}`}
                     onClick={() => setTrade(t)}
                   >
                     {t}
@@ -183,7 +221,9 @@ export default function OnboardingPage() {
             </div>
 
             <div className="ob-field">
-              <label className="ob-label" htmlFor="w-location">Location</label>
+              <label className="ob-label" htmlFor="w-location">
+                Location
+              </label>
               <input
                 id="w-location"
                 className="ob-input"
@@ -194,7 +234,10 @@ export default function OnboardingPage() {
             </div>
 
             <div className="ob-field">
-              <label className="ob-label" htmlFor="w-rate">Daily rate (KSh) — optional</label>
+              <label className="ob-label" htmlFor="w-rate">
+                Daily rate (KSh){" "}
+                <span className="ob-label-opt">— optional</span>
+              </label>
               <input
                 id="w-rate"
                 className="ob-input"
@@ -203,31 +246,54 @@ export default function OnboardingPage() {
                 value={dailyRate}
                 onChange={(e) => setDailyRate(e.target.value)}
               />
-              <div className="ob-hint">You can set this later from your profile</div>
+              <div className="ob-hint">
+                You can set this later from your profile.
+              </div>
             </div>
 
-            <label className="ob-terms">
-              <input type="checkbox" checked={terms} onChange={(e) => setTerms(e.target.checked)} />
+            <label className="ob-check-item">
+              <input
+                type="checkbox"
+                checked={terms}
+                onChange={(e) => setTerms(e.target.checked)}
+              />
               <span>
-                I agree to Fundi&apos;s <a href="/terms">Terms of Service</a> and{" "}
-                <a href="/privacy">Privacy Policy</a>
+                I agree to Fundi&apos;s <a href="/terms">Terms of Service</a>{" "}
+                and <a href="/privacy">Privacy Policy</a>.
               </span>
             </label>
 
-            <button type="button" className="ob-btn" disabled={!workerValid || saving} onClick={submitWorker}>
-              <CircleCheck size={15} /> {saving ? "Creating…" : "Create my account"}
-            </button>
-            <button type="button" className="ob-back" onClick={() => setStep(1)}>← Back</button>
+            <div className="ob-btn-row">
+              <button
+                type="button"
+                className="ob-btn-back"
+                onClick={() => setStep(1)}
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                className="ob-btn-next"
+                disabled={!workerValid || saving}
+                onClick={submitWorker}
+              >
+                {saving ? "Creating…" : "Create account"}
+              </button>
+            </div>
           </>
         )}
 
         {step === 2 && role === "employer" && (
           <>
             <h1 className="ob-title">Tell us what you need</h1>
-            <p className="ob-sub">We&apos;ll show you the right fundis for your needs.</p>
+            <p className="ob-sub">
+              We&apos;ll show you the right fundis for the job.
+            </p>
 
             <div className="ob-field">
-              <label className="ob-label" htmlFor="e-location">Location</label>
+              <label className="ob-label" htmlFor="e-location">
+                Location
+              </label>
               <input
                 id="e-location"
                 className="ob-input"
@@ -238,14 +304,16 @@ export default function OnboardingPage() {
             </div>
 
             <div className="ob-field">
-              <span className="ob-label">What do you usually need?</span>
-              <div className="ob-hint" style={{ marginTop: 0, marginBottom: 8 }}>Select all that apply</div>
-              <div className="ob-pills">
+              <span className="ob-label">
+                What do you usually need?{" "}
+                <span className="ob-label-opt">— optional</span>
+              </span>
+              <div className="ob-trade-grid">
                 {EMPLOYER_TRADES.map((t) => (
                   <button
                     key={t}
                     type="button"
-                    className={`ob-pill${interested.includes(t) ? " selected" : ""}`}
+                    className={`ob-trade-pill${interested.includes(t) ? " selected" : ""}`}
                     onClick={() => toggleInterested(t)}
                   >
                     {t}
@@ -254,24 +322,43 @@ export default function OnboardingPage() {
               </div>
             </div>
 
-            <label className="ob-terms">
-              <input type="checkbox" checked={terms} onChange={(e) => setTerms(e.target.checked)} />
+            <label className="ob-check-item">
+              <input
+                type="checkbox"
+                checked={terms}
+                onChange={(e) => setTerms(e.target.checked)}
+              />
               <span>
-                I agree to Fundi&apos;s <a href="/terms">Terms of Service</a> and{" "}
-                <a href="/privacy">Privacy Policy</a>
+                I agree to Fundi&apos;s <a href="/terms">Terms of Service</a>{" "}
+                and <a href="/privacy">Privacy Policy</a>.
               </span>
             </label>
 
-            <button type="button" className="ob-btn" disabled={!employerValid || saving} onClick={submitEmployer}>
-              <CircleCheck size={15} /> {saving ? "Creating…" : "Create my account"}
-            </button>
-            <button type="button" className="ob-back" onClick={() => setStep(1)}>← Back</button>
+            <div className="ob-btn-row">
+              <button
+                type="button"
+                className="ob-btn-back"
+                onClick={() => setStep(1)}
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                className="ob-btn-next"
+                disabled={!employerValid || saving}
+                onClick={submitEmployer}
+              >
+                {saving ? "Creating…" : "Create account"}
+              </button>
+            </div>
           </>
         )}
       </div>
 
-      <div className="ob-footer">
-        © 2026 Fundi · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a>
+      <div className="ob-foot">
+        <span>© 2026 Fundi</span>
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
       </div>
     </div>
   );
