@@ -83,7 +83,7 @@ export default function LandingNav() {
             : "border-transparent",
         )}
       >
-        <div className="mx-auto flex h-full w-full max-w-[1080px] items-center justify-between px-4 md:px-8">
+        <div className="mx-auto flex h-full w-full max-w-[1280px] items-center justify-between px-4 md:px-8">
           <Link href="/" className="inline-flex items-center no-underline">
             <Image
               src="/brand/lightlogo.png"
