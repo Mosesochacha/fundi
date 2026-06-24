@@ -75,7 +75,7 @@ export default function GlobalSection() {
               Worldwide
             </div>
             <div className="text-sm text-ink-3 tracking-[0.08em] uppercase mt-1">
-              Launching 2026
+              Now in early access
             </div>
           </div>
         </div>
