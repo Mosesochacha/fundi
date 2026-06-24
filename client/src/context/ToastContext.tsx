@@ -1,8 +1,8 @@
 "use client";
 
-import { createContext, useContext, useEffect, type ReactNode } from "react";
-import { useToast } from "@/hooks/useToast";
+import { createContext, type ReactNode, useContext, useEffect } from "react";
 import { ToastContainer } from "@/components/ui/Toast";
+import { useToast } from "@/hooks/useToast";
 
 const ToastContext = createContext<ReturnType<typeof useToast> | null>(null);
 
@@ -12,7 +12,9 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        toast.toasts.forEach((t) => toast.dismiss(t.id));
+        toast.toasts.forEach((t) => {
+          toast.dismiss(t.id);
+        });
       }
     };
     window.addEventListener("keydown", handler);

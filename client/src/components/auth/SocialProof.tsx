@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useState } from "react";
 
 const testimonials = [
   {
@@ -9,21 +9,21 @@ const testimonials = [
     profession: "Master Plumber, Nairobi",
     quote: "I got 3 new clients in my first week just from my profile.",
     initials: "JK",
-    avatarBg: "#c2410c",
+    avatarBg: "var(--color-gold-dark)",
   },
   {
     name: "Grace Wanjiku",
     profession: "Interior Painter, Kilimani",
     quote: "Customers see my work before they even call me. Game changer.",
     initials: "GW",
-    avatarBg: "#E05A2B",
+    avatarBg: "var(--color-gold)",
   },
   {
     name: "David Ochieng",
     profession: "Carpenter, South B",
     quote: "Finally a platform that shows what I can actually do.",
     initials: "DO",
-    avatarBg: "#fdba74",
+    avatarBg: "var(--color-gold-light)",
   },
 ] as const;
 
@@ -31,7 +31,10 @@ export default function SocialProof() {
   const [idx, setIdx] = useState(0);
 
   useEffect(() => {
-    const timer = setInterval(() => setIdx((i) => (i + 1) % testimonials.length), 4000);
+    const timer = setInterval(
+      () => setIdx((i) => (i + 1) % testimonials.length),
+      4000,
+    );
     return () => clearInterval(timer);
   }, []);
 
@@ -39,13 +42,17 @@ export default function SocialProof() {
 
   return (
     <div className="relative w-full h-full flex flex-col justify-between p-10 overflow-hidden">
-      {/* Fundi logo */}
-      <p className="relative z-10 text-white text-2xl font-bold font-playfair">Fundi</p>
+      {/* Tesilix logo */}
+      <p className="relative z-10 text-white text-2xl font-medium font-serif">
+        Tesilix<span className="italic text-gold font-light">.</span>
+      </p>
 
       {/* Main content */}
       <div className="relative z-10 space-y-8">
-        <p className="text-white text-4xl font-playfair italic leading-tight">
-          Your craft deserves<br />to be seen.
+        <p className="text-white text-4xl font-serif italic leading-tight">
+          Your craft deserves
+          <br />
+          to be seen.
         </p>
 
         <AnimatePresence mode="wait">
@@ -57,19 +64,19 @@ export default function SocialProof() {
             transition={{ duration: 0.6 }}
             className="bg-white/10 rounded-2xl p-6 space-y-4 backdrop-blur-sm"
           >
-            <p className="text-white/90 text-[15px] leading-relaxed font-dm-sans italic">
+            <p className="text-white/90 text-[15px] leading-relaxed italic">
               &ldquo;{t.quote}&rdquo;
             </p>
             <div className="flex items-center gap-3">
               <div
-                className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
+                className="w-10 h-10 rounded-full flex items-center justify-center text-navy text-sm font-bold flex-shrink-0"
                 style={{ background: t.avatarBg }}
               >
                 {t.initials}
               </div>
               <div>
-                <p className="text-white text-sm font-semibold font-dm-sans">{t.name}</p>
-                <p className="text-white/60 text-xs font-dm-sans">{t.profession}</p>
+                <p className="text-white text-sm font-semibold">{t.name}</p>
+                <p className="text-white/60 text-xs">{t.profession}</p>
               </div>
             </div>
           </motion.div>
@@ -77,12 +84,16 @@ export default function SocialProof() {
 
         {/* Dot indicators */}
         <div className="flex gap-2">
-          {testimonials.map((_, i) => (
+          {testimonials.map((item, i) => (
             <button
-              key={i}
+              type="button"
+              key={item.name}
               onClick={() => setIdx(i)}
-              className="w-2 h-2 rounded-full transition-all duration-300"
-              style={{ background: i === idx ? "white" : "rgba(255,255,255,0.3)" }}
+              className={
+                i === idx
+                  ? "w-2 h-2 rounded-full transition-all duration-300 bg-white"
+                  : "w-2 h-2 rounded-full transition-all duration-300 bg-white/30"
+              }
               aria-label={`Testimonial ${i + 1}`}
             />
           ))}
@@ -90,11 +101,8 @@ export default function SocialProof() {
       </div>
 
       {/* Footer */}
-      <p
-        className="relative z-10 text-sm font-dm-sans"
-        style={{ color: "var(--orange-100)" }}
-      >
-        Join 2,400+ professionals building their reputation on Fundi
+      <p className="relative z-10 text-sm text-gold-light">
+        Join 2,400+ professionals building their reputation on Tesilix
       </p>
     </div>
   );

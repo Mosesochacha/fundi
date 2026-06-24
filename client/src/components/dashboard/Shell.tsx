@@ -14,6 +14,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { NotificationBell } from "@/features/notifications";
 import { useSetAvailability } from "@/features/worker/availability";
+import { cn } from "@/lib/utils";
 import {
   type BadgeKey,
   type DashboardRole,
@@ -21,7 +22,6 @@ import {
   type NavItem,
   ROLE_LABELS,
 } from "./navConfig";
-import "./shell.css";
 
 export interface ShellUser {
   name: string;
@@ -43,7 +43,7 @@ export interface ShellProps {
 
 function VerifiedBadge() {
   return (
-    <span className="dash-verified">
+    <span className="inline-flex items-center gap-[3px] bg-gold/[0.12] border border-gold/25 rounded-full px-1.5 py-px text-[9px] text-gold-dark whitespace-nowrap">
       <ShieldCheck size={10} strokeWidth={2} />
       Verified
     </span>
@@ -117,17 +117,26 @@ export default function Shell({
     }
   }
 
-  const Logo = ({ small }: { small?: boolean }) => (
-    <span className={`dash-logo${small ? " dash-logo-sm" : ""}`}>
-      Fundi<span>.</span>
+  const Logo = ({ className }: { className?: string }) => (
+    <span
+      className={cn(
+        "block font-serif text-xl font-medium text-white no-underline",
+        className,
+      )}
+    >
+      Tesilix<span className="italic font-light text-gold">.</span>
     </span>
   );
 
   const renderNav = (onNavigate?: () => void) => (
-    <nav className="dash-nav">
+    <nav className="flex-1 overflow-y-auto pt-1.5 pb-3">
       {config.sections.map((section) => (
         <div key={section.label ?? "section"}>
-          {section.label && <div className="dash-section">{section.label}</div>}
+          {section.label && (
+            <div className="text-[9px] uppercase tracking-[0.1em] text-white/30 px-5 pt-3.5 pb-[5px]">
+              {section.label}
+            </div>
+          )}
           {section.items.map((item) => {
             const Icon = item.icon;
             const badge = badgeOf(item);
@@ -135,12 +144,21 @@ export default function Shell({
               <Link
                 key={item.href}
                 href={item.href}
-                className={`dash-navitem${isActive(item.href) ? " active" : ""}`}
+                className={cn(
+                  "flex items-center gap-[9px] w-[calc(100%-16px)] text-xs px-3 py-[9px] rounded-md mx-2 my-px no-underline transition-colors",
+                  isActive(item.href)
+                    ? "bg-gold/[0.14] text-gold"
+                    : "text-white/60 hover:bg-white/[0.06] hover:text-white/90",
+                )}
                 onClick={onNavigate}
               >
                 <Icon size={15} />
-                <span className="dash-navlabel">{item.label}</span>
-                {badge ? <span className="dash-badge">{badge}</span> : null}
+                <span className="flex-1">{item.label}</span>
+                {badge ? (
+                  <span className="bg-gold text-navy text-[9px] font-semibold rounded-full px-1.5 py-px ml-auto">
+                    {badge}
+                  </span>
+                ) : null}
               </Link>
             );
           })}
@@ -151,26 +169,31 @@ export default function Shell({
 
   const availabilityFooter =
     role === "worker" ? (
-      <div className="dash-footer">
+      <div className="border-t border-white/[0.07] p-3">
         <button
           type="button"
-          className={`dash-avail${available ? " on" : ""}`}
+          className="w-full flex items-center gap-[9px] text-xs px-3 py-[9px] rounded-md bg-white/[0.04] text-white/70 cursor-pointer transition-colors hover:bg-white/[0.08] disabled:opacity-60 disabled:cursor-default"
           onClick={toggleAvailability}
           disabled={savingAvail}
         >
-          <span className="dash-avail-dot" />
+          <span
+            className={cn(
+              "w-2 h-2 rounded-full shrink-0 transition-colors",
+              available ? "bg-green-400" : "bg-white/15",
+            )}
+          />
           {available ? "Available now" : "Unavailable"}
         </button>
       </div>
     ) : null;
 
   return (
-    <div className="dash">
+    <div className="min-h-screen bg-cream text-ink-2 font-sans">
       {/* ── Desktop sidebar ── */}
-      <aside className="dash-sidebar">
+      <aside className="hidden lg:flex lg:flex-col lg:fixed lg:top-0 lg:left-0 lg:w-[220px] lg:h-screen lg:bg-navy lg:z-30">
         <Link
           href={config.sections[0].items[0].href}
-          style={{ textDecoration: "none" }}
+          className="no-underline px-5 pt-[18px] pb-2.5"
         >
           <Logo />
         </Link>
@@ -179,20 +202,22 @@ export default function Shell({
       </aside>
 
       {/* ── Mobile topbar: logo left, avatar + hamburger right ── */}
-      <header className="dash-mtop">
-        <div className="dash-mtop-row">
+      <header className="bg-white border-b border-border sticky top-0 z-30 lg:hidden">
+        <div className="h-[52px] flex items-center justify-between px-3">
           <Link
             href={`/${role}/dashboard`}
-            className="dash-logo-mark"
-            aria-label="Fundi home"
+            className="w-[34px] h-[34px] rounded-[9px] bg-gold text-navy font-serif text-[19px] font-semibold flex items-center justify-center no-underline shrink-0"
+            aria-label="Tesilix home"
           >
-            F
+            T
           </Link>
-          <div className="dash-mtop-right">
-            <span className="dash-mtop-avatar">{user.initials}</span>
+          <div className="flex items-center gap-2.5">
+            <span className="w-8 h-8 rounded-full bg-gold-light text-gold-dark text-xs font-semibold flex items-center justify-center">
+              {user.initials}
+            </span>
             <button
               type="button"
-              className="dash-hamburger"
+              className="text-ink-2 flex p-2 cursor-pointer"
               onClick={() => setDrawerOpen(true)}
               aria-label="Open menu"
             >
@@ -205,16 +230,26 @@ export default function Shell({
       {/* ── Mobile drawer ── */}
       <button
         type="button"
-        className={`dash-overlay${drawerOpen ? " show" : ""}`}
+        className={cn(
+          "fixed inset-0 bg-black/45 z-40 transition-opacity duration-[250ms] lg:hidden",
+          drawerOpen
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none",
+        )}
         aria-label="Close menu"
         onClick={() => setDrawerOpen(false)}
       />
-      <aside className={`dash-drawer${drawerOpen ? " open" : ""}`}>
-        <div className="dash-drawer-head">
-          <Logo />
+      <aside
+        className={cn(
+          "fixed inset-0 w-full bg-navy z-50 flex flex-col overflow-y-auto transition-transform duration-[250ms] lg:hidden",
+          drawerOpen ? "translate-x-0" : "-translate-x-full",
+        )}
+      >
+        <div className="flex items-center justify-between pt-3.5 px-4 pb-1.5">
+          <Logo className="px-1 pt-1" />
           <button
             type="button"
-            className="dash-drawer-close"
+            className="bg-white/[0.08] border border-white/15 text-white w-[38px] h-[38px] rounded-[9px] flex items-center justify-center cursor-pointer"
             onClick={() => setDrawerOpen(false)}
             aria-label="Close menu"
           >
@@ -226,31 +261,39 @@ export default function Shell({
       </aside>
 
       {/* ── Main column ── */}
-      <div className="dash-main">
-        <header className="dash-topbar">
-          <span className="dash-title">{pageTitle}</span>
-          <div className="dash-topright">
+      <div className="min-h-screen flex flex-col lg:ml-[220px]">
+        <header className="hidden lg:flex lg:items-center lg:justify-between lg:h-[60px] lg:bg-white lg:border-b lg:border-border lg:px-6 lg:sticky lg:top-0 lg:z-20">
+          <span className="text-[13px] text-ink-2 font-medium">
+            {pageTitle}
+          </span>
+          <div className="flex items-center gap-3">
             <NotificationBell variant="dash" />
-            <div className="dash-userwrap" ref={menuRef}>
+            <div className="relative" ref={menuRef}>
               <button
                 type="button"
-                className="dash-userpill"
+                className="flex items-center gap-2 rounded-full px-1.5 py-1 cursor-pointer transition-colors hover:bg-cream"
                 onClick={() => setMenuOpen((o) => !o)}
               >
-                <span className="dash-avatar">{user.initials}</span>
-                <span className="dash-userinfo">
-                  <span className="dash-username">{user.name}</span>
-                  <span className="dash-userrole">{ROLE_LABELS[role]}</span>
+                <span className="w-[34px] h-[34px] rounded-full bg-gold-light text-gold-dark text-[11px] font-semibold flex items-center justify-center shrink-0">
+                  {user.initials}
+                </span>
+                <span className="flex flex-col leading-tight text-left">
+                  <span className="text-[13px] font-medium text-ink">
+                    {user.name}
+                  </span>
+                  <span className="text-[11px] text-ink-3">
+                    {ROLE_LABELS[role]}
+                  </span>
                 </span>
                 {showVerified && <VerifiedBadge />}
-                <ChevronDown size={14} className="dash-chev" />
+                <ChevronDown size={14} className="text-ink-3 shrink-0" />
               </button>
               {menuOpen && (
-                <div className="dash-menu">
+                <div className="absolute top-[calc(100%+6px)] right-0 min-w-[168px] bg-white border border-border rounded-lg shadow-[0_8px_24px_rgba(0,0,0,0.08)] p-1.5 z-[60]">
                   {role === "worker" && (
                     <Link
                       href={`/${role}/profile`}
-                      className="dash-menuitem"
+                      className="flex items-center gap-2 w-full text-[13px] text-ink-2 no-underline px-2.5 py-2 rounded-md hover:bg-cream-2 hover:text-ink"
                       onClick={() => setMenuOpen(false)}
                     >
                       <User size={15} /> Profile
@@ -258,14 +301,14 @@ export default function Shell({
                   )}
                   <Link
                     href={`/${role}/settings`}
-                    className="dash-menuitem"
+                    className="flex items-center gap-2 w-full text-[13px] text-ink-2 no-underline px-2.5 py-2 rounded-md hover:bg-cream-2 hover:text-ink"
                     onClick={() => setMenuOpen(false)}
                   >
                     <Settings size={15} /> Settings
                   </Link>
                   <Link
                     href="/logout"
-                    className="dash-menuitem"
+                    className="flex items-center gap-2 w-full text-[13px] text-ink-2 no-underline px-2.5 py-2 rounded-md hover:bg-cream-2 hover:text-ink"
                     onClick={() => setMenuOpen(false)}
                   >
                     <LogOut size={15} /> Logout
@@ -276,11 +319,13 @@ export default function Shell({
           </div>
         </header>
 
-        <main className="dash-content">{children}</main>
+        <main className="flex-1 bg-cream-2 px-4 pt-5 pb-[82px] lg:px-8 lg:py-6 lg:min-h-[calc(100vh-60px)]">
+          {children}
+        </main>
       </div>
 
       {/* ── Mobile bottom nav ── */}
-      <nav className="dash-bottom">
+      <nav className="fixed bottom-0 left-0 right-0 h-[58px] z-30 flex bg-navy border-t border-white/[0.07] lg:hidden">
         {config.bottomNav.map((item) => {
           const Icon = item.icon;
           const badge = badgeOf(item);
@@ -288,12 +333,17 @@ export default function Shell({
             <Link
               key={item.href}
               href={item.href}
-              className={`dash-bottomitem${isActive(item.href) ? " active" : ""}`}
+              className={cn(
+                "flex-1 flex flex-col items-center justify-center gap-[3px] text-[10px] no-underline relative",
+                isActive(item.href) ? "text-gold" : "text-white/45",
+              )}
             >
-              <span className="dash-bottomicon">
+              <span className="relative">
                 <Icon size={19} />
                 {badge ? (
-                  <span className="dash-bottombadge">{badge}</span>
+                  <span className="absolute -top-[5px] left-2.5 bg-gold text-navy text-[8px] font-semibold leading-none rounded-full px-1 py-0.5 min-w-[14px] text-center">
+                    {badge}
+                  </span>
                 ) : null}
               </span>
               {item.label}

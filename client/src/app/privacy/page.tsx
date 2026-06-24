@@ -2,16 +2,16 @@ import type { Metadata } from "next";
 import LegalLayout from "@/components/legal/LegalLayout";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | Fundi",
-  description: "How Fundi collects, uses and protects your information.",
+  title: "Privacy Policy | Tesilix",
+  description: "How Tesilix collects, uses and protects your information.",
 };
 
 export default function PrivacyPage() {
   return (
     <LegalLayout title="Privacy Policy" updated="June 2026">
       <p>
-        This policy explains what information Fundi collects, how we use it, and
-        the choices you have. We aim to collect only what we need to run the
+        This policy explains what information Tesilix collects, how we use it,
+        and the choices you have. We aim to collect only what we need to run the
         platform and to keep your data safe.
       </p>
 
@@ -38,15 +38,17 @@ export default function PrivacyPage() {
         <li>To create and operate your account.</li>
         <li>To show worker profiles to employers and connect the two sides.</li>
         <li>To verify accounts (e.g. email and phone) and prevent abuse.</li>
-        <li>To send essential notifications about your account and activity.</li>
+        <li>
+          To send essential notifications about your account and activity.
+        </li>
       </ul>
 
       <h2>3. What we share</h2>
       <p>
-        Worker profile details you choose to publish are visible to others on the
-        platform. We do <strong>not</strong> sell your personal data. We share
-        information only with service providers that help us run Fundi (such as
-        hosting, email and verification), and where required by law.
+        Worker profile details you choose to publish are visible to others on
+        the platform. We do <strong>not</strong> sell your personal data. We
+        share information only with service providers that help us run Tesilix
+        (such as hosting, email and verification), and where required by law.
       </p>
 
       <h2>4. Your phone number</h2>
@@ -85,8 +87,8 @@ export default function PrivacyPage() {
 
       <h2>9. Changes</h2>
       <p>
-        We may update this policy from time to time. We&rsquo;ll post the updated
-        version here with a new date.
+        We may update this policy from time to time. We&rsquo;ll post the
+        updated version here with a new date.
       </p>
     </LegalLayout>
   );

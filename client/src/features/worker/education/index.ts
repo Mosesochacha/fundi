@@ -1,6 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import client from "@/lib/axios";
-import type { EducationItem, EducationType } from "../profile/types/profile.types";
+import type {
+  EducationItem,
+  EducationType,
+} from "../profile/types/profile.types";
 
 export interface EducationInput {
   type?: EducationType;
@@ -11,8 +14,7 @@ export interface EducationInput {
 }
 
 export const educationService = {
-  add: (data: EducationInput) =>
-    client.post("/worker/profile/education", data),
+  add: (data: EducationInput) => client.post("/worker/profile/education", data),
   remove: (id: string) => client.delete(`/worker/profile/education/${id}`),
 };
 

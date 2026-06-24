@@ -26,11 +26,11 @@ export default function AdminDashboardPage() {
   return (
     // biome-ignore lint/a11y/useValidAriaRole: `role` is a Shell prop, not an ARIA attribute
     <Shell role="admin" user={shellUser} currentPath={pathname}>
-      <div style={{ padding: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: "#1c1410" }}>
+      <div className="p-6">
+        <h1 className="font-serif text-[22px] font-bold text-ink">
           Admin dashboard
         </h1>
-        <p style={{ marginTop: 8, color: "#8a8a85", fontSize: 14 }}>
+        <p className="mt-2 text-ink-3 text-sm">
           The admin dashboard is coming soon.
         </p>
       </div>

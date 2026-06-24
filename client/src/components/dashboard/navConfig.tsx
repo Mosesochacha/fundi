@@ -153,7 +153,8 @@ export const NAV_CONFIG: Record<DashboardRole, RoleNav> = {
       {
         label: "Other",
         items: [
-          { label: "Settings", href: "/employer/settings", icon: Settings },        ],
+          { label: "Settings", href: "/employer/settings", icon: Settings },
+        ],
       },
     ],
     bottomNav: [
@@ -209,8 +210,7 @@ export const NAV_CONFIG: Record<DashboardRole, RoleNav> = {
       },
       {
         label: "System",
-        items: [
-          { label: "Settings", href: "/admin/settings", icon: Settings },        ],
+        items: [{ label: "Settings", href: "/admin/settings", icon: Settings }],
       },
     ],
     bottomNav: [
@@ -254,7 +254,8 @@ export const NAV_CONFIG: Record<DashboardRole, RoleNav> = {
       {
         label: "Other",
         items: [
-          { label: "Settings", href: "/moderator/settings", icon: Settings },        ],
+          { label: "Settings", href: "/moderator/settings", icon: Settings },
+        ],
       },
     ],
     bottomNav: [

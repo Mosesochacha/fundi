@@ -1,6 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { Conversation } from "../types";
 import { relativeLabel } from "./helpers";
 
@@ -30,13 +31,16 @@ export default function ConversationList({
   loading,
 }: Props) {
   return (
-    <div className="msg-list">
-      <div className="msg-list-head">
-        <h2 className="msg-list-title">Messages</h2>
-        <div className="msg-search">
-          <Search size={14} className="msg-search-icon" />
+    <div className="flex flex-col overflow-hidden bg-white border-r-[0.5px] border-border min-w-0 group-[.has-selection]:hidden lg:flex">
+      <div className="px-4 py-3.5 border-b-[0.5px] border-border shrink-0">
+        <h2 className="text-sm font-medium text-ink m-0 mb-2.5">Messages</h2>
+        <div className="relative flex items-center">
+          <Search
+            size={14}
+            className="absolute left-[9px] text-ink-3 pointer-events-none"
+          />
           <input
-            className="msg-search-input"
+            className="w-full border-[0.5px] border-border rounded-lg bg-cream py-[7px] pl-[30px] pr-2.5 text-xs text-ink outline-none placeholder:text-ink-3 focus:border-gold"
             placeholder="Search conversations..."
             value={search}
             onChange={(e) => onSearch(e.target.value)}
@@ -44,11 +48,15 @@ export default function ConversationList({
         </div>
       </div>
 
-      <div className="msg-list-scroll">
+      <div className="flex-1 overflow-y-auto">
         {loading ? (
-          <div className="msg-list-loading">Loading…</div>
+          <div className="px-4 py-6 text-xs text-ink-3 text-center">
+            Loading…
+          </div>
         ) : conversations.length === 0 ? (
-          <div className="msg-list-empty">No conversations</div>
+          <div className="px-4 py-6 text-xs text-ink-3 text-center">
+            No conversations
+          </div>
         ) : (
           conversations.map((c) => {
             const online = isOnline(c, presence);
@@ -57,43 +65,60 @@ export default function ConversationList({
               <button
                 type="button"
                 key={c.id}
-                className={`msg-conv${selectedId === c.id ? " selected" : ""}`}
+                className={cn(
+                  "w-full flex gap-2.5 items-start text-left px-3.5 py-[11px] border-b-[0.5px] border-cream-2 border-l-2 cursor-pointer",
+                  selectedId === c.id
+                    ? "bg-gold-light border-l-gold"
+                    : "bg-white border-l-transparent hover:bg-cream",
+                )}
                 onClick={() => onSelect(c.id)}
               >
-                <span className="msg-avatar-wrap">
+                <span className="relative shrink-0 inline-flex">
                   <span
-                    className="msg-avatar"
+                    className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold text-white"
                     style={{ background: c.participant.avatarColor }}
                   >
                     {c.participant.initials}
                   </span>
-                  {online && <span className="msg-online-dot" />}
+                  {online && (
+                    <span className="absolute -right-px -bottom-px w-[9px] h-[9px] rounded-full bg-green-400 border-2 border-white" />
+                  )}
                 </span>
-                <span className="msg-conv-body">
-                  <span className="msg-conv-row1">
-                    <span className={`msg-conv-name${unread ? " unread" : ""}`}>
+                <span className="flex-1 min-w-0 flex flex-col gap-0.5">
+                  <span className="flex items-baseline justify-between gap-2">
+                    <span
+                      className={cn(
+                        "text-xs whitespace-nowrap overflow-hidden text-ellipsis",
+                        unread ? "font-medium text-ink" : "text-ink-2",
+                      )}
+                    >
                       {c.participant.name}
                     </span>
                     {c.lastMessage && (
-                      <span className="msg-conv-time">
+                      <span className="text-[10px] text-ink-3 shrink-0">
                         {relativeLabel(c.lastMessage.createdAt)}
                       </span>
                     )}
                   </span>
-                  <span className="msg-conv-row2">
+                  <span className="flex min-w-0">
                     <span
-                      className={`msg-conv-preview${unread ? " unread" : ""}`}
+                      className={cn(
+                        "text-[11px] whitespace-nowrap overflow-hidden text-ellipsis",
+                        unread ? "text-ink-2 font-medium" : "text-ink-3",
+                      )}
                     >
                       {c.lastMessage?.content ?? "No messages yet"}
                     </span>
                   </span>
                   {(c.linkedJob || unread) && (
-                    <span className="msg-conv-row3">
-                      <span className="msg-conv-tag">
+                    <span className="flex items-center justify-between gap-2 mt-px">
+                      <span className="text-[10px] text-ink-3 whitespace-nowrap overflow-hidden text-ellipsis">
                         {c.linkedJob?.title ?? ""}
                       </span>
                       {unread && (
-                        <span className="msg-conv-badge">{c.unreadCount}</span>
+                        <span className="shrink-0 min-w-[16px] h-4 px-1 rounded-lg bg-gold text-navy text-[9px] font-semibold inline-flex items-center justify-center">
+                          {c.unreadCount}
+                        </span>
                       )}
                     </span>
                   )}

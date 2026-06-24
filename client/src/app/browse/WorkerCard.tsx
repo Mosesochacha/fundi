@@ -1,6 +1,7 @@
 "use client";
 
 import { MapPin } from "lucide-react";
+import type { CSSProperties } from "react";
 import type { BrowseWorker } from "@/features/browse";
 import { avatarTint, bannerGradient, tradeAccent } from "./constants";
 
@@ -19,72 +20,104 @@ export function WorkerCardGrid({ worker, onView }: Props) {
   const available = worker.isAvailable;
 
   return (
-    <article className="wk-card">
+    <article className="group flex flex-col overflow-hidden rounded-[18px] border border-border bg-white shadow-[0_1px_2px_rgba(33,28,20,0.04)] transition-all duration-[220ms] hover:-translate-y-[3px] hover:border-ink-4 hover:shadow-[0_16px_36px_rgba(33,28,20,0.12)]">
       {/* COVER BANNER */}
       <div
-        className="wk-banner"
-        style={{ background: bannerGradient(worker.trade) }}
+        className="relative h-20"
+        style={{ background: bannerGradient(worker.trade) } as CSSProperties}
       >
-        <span className={`wk-avail ${available ? "is-avail" : "is-booked"}`}>
-          <span className="wk-avail-dot" />
+        <span
+          className={`absolute top-[11px] right-[11px] flex items-center gap-[5px] rounded-full bg-white/[0.92] px-2.5 py-1 text-[11px] font-semibold shadow-[0_1px_3px_rgba(33,28,20,0.08)] ${available ? "text-green-700" : "text-red-600"}`}
+        >
+          <span
+            className={`h-1.5 w-1.5 rounded-full ${available ? "bg-green-500" : "bg-red-400"}`}
+          />
           {available ? "Available now" : "Booked"}
         </span>
       </div>
 
       {/* AVATAR */}
-      <div className="wk-avatar-wrap">
+      <div className="relative ml-[18px] mt-[-31px] w-[62px]">
         <span
-          className="wk-avatar"
-          style={{ background: avatarTint(worker.trade), color: accent }}
+          className="flex h-[62px] w-[62px] items-center justify-center overflow-hidden rounded-full border-[3px] border-white font-serif text-[23px] font-medium shadow-[0_2px_6px_rgba(33,28,20,0.08)]"
+          style={
+            {
+              background: avatarTint(worker.trade),
+              color: accent,
+            } as CSSProperties
+          }
         >
           {worker.avatarUrl ? (
-            // biome-ignore lint/performance/noImgElement: avatar URLs are arbitrary external hosts
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={worker.avatarUrl} alt={worker.name} />
+            // biome-ignore lint/performance/noImgElement: avatar URLs are arbitrary external hosts
+            <img
+              src={worker.avatarUrl}
+              alt={worker.name}
+              className="h-full w-full object-cover"
+            />
           ) : (
             worker.initials
           )}
         </span>
         {worker.isVerified && (
-          <span className="wk-check" role="img" aria-label="Verified">
+          <span
+            className="absolute -bottom-px -right-[3px] flex h-[22px] w-[22px] items-center justify-center rounded-full border-[2.5px] border-white bg-gold-dark text-[11px] font-bold text-white"
+            role="img"
+            aria-label="Verified"
+          >
             ✓
           </span>
         )}
       </div>
 
       {/* CONTENT */}
-      <div className="wk-body">
-        <h3 className="wk-name">{worker.name}</h3>
+      <div className="flex flex-1 flex-col px-[18px] pb-[18px] pt-[11px]">
+        <h3 className="m-0 font-serif text-[19px] font-medium leading-[1.15] text-ink">
+          {worker.name}
+        </h3>
 
-        <div className="wk-trade">
-          <span className="wk-trade-dot" style={{ background: accent }} />
-          <span className="wk-trade-label" style={{ color: accent }}>
+        <div className="mt-1.5 flex items-center gap-1.5">
+          <span
+            className="h-1.5 w-1.5 flex-none rounded-full"
+            style={{ background: accent } as CSSProperties}
+          />
+          <span
+            className="text-[11px] font-bold uppercase tracking-[0.1em]"
+            style={{ color: accent } as CSSProperties}
+          >
             {worker.trade}
           </span>
         </div>
 
         {worker.location && (
-          <p className="wk-loc">
-            <MapPin size={13} aria-hidden />
+          <p className="mt-[7px] flex items-center gap-[5px] text-[12.5px] text-ink-3">
+            <MapPin size={13} aria-hidden className="text-ink-4" />
             {worker.location}
           </p>
         )}
 
-        {worker.bio && <p className="wk-tagline">{worker.bio}</p>}
+        {worker.bio && (
+          <p className="mt-[11px] line-clamp-2 text-[13px] leading-[1.45] text-ink-2">
+            {worker.bio}
+          </p>
+        )}
 
-        <div className="wk-divider" />
+        <div className="mb-[13px] mt-auto h-px bg-border" />
 
-        <div className="wk-meta">
+        <div className="flex items-center gap-2 whitespace-nowrap text-[12.5px] text-ink-3">
           {worker.reviewCount > 0 && (
             <>
               <span>
-                <strong>{worker.rating.toFixed(1)}</strong> rating
+                <strong className="font-bold text-ink">
+                  {worker.rating.toFixed(1)}
+                </strong>{" "}
+                rating
               </span>
-              <span className="wk-meta-sep">·</span>
+              <span className="text-ink-4">·</span>
             </>
           )}
           <span>
-            <strong>
+            <strong className="font-bold text-ink">
               {worker.yearsExperience}{" "}
               {worker.yearsExperience === 1 ? "yr" : "yrs"}
             </strong>{" "}
@@ -94,7 +127,7 @@ export function WorkerCardGrid({ worker, onView }: Props) {
 
         <button
           type="button"
-          className="wk-view"
+          className="mt-3.5 inline-flex w-fit items-center gap-[7px] self-start whitespace-nowrap rounded-full border border-border bg-white px-[18px] py-[9px] text-[13.5px] font-semibold text-ink-2 transition-all duration-[180ms] hover:border-navy hover:bg-navy hover:text-white"
           onClick={() => onView(worker)}
         >
           View profile <span aria-hidden>→</span>

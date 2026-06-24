@@ -7,10 +7,19 @@ import { useState } from "react";
 import Shell from "@/components/dashboard/Shell";
 import { useAuth } from "@/features/auth";
 import { type EmployerJob, useGetEmployerJobs } from "@/features/employer/jobs";
-import HireModal from "../dashboard/HireModal";
-import ReviewModal from "../dashboard/ReviewModal";
 import {
   Avatar,
+  EL_BTN,
+  EL_BTN_GOLD,
+  EL_BTN_OUTLINE,
+  EL_CARD,
+  EL_RATE,
+  EL_ROW,
+  EL_ROW_ACTIONS,
+  EL_ROW_BODY,
+  EL_ROW_META,
+  EL_ROW_NAME,
+  EL_ROW_TOP,
   EmptyCard,
   fmtMoney,
   initialsOf,
@@ -18,7 +27,8 @@ import {
   Stars,
   shortDate,
 } from "../_shared/parts";
-import "../_shared/list.css";
+import HireModal from "../dashboard/HireModal";
+import ReviewModal from "../dashboard/ReviewModal";
 
 type HireTarget = { id: string; name: string; trade: string };
 type ReviewTarget = { jobId: string; workerName: string; jobType: string };
@@ -42,11 +52,15 @@ export default function EmployerHiresPage() {
   return (
     // biome-ignore lint/a11y/useValidAriaRole: `role` is a Shell prop, not an ARIA attribute
     <Shell role="employer" user={shellUser} currentPath={pathname}>
-      <div className="el">
+      <div className="flex flex-col gap-4 text-ink-2">
         <div>
-          <div className="el-head-eyebrow">History</div>
-          <h1 className="el-title">Past hires.</h1>
-          <p className="el-sub">Workers you’ve completed jobs with — hire them again in a tap.</p>
+          <div className="text-xs text-ink-3">History</div>
+          <h1 className="font-serif text-[26px] font-normal text-ink mt-0.5 leading-[1.15]">
+            Past hires.
+          </h1>
+          <p className="text-[13px] text-ink-3 mt-1">
+            Workers you’ve completed jobs with — hire them again in a tap.
+          </p>
         </div>
 
         {isLoading ? (
@@ -57,13 +71,16 @@ export default function EmployerHiresPage() {
             title="No hires yet"
             sub="Your completed jobs will appear here."
             cta={
-              <Link href="/employer/search" className="el-btn el-btn-gold">
+              <Link
+                href="/employer/search"
+                className={`${EL_BTN} ${EL_BTN_GOLD}`}
+              >
                 Find a fundi
               </Link>
             }
           />
         ) : (
-          <div className="el-card">
+          <div className={EL_CARD}>
             {hires.map((job) => (
               <HireRow
                 key={job.id}
@@ -93,7 +110,10 @@ export default function EmployerHiresPage() {
         defaultLocation={employerLocation}
         onClose={() => setHireTarget(null)}
       />
-      <ReviewModal target={reviewTarget} onClose={() => setReviewTarget(null)} />
+      <ReviewModal
+        target={reviewTarget}
+        onClose={() => setReviewTarget(null)}
+      />
     </Shell>
   );
 }
@@ -109,38 +129,52 @@ function HireRow({
 }) {
   const when = job.completedAt ?? job.createdAt;
   return (
-    <div className="el-row">
+    <div className={EL_ROW}>
       <Avatar name={job.workerName} url={job.avatarUrl} />
-      <div className="el-row-body">
-        <div className="el-row-top">
-          <span className="el-row-name">
+      <div className={EL_ROW_BODY}>
+        <div className={EL_ROW_TOP}>
+          <span className={EL_ROW_NAME}>
             {job.workerName}
             {job.trade ? ` — ${job.trade}` : ""}
           </span>
           {job.rating != null ? (
             <Stars value={job.rating} />
           ) : (
-            <span className="el-badge el-badge-completed">Completed</span>
+            <span className="text-[10px] font-semibold rounded-full px-2 py-0.5 whitespace-nowrap shrink-0 bg-green-50 text-green-600">
+              Completed
+            </span>
           )}
         </div>
-        <div className="el-row-meta">
+        <div className={EL_ROW_META}>
           {job.jobType} · {job.location} · {shortDate(when)}
         </div>
-        <div className="el-row-actions">
+        <div className={EL_ROW_ACTIONS}>
           {job.agreedRate ? (
-            <span className="el-rate">KSh {fmtMoney(job.agreedRate)} paid</span>
+            <span className={EL_RATE}>KSh {fmtMoney(job.agreedRate)} paid</span>
           ) : null}
         </div>
-        <div className="el-row-actions">
-          <button type="button" className="el-btn el-btn-gold" onClick={onHireAgain}>
+        <div className={EL_ROW_ACTIONS}>
+          <button
+            type="button"
+            className={`${EL_BTN} ${EL_BTN_GOLD}`}
+            onClick={onHireAgain}
+          >
             Hire again
           </button>
           {job.reviewedAt ? (
-            <button type="button" className="el-btn el-btn-outline" onClick={onReview}>
+            <button
+              type="button"
+              className={`${EL_BTN} ${EL_BTN_OUTLINE}`}
+              onClick={onReview}
+            >
               Edit review
             </button>
           ) : (
-            <button type="button" className="el-btn el-btn-outline" onClick={onReview}>
+            <button
+              type="button"
+              className={`${EL_BTN} ${EL_BTN_OUTLINE}`}
+              onClick={onReview}
+            >
               Leave review
             </button>
           )}

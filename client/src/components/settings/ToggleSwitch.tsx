@@ -1,5 +1,7 @@
 "use client";
 
+import { cn } from "@/lib/utils";
+
 interface ToggleSwitchProps {
   checked: boolean;
   onChange: (value: boolean) => void;
@@ -8,7 +10,13 @@ interface ToggleSwitchProps {
   label: string;
 }
 
-export default function ToggleSwitch({ checked, onChange, loading = false, disabled = false, label }: ToggleSwitchProps) {
+export default function ToggleSwitch({
+  checked,
+  onChange,
+  loading = false,
+  disabled = false,
+  label,
+}: ToggleSwitchProps) {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === " " && !disabled && !loading) {
       e.preventDefault();
@@ -18,46 +26,49 @@ export default function ToggleSwitch({ checked, onChange, loading = false, disab
 
   return (
     <button
+      type="button"
       role="switch"
       aria-checked={checked}
       aria-label={label}
       disabled={disabled || loading}
       onClick={() => !loading && onChange(!checked)}
       onKeyDown={handleKeyDown}
-      className="relative shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f97316] focus-visible:ring-offset-2 rounded-full disabled:opacity-50"
-      style={{ width: 44, height: 24 }}
+      className="relative shrink-0 w-11 h-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 rounded-full disabled:opacity-50"
     >
       {/* Track */}
       <span
-        style={{
-          display: "block",
-          width: 44,
-          height: 24,
-          borderRadius: 12,
-          background: checked ? "#f97316" : "#d1d5db",
-          transition: "background 200ms ease",
-        }}
+        className={cn(
+          "block w-11 h-6 rounded-xl transition-colors duration-200",
+          checked ? "bg-gold" : "bg-ink-4",
+        )}
       />
       {/* Thumb */}
       <span
-        style={{
-          position: "absolute",
-          top: 2,
-          left: checked ? 22 : 2,
-          width: 20,
-          height: 20,
-          borderRadius: "50%",
-          background: "white",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
-          transition: "left 200ms ease",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
+        className={cn(
+          "absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] transition-[left] duration-200 flex items-center justify-center",
+          checked ? "left-[22px]" : "left-0.5",
+        )}
       >
         {loading && (
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style={{ animation: "spin 0.8s linear infinite" }}>
-            <circle cx="12" cy="12" r="10" stroke="#f97316" strokeWidth="3" strokeLinecap="round" strokeDasharray="32" strokeDashoffset="12" />
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+            className="animate-spin"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              className="text-gold"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeDasharray="32"
+              strokeDashoffset="12"
+            />
           </svg>
         )}
       </span>

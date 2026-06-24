@@ -14,6 +14,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import Shell from "@/components/dashboard/Shell";
+import { useToastContext } from "@/context/ToastContext";
 import { useAuth } from "@/features/auth";
 import {
   EMPTY_STATS,
@@ -22,13 +23,12 @@ import {
   type SortOption,
   useAcceptRequest,
   useDeclineRequest,
-  useGetRequests,
   useGetRequestStats,
+  useGetRequests,
   useMarkComplete,
 } from "@/features/worker/requests";
-import { useToastContext } from "@/context/ToastContext";
 import { useSocket } from "@/hooks/useSocket";
-import "./requests.css";
+import { cn } from "@/lib/utils";
 
 /* ── Small formatting helpers ─────────────────────────────────────────────── */
 const initialsOf = (n: string) =>
@@ -103,6 +103,22 @@ function sortRequests(list: JobRequest[], sort: SortOption): JobRequest[] {
   }
 }
 
+/* ── Shared button class sets ─────────────────────────────────────────────── */
+const BTN_BASE =
+  "inline-flex items-center justify-center gap-1.5 font-sans font-medium text-xs px-[11px] py-1.5 rounded-lg border-[0.5px] cursor-pointer no-underline whitespace-nowrap transition-colors disabled:opacity-55 disabled:cursor-not-allowed max-[640px]:w-full";
+// `enabled:hover:` is used on disable-able <button>s (accept/decline/complete)
+// so their hover styles don't fire while busy; `:enabled` only matches form
+// controls, so the outline/blue variants (used on never-disabled <Link>s and
+// the always-enabled directions button) use a plain `hover:`.
+const BTN_GOLD =
+  "bg-gold text-navy border-gold enabled:hover:bg-gold-dark enabled:hover:border-gold-dark";
+const BTN_OUTLINE =
+  "bg-white text-ink-2 border-border hover:border-gold hover:bg-gold-light hover:text-ink";
+const BTN_RED =
+  "bg-white text-red-600 border-red-200 enabled:hover:bg-red-50 enabled:hover:border-red-600";
+const BTN_BLUE =
+  "bg-white text-blue-600 border-blue-500/40 hover:bg-blue-50 hover:border-blue-600";
+
 /* ─────────────────────────────────────────────────────────────────────────
    Page
    ───────────────────────────────────────────────────────────────────────── */
@@ -117,10 +133,7 @@ export default function WorkerRequestsPage() {
   const { data: statsData } = useGetRequestStats();
   const stats = statsData ?? EMPTY_STATS;
 
-  const requests = useMemo(
-    () => sortRequests(data ?? [], sort),
-    [data, sort],
-  );
+  const requests = useMemo(() => sortRequests(data ?? [], sort), [data, sort]);
 
   const name =
     profile?.fullName ||
@@ -165,15 +178,19 @@ export default function WorkerRequestsPage() {
       currentPath={pathname}
       unreadRequests={stats.new}
     >
-      <div className="wr">
+      <div className="flex flex-col gap-5 text-ink-2">
         {/* ── Header ─────────────────────────────────────────────────────── */}
-        <div className="wr-head">
-          <h1 className="wr-title">Job requests</h1>
-          <p className="wr-sub">Manage all incoming and active job requests</p>
+        <div className="flex flex-col gap-0.5">
+          <h1 className="font-serif text-[26px] font-normal text-ink leading-[1.15]">
+            Job requests
+          </h1>
+          <p className="text-[13px] text-ink-3">
+            Manage all incoming and active job requests
+          </p>
         </div>
 
         {/* ── Stat strip ─────────────────────────────────────────────────── */}
-        <div className="wr-stats">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
           <StatCard
             accent="gold"
             value={stats.new}
@@ -202,26 +219,42 @@ export default function WorkerRequestsPage() {
         </div>
 
         {/* ── Filter bar ─────────────────────────────────────────────────── */}
-        <div className="wr-filters">
-          <div className="wr-tabs">
+        <div className="flex items-center gap-2 flex-wrap bg-white border-[0.5px] border-border rounded-[10px] px-4 py-3">
+          <div className="flex items-center gap-2 flex-wrap max-[640px]:flex-nowrap max-[640px]:overflow-x-auto max-[640px]:[scrollbar-width:none] max-[640px]:[&::-webkit-scrollbar]:hidden">
             {tabs.map((t, i) => (
               <Fragment key={t.value}>
-                {i === 1 && <span className="wr-sep" />}
+                {i === 1 && (
+                  <span className="w-px self-stretch bg-border scale-x-50 mx-0.5 my-0.5" />
+                )}
                 <button
                   type="button"
-                  className={`wr-tab${filter === t.value ? " active" : ""}`}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 font-sans text-xs font-medium px-3 py-1.5 rounded-full border cursor-pointer whitespace-nowrap transition-colors hover:border-gold",
+                    filter === t.value
+                      ? "border-gold bg-gold-light text-gold-dark"
+                      : "border-border bg-cream text-ink-2",
+                  )}
                   onClick={() => setFilter(t.value)}
                 >
                   {t.label}
-                  <span className="wr-tab-count">{t.count}</span>
+                  <span
+                    className={cn(
+                      "inline-flex items-center justify-center min-w-4 h-4 px-1 rounded-full text-[9px] font-bold leading-none",
+                      filter === t.value
+                        ? "bg-gold-dark text-white"
+                        : "bg-gold text-navy",
+                    )}
+                  >
+                    {t.count}
+                  </span>
                 </button>
               </Fragment>
             ))}
           </div>
-          <label className="wr-sort-wrap">
+          <label className="ml-auto inline-flex items-center gap-1.5 text-ink-3 text-xs max-[640px]:ml-0">
             Sort
             <select
-              className="wr-sort"
+              className="font-sans text-xs font-medium text-ink-2 bg-cream border border-border rounded-lg px-2.5 py-1.5 cursor-pointer hover:border-gold"
               value={sort}
               onChange={(e) => setSort(e.target.value as SortOption)}
             >
@@ -236,7 +269,11 @@ export default function WorkerRequestsPage() {
 
         {/* ── Error ──────────────────────────────────────────────────────── */}
         {isError && (
-          <button type="button" className="wr-error" onClick={() => refetch()}>
+          <button
+            type="button"
+            className="block w-full text-center bg-red-50 text-red-600 border border-red-200 rounded-lg p-3 text-xs font-medium font-sans cursor-pointer"
+            onClick={() => refetch()}
+          >
             Could not load your requests. Tap to retry.
           </button>
         )}
@@ -247,7 +284,7 @@ export default function WorkerRequestsPage() {
         ) : requests.length === 0 ? (
           <EmptyState filter={filter} totalAll={stats.total} />
         ) : (
-          <div className="wr-list">
+          <div className="flex flex-col gap-2.5">
             {requests.map((r) => (
               <RequestCard key={r.id} req={r} />
             ))}
@@ -274,15 +311,27 @@ function StatCard({
   sub: string;
   gold?: boolean;
 }) {
+  const barColor = {
+    gold: "bg-gold",
+    blue: "bg-blue-500",
+    green: "bg-green-400",
+    default: "bg-border",
+  }[accent];
+
   return (
-    <div className="wr-stat">
-      <div
-        className={`wr-stat-bar${accent === "default" ? "" : ` ${accent}`}`}
-      />
-      <div className="wr-stat-body">
-        <div className={`wr-stat-num${gold ? " gold" : ""}`}>{value}</div>
-        <div className="wr-stat-label">{label}</div>
-        <div className="wr-stat-sub">{sub}</div>
+    <div className="bg-white border-[0.5px] border-border rounded-[10px] overflow-hidden">
+      <div className={cn("h-0.5", barColor)} />
+      <div className="px-4 py-3.5">
+        <div
+          className={cn(
+            "font-serif text-2xl font-normal leading-none",
+            gold ? "text-gold-dark" : "text-ink",
+          )}
+        >
+          {value}
+        </div>
+        <div className="text-xs font-medium text-ink-2 mt-2">{label}</div>
+        <div className="text-[11px] text-ink-3 mt-0.5">{sub}</div>
       </div>
     </div>
   );
@@ -334,22 +383,35 @@ function RequestCard({ req }: { req: JobRequest }) {
 
   const messageHref = `/worker/messages?to=${req.employer.id}`;
 
+  const leftBorder = {
+    new: "border-l-gold",
+    active: "border-l-blue-500",
+    completed: "border-l-green-400",
+    declined: "border-l-border",
+  }[req.status];
+
   return (
-    <div className={`wr-card ${req.status}`}>
+    <div
+      className={cn(
+        "bg-white border-[0.5px] border-border rounded-xl overflow-hidden border-l-[3px] transition-colors",
+        leftBorder,
+        req.status === "declined" ? "opacity-70" : "hover:border-gold",
+      )}
+    >
       {/* Header */}
-      <div className="wr-card-head">
+      <div className="flex gap-3 px-4 py-3.5 border-b-[0.5px] border-border">
         <div
-          className="wr-avatar"
+          className="w-[42px] h-[42px] rounded-full text-white text-[13px] font-semibold flex items-center justify-center shrink-0"
           style={{ background: req.employer.avatarColor }}
         >
           {req.employer.initials}
         </div>
-        <div className="wr-card-mid">
-          <div className="wr-card-row1">
-            <span className="wr-job-title">{req.title}</span>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-medium text-ink">{req.title}</span>
             <StatusBadge req={req} />
           </div>
-          <div className="wr-card-meta">
+          <div className="flex items-center flex-wrap gap-2.5 text-[11px] text-ink-3 mt-1.5 [&>span]:inline-flex [&>span]:items-center [&>span]:gap-1">
             <span>
               <Calendar size={12} /> {scheduledLabel(req.scheduledAt)}
             </span>
@@ -361,19 +423,28 @@ function RequestCard({ req }: { req: JobRequest }) {
             </span>
           </div>
         </div>
-        <div className="wr-card-right">
-          <span className="wr-timeago">{timeAgo(req.createdAt)}</span>
-          <span className="wr-rate">{formatRate(req.agreedRate)}</span>
+        <div className="flex flex-col items-end gap-1.5 shrink-0">
+          <span className="text-[11px] text-ink-3 whitespace-nowrap">
+            {timeAgo(req.createdAt)}
+          </span>
+          <span className="bg-gold-light border border-gold/40 text-gold-dark text-xs font-semibold rounded-full px-2.5 py-[3px] whitespace-nowrap">
+            {formatRate(req.agreedRate)}
+          </span>
         </div>
       </div>
 
       {/* Body */}
-      <div className="wr-card-body">
-        <p className="wr-desc">{req.description}</p>
+      <div className="px-4 py-3 border-b-[0.5px] border-border">
+        <p className="text-xs text-ink-2 leading-relaxed line-clamp-3">
+          {req.description}
+        </p>
         {req.tags.length > 0 && (
-          <div className="wr-tags">
+          <div className="flex gap-1.5 flex-wrap mt-2.5">
             {req.tags.map((tag) => (
-              <span key={tag} className="wr-tag">
+              <span
+                key={tag}
+                className="bg-cream border-[0.5px] border-border rounded-full px-2.5 py-[3px] text-[11px] text-ink-2"
+              >
                 {tag}
               </span>
             ))}
@@ -383,21 +454,22 @@ function RequestCard({ req }: { req: JobRequest }) {
 
       {/* Inline confirmation */}
       {confirm === "decline" && (
-        <div className="wr-confirm danger">
-          <span className="wr-confirm-text">
-            <strong>Are you sure?</strong> You can&apos;t undo this.
+        <div className="flex items-center justify-between gap-3 flex-wrap mx-4 mb-3 px-3 py-2.5 rounded-[10px] bg-red-50 border border-red-200">
+          <span className="text-xs text-ink-2 leading-snug">
+            <strong className="text-ink font-semibold">Are you sure?</strong>{" "}
+            You can&apos;t undo this.
           </span>
-          <div className="wr-confirm-actions">
+          <div className="flex gap-2 shrink-0">
             <button
               type="button"
-              className="wr-btn wr-btn-outline"
+              className={cn(BTN_BASE, BTN_OUTLINE)}
               onClick={() => setConfirm(null)}
             >
               Cancel
             </button>
             <button
               type="button"
-              className="wr-btn wr-btn-red"
+              className={cn(BTN_BASE, BTN_RED)}
               onClick={onDecline}
             >
               Yes, decline
@@ -406,22 +478,24 @@ function RequestCard({ req }: { req: JobRequest }) {
         </div>
       )}
       {confirm === "complete" && (
-        <div className="wr-confirm">
-          <span className="wr-confirm-text">
-            <strong>Mark this job as complete?</strong> The client will be
-            notified and asked to leave a review.
+        <div className="flex items-center justify-between gap-3 flex-wrap mx-4 mb-3 px-3 py-2.5 rounded-[10px] bg-cream border-[0.5px] border-border">
+          <span className="text-xs text-ink-2 leading-snug">
+            <strong className="text-ink font-semibold">
+              Mark this job as complete?
+            </strong>{" "}
+            The client will be notified and asked to leave a review.
           </span>
-          <div className="wr-confirm-actions">
+          <div className="flex gap-2 shrink-0">
             <button
               type="button"
-              className="wr-btn wr-btn-outline"
+              className={cn(BTN_BASE, BTN_OUTLINE)}
               onClick={() => setConfirm(null)}
             >
               Cancel
             </button>
             <button
               type="button"
-              className="wr-btn wr-btn-gold"
+              className={cn(BTN_BASE, BTN_GOLD)}
               onClick={onComplete}
             >
               Yes, complete
@@ -431,21 +505,23 @@ function RequestCard({ req }: { req: JobRequest }) {
       )}
 
       {/* Footer */}
-      <div className="wr-card-foot">
-        <div className="wr-emp">
+      <div className="flex items-center justify-between gap-3 px-4 py-3 max-[640px]:flex-col max-[640px]:items-stretch">
+        <div className="flex items-center gap-2 min-w-0">
           <div
-            className="wr-emp-avatar"
+            className="w-7 h-7 rounded-full text-white text-[11px] font-semibold flex items-center justify-center shrink-0"
             style={{ background: req.employer.avatarColor }}
           >
             {req.employer.initials}
           </div>
-          <div className="wr-emp-info">
-            <div className="wr-emp-name">{req.employer.name}</div>
+          <div className="min-w-0">
+            <div className="text-xs font-medium text-ink">
+              {req.employer.name}
+            </div>
             <EmployerSub employer={req.employer} />
           </div>
         </div>
 
-        <div className="wr-actions">
+        <div className="flex items-center gap-2 shrink-0 max-[640px]:flex-col">
           <CardActions
             req={req}
             busy={busy}
@@ -463,9 +539,13 @@ function RequestCard({ req }: { req: JobRequest }) {
 
 /* ── Status badge ─────────────────────────────────────────────────────────── */
 function StatusBadge({ req }: { req: JobRequest }) {
+  const BADGE =
+    "inline-flex items-center gap-1 text-[10px] font-semibold rounded-full px-[9px] py-[3px] whitespace-nowrap shrink-0 border";
   if (req.status === "new") {
     return (
-      <span className="wr-badge new">
+      <span
+        className={cn(BADGE, "bg-gold-light border-gold/40 text-gold-dark")}
+      >
         <Clock size={11} /> New request
       </span>
     );
@@ -473,13 +553,20 @@ function StatusBadge({ req }: { req: JobRequest }) {
   if (req.status === "active") {
     if (req.isToday) {
       return (
-        <span className="wr-badge today">
+        <span
+          className={cn(
+            BADGE,
+            "bg-orange-50 border-orange-500/40 text-orange-600",
+          )}
+        >
           <Zap size={11} /> Today · {timeLabel(req.scheduledAt)}
         </span>
       );
     }
     return (
-      <span className="wr-badge inprogress">
+      <span
+        className={cn(BADGE, "bg-blue-50 border-blue-500/40 text-blue-600")}
+      >
         <Clock size={11} /> In progress
         {req.dayProgress
           ? ` · Day ${req.dayProgress.current}/${req.dayProgress.total}`
@@ -489,12 +576,18 @@ function StatusBadge({ req }: { req: JobRequest }) {
   }
   if (req.status === "completed") {
     return (
-      <span className="wr-badge completed">
+      <span
+        className={cn(BADGE, "bg-green-50 border-green-400/50 text-green-600")}
+      >
         <CheckCircle2 size={11} /> Completed
       </span>
     );
   }
-  return <span className="wr-badge declined">Declined</span>;
+  return (
+    <span className={cn(BADGE, "bg-cream-2 border-border text-ink-3")}>
+      Declined
+    </span>
+  );
 }
 
 /* ── Footer action buttons (vary by status) ───────────────────────────────── */
@@ -518,12 +611,12 @@ function CardActions({
   if (req.status === "new") {
     return (
       <>
-        <Link href={messageHref} className="wr-btn wr-btn-outline">
+        <Link href={messageHref} className={cn(BTN_BASE, BTN_OUTLINE)}>
           Message
         </Link>
         <button
           type="button"
-          className="wr-btn wr-btn-red"
+          className={cn(BTN_BASE, BTN_RED)}
           onClick={onAskDecline}
           disabled={busy}
         >
@@ -531,7 +624,7 @@ function CardActions({
         </button>
         <button
           type="button"
-          className="wr-btn wr-btn-gold"
+          className={cn(BTN_BASE, BTN_GOLD)}
           onClick={onAccept}
           disabled={busy}
         >
@@ -544,13 +637,13 @@ function CardActions({
   if (req.status === "active") {
     return (
       <>
-        <Link href={messageHref} className="wr-btn wr-btn-outline">
+        <Link href={messageHref} className={cn(BTN_BASE, BTN_OUTLINE)}>
           Message client
         </Link>
         {req.isToday && (
           <button
             type="button"
-            className="wr-btn wr-btn-blue"
+            className={cn(BTN_BASE, BTN_BLUE)}
             onClick={onDirections}
           >
             <MapPin size={14} /> Get directions
@@ -558,7 +651,7 @@ function CardActions({
         )}
         <button
           type="button"
-          className="wr-btn wr-btn-gold"
+          className={cn(BTN_BASE, BTN_GOLD)}
           onClick={onAskComplete}
           disabled={busy}
         >
@@ -572,13 +665,13 @@ function CardActions({
     return (
       <>
         {req.review && (
-          <span className="wr-review-inline">
+          <span className="inline-flex items-center gap-1.5 text-xs text-ink-2">
             <Stars value={req.review.rating} />
           </span>
         )}
         <Link
           href={`/worker/requests/${req.id}`}
-          className="wr-btn wr-btn-outline"
+          className={cn(BTN_BASE, BTN_OUTLINE)}
         >
           {req.review ? "View review" : "View job details"}
         </Link>
@@ -588,7 +681,10 @@ function CardActions({
 
   // declined
   return (
-    <Link href={`/worker/requests/${req.id}`} className="wr-btn wr-btn-outline">
+    <Link
+      href={`/worker/requests/${req.id}`}
+      className={cn(BTN_BASE, BTN_OUTLINE)}
+    >
       View details
     </Link>
   );
@@ -597,16 +693,25 @@ function CardActions({
 /* ── Employer sub-line ────────────────────────────────────────────────────── */
 function EmployerSub({ employer }: { employer: JobRequest["employer"] }) {
   if (employer.totalHires === 0) {
-    return <div className="wr-emp-sub">Employer · New to Fundi</div>;
+    return (
+      <div className="flex items-center gap-[3px] text-[10px] text-ink-3">
+        Employer · New to Tesilix
+      </div>
+    );
   }
   return (
-    <div className="wr-emp-sub">
+    <div className="flex items-center gap-[3px] text-[10px] text-ink-3">
       Employer · {employer.totalHires} hire
       {employer.totalHires === 1 ? "" : "s"}
       {employer.rating != null && (
         <>
           {" · "}
-          <Star size={10} fill="currentColor" strokeWidth={0} />
+          <Star
+            size={10}
+            fill="currentColor"
+            strokeWidth={0}
+            className="text-gold"
+          />
           {employer.rating.toFixed(1)}
         </>
       )}
@@ -617,7 +722,11 @@ function EmployerSub({ employer }: { employer: JobRequest["employer"] }) {
 /* ── Stars row ────────────────────────────────────────────────────────────── */
 function Stars({ value }: { value: number }) {
   return (
-    <span className="wr-stars" role="img" aria-label={`${value} out of 5`}>
+    <span
+      className="inline-flex gap-px text-gold"
+      role="img"
+      aria-label={`${value} out of 5`}
+    >
       {Array.from({ length: 5 }, (_, i) => (
         <Star
           // biome-ignore lint/suspicious/noArrayIndexKey: fixed 5-star row
@@ -641,19 +750,24 @@ function EmptyState({
   filter: RequestFilter;
   totalAll: number;
 }) {
+  const wrapCls =
+    "flex flex-col items-center text-center px-6 py-[60px] bg-white border-[0.5px] border-border rounded-xl";
+
   // Brand-new worker with no requests at all.
   if (totalAll === 0) {
     return (
-      <div className="wr-empty">
-        <span className="wr-empty-icon">
+      <div className={wrapCls}>
+        <span className="text-border leading-none">
           <FileText size={44} />
         </span>
-        <div className="wr-empty-title">No job requests yet</div>
-        <p className="wr-empty-sub">
+        <div className="text-[15px] font-medium text-ink-2 mt-3.5">
+          No job requests yet
+        </div>
+        <p className="text-[13px] text-ink-3 leading-relaxed max-w-[280px] mt-1">
           Complete your profile and share it to start receiving requests from
           employers.
         </p>
-        <Link href="/worker/profile" className="wr-btn wr-btn-gold">
+        <Link href="/worker/profile" className={cn(BTN_BASE, BTN_GOLD, "mt-4")}>
           Complete profile
         </Link>
       </div>
@@ -685,12 +799,14 @@ function EmptyState({
 
   const { title, sub } = copy[filter];
   return (
-    <div className="wr-empty">
-      <span className="wr-empty-icon">
+    <div className={wrapCls}>
+      <span className="text-border leading-none">
         <FileText size={44} />
       </span>
-      <div className="wr-empty-title">{title}</div>
-      <p className="wr-empty-sub">{sub}</p>
+      <div className="text-[15px] font-medium text-ink-2 mt-3.5">{title}</div>
+      <p className="text-[13px] text-ink-3 leading-relaxed max-w-[280px] mt-1">
+        {sub}
+      </p>
     </div>
   );
 }
@@ -698,39 +814,32 @@ function EmptyState({
 /* ─────────────────────────────────────────────────────────────────────────
    Loading skeleton — three cards mirroring the real layout
    ───────────────────────────────────────────────────────────────────────── */
+const SKEL = "bg-cream-2 rounded-md animate-pulse";
+
 function RequestsSkeleton() {
   return (
-    <div className="wr-list">
+    <div className="flex flex-col gap-2.5">
       {Array.from({ length: 3 }, (_, i) => (
         <div
           // biome-ignore lint/suspicious/noArrayIndexKey: fixed skeleton row
           key={i}
-          className="wr-card"
+          className="bg-white border-[0.5px] border-border rounded-xl overflow-hidden border-l-[3px] border-l-border"
         >
-          <div className="wr-card-head">
-            <div
-              className="wr-skel"
-              style={{ width: 42, height: 42, borderRadius: "50%" }}
-            />
-            <div className="wr-card-mid">
-              <div className="wr-skel" style={{ width: "45%", height: 14 }} />
-              <div
-                className="wr-skel"
-                style={{ width: "70%", height: 11, marginTop: 8 }}
-              />
+          <div className="flex gap-3 px-4 py-3.5 border-b-[0.5px] border-border">
+            <div className={cn(SKEL, "w-[42px] h-[42px] rounded-full")} />
+            <div className="flex-1 min-w-0">
+              <div className={cn(SKEL, "w-[45%] h-3.5")} />
+              <div className={cn(SKEL, "w-[70%] h-[11px] mt-2")} />
             </div>
-            <div className="wr-skel" style={{ width: 60, height: 22 }} />
+            <div className={cn(SKEL, "w-[60px] h-[22px]")} />
           </div>
-          <div className="wr-card-body">
-            <div className="wr-skel" style={{ width: "100%", height: 11 }} />
-            <div
-              className="wr-skel"
-              style={{ width: "80%", height: 11, marginTop: 6 }}
-            />
+          <div className="px-4 py-3 border-b-[0.5px] border-border">
+            <div className={cn(SKEL, "w-full h-[11px]")} />
+            <div className={cn(SKEL, "w-[80%] h-[11px] mt-1.5")} />
           </div>
-          <div className="wr-card-foot">
-            <div className="wr-skel" style={{ width: 140, height: 28 }} />
-            <div className="wr-skel" style={{ width: 180, height: 30 }} />
+          <div className="flex items-center justify-between gap-3 px-4 py-3">
+            <div className={cn(SKEL, "w-[140px] h-7")} />
+            <div className={cn(SKEL, "w-[180px] h-[30px]")} />
           </div>
         </div>
       ))}

@@ -7,8 +7,8 @@ import { useMemo, useState } from "react";
 import { useToastContext } from "@/context/ToastContext";
 import { useGoogleAuth, useRegister } from "@/features/auth";
 import { redirectPathForRole } from "@/lib/authRedirect";
+import { cn } from "@/lib/utils";
 import { accountStepSchema } from "@/lib/validations/auth";
-import "./signup.css";
 
 type AccountType = "employer" | "worker";
 
@@ -54,7 +54,11 @@ function passwordScore(v: string): number {
 
 function EyeIcon() {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className="w-[15px] h-[15px] stroke-current fill-none [stroke-width:1.5]"
+    >
       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
       <circle cx="12" cy="12" r="3" />
     </svg>
@@ -71,6 +75,17 @@ const EMPTY_FORM = {
   location: "",
   dailyRate: "",
 };
+
+const LABEL_CLASS =
+  "block text-xs font-medium text-ink-2 mb-1.5 tracking-[0.02em]";
+const HINT_CLASS = "text-[11px] text-ink-3 mt-1";
+const ERR_CLASS = "text-[11px] text-red-600 mt-1";
+const TERMS_LINK_CLASS = "text-gold-dark no-underline hover:text-navy";
+
+const BTN_NEXT_CLASS =
+  "flex-1 py-3 rounded-md text-sm font-medium bg-gold text-navy transition-all hover:bg-gold-dark disabled:opacity-60 disabled:cursor-not-allowed";
+const BTN_BACK_CLASS =
+  "flex-none px-5 py-[11px] rounded-md text-[13px] font-medium border border-border bg-transparent text-ink-2 transition-all hover:border-ink-3";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -116,7 +131,7 @@ export default function RegisterPage() {
 
   const goToStep3 = () => {
     if (!accountType) {
-      toastError("Please choose how you'll use Fundi");
+      toastError("Please choose how you'll use Tesilix");
       return;
     }
     setStep(3);
@@ -184,36 +199,54 @@ export default function RegisterPage() {
     }
   };
 
-  const inputClass = (k: string, extra = "") =>
-    `input${errors[k] ? " error" : ""}${extra}`;
+  const inputClass = (k: string) =>
+    cn(
+      "w-full px-3.5 py-2.5 border rounded-md text-sm bg-cream text-ink outline-none transition-all placeholder:text-ink-3 focus:border-gold focus:bg-white",
+      errors[k] ? "border-red-600" : "border-border",
+    );
 
   return (
-    <div className="su">
-      <div className="top">
-        <Link href="/" className="logo">
-          Fundi<span>.</span>
+    <div className="min-h-screen bg-cream text-ink font-sans flex flex-col items-center px-4 pt-10 pb-14">
+      <div className="text-center mb-6">
+        <Link
+          href="/"
+          className="font-serif text-[22px] font-medium text-navy no-underline"
+        >
+          Tesilix<span className="italic text-gold font-light">.</span>
         </Link>
-        <div className="tagline">The skilled worker marketplace for Kenya</div>
+        <div className="text-xs text-ink-3 mt-0.5">
+          The global skilled worker marketplace
+        </div>
       </div>
 
-      <div className="progress-track">
-        <div className="progress-fill" style={{ width: `${progress}%` }} />
+      <div className="w-full max-w-[420px] h-[3px] bg-border rounded-sm mb-5 overflow-hidden">
+        <div
+          className="h-full bg-gold rounded-sm transition-[width] duration-[400ms] ease"
+          style={{ width: `${progress}%` }}
+        />
       </div>
 
-      <div className="card">
+      <div className="bg-white border border-border rounded-xl p-8 w-full max-w-[420px]">
         {/* STEP 1 — account */}
         {step === 1 && (
           <div>
-            <div className="card-title">
-              Create your <em>account</em>
+            <div className="font-serif text-[24px] font-normal text-ink mb-1">
+              Create your{" "}
+              <em className="italic font-light text-gold-dark">account</em>
             </div>
-            <p className="card-sub">
-              Already have an account? <Link href="/login">Sign in →</Link>
+            <p className="text-[13px] text-ink-3 mb-6 leading-normal">
+              Already have an account?{" "}
+              <Link
+                href="/login"
+                className="text-gold-dark font-medium no-underline hover:text-navy"
+              >
+                Sign in →
+              </Link>
             </p>
 
             <button
               type="button"
-              className="btn-google"
+              className="w-full py-[11px] rounded-md text-[13px] font-medium border border-border bg-white text-ink flex items-center justify-center gap-2 transition-all hover:border-ink-3 disabled:opacity-60"
               onClick={onGoogle}
               disabled={googleLoading}
             >
@@ -243,11 +276,13 @@ export default function RegisterPage() {
               Continue with Google
             </button>
 
-            <div className="divider">or sign up with email</div>
+            <div className="flex items-center gap-3 my-4 text-xs text-ink-3 before:content-[''] before:flex-1 before:h-px before:bg-border after:content-[''] after:flex-1 after:h-px after:bg-border">
+              or sign up with email
+            </div>
 
-            <div className="field-row">
-              <div className="field">
-                <span className="label">First name</span>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="mb-4">
+                <span className={LABEL_CLASS}>First name</span>
                 <input
                   className={inputClass("firstName")}
                   placeholder="John"
@@ -256,11 +291,11 @@ export default function RegisterPage() {
                   autoComplete="given-name"
                 />
                 {errors.firstName && (
-                  <div className="err">{errors.firstName}</div>
+                  <div className={ERR_CLASS}>{errors.firstName}</div>
                 )}
               </div>
-              <div className="field">
-                <span className="label">Last name</span>
+              <div className="mb-4">
+                <span className={LABEL_CLASS}>Last name</span>
                 <input
                   className={inputClass("lastName")}
                   placeholder="Kamau"
@@ -269,13 +304,13 @@ export default function RegisterPage() {
                   autoComplete="family-name"
                 />
                 {errors.lastName && (
-                  <div className="err">{errors.lastName}</div>
+                  <div className={ERR_CLASS}>{errors.lastName}</div>
                 )}
               </div>
             </div>
 
-            <div className="field">
-              <span className="label">Email address</span>
+            <div className="mb-4">
+              <span className={LABEL_CLASS}>Email address</span>
               <input
                 className={inputClass("email")}
                 type="email"
@@ -285,11 +320,11 @@ export default function RegisterPage() {
                 autoComplete="email"
                 inputMode="email"
               />
-              {errors.email && <div className="err">{errors.email}</div>}
+              {errors.email && <div className={ERR_CLASS}>{errors.email}</div>}
             </div>
 
-            <div className="field">
-              <span className="label">Phone number</span>
+            <div className="mb-4">
+              <span className={LABEL_CLASS}>Phone number</span>
               <input
                 className={inputClass("phoneNumber")}
                 type="tel"
@@ -300,20 +335,20 @@ export default function RegisterPage() {
                 inputMode="tel"
               />
               {errors.phoneNumber ? (
-                <div className="err">{errors.phoneNumber}</div>
+                <div className={ERR_CLASS}>{errors.phoneNumber}</div>
               ) : (
-                <div className="hint">
+                <div className={HINT_CLASS}>
                   Include your country code (e.g. +254, +44, +1). For
                   verification only — never shown publicly.
                 </div>
               )}
             </div>
 
-            <div className="field">
-              <span className="label">Password</span>
-              <div className="pw-wrap">
+            <div className="mb-4">
+              <span className={LABEL_CLASS}>Password</span>
+              <div className="relative">
                 <input
-                  className={inputClass("password")}
+                  className={cn(inputClass("password"), "pr-[42px]")}
                   type={showPw1 ? "text" : "password"}
                   placeholder="At least 8 characters"
                   value={form.password}
@@ -322,18 +357,18 @@ export default function RegisterPage() {
                 />
                 <button
                   type="button"
-                  className="pw-eye"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-3 leading-none"
                   onClick={() => setShowPw1((s) => !s)}
                   aria-label={showPw1 ? "Hide password" : "Show password"}
                 >
                   <EyeIcon />
                 </button>
               </div>
-              <div className="strength-wrap">
+              <div className="flex gap-1 mt-1.5">
                 {[0, 1, 2, 3].map((i) => (
                   <div
                     key={i}
-                    className="strength-seg"
+                    className="h-[3px] flex-1 rounded-sm transition-colors duration-300"
                     style={{
                       background:
                         i < score ? STRENGTH_COLORS[score] : "#e5e0d5",
@@ -342,19 +377,21 @@ export default function RegisterPage() {
                 ))}
               </div>
               <div
-                className="strength-label"
+                className="text-[11px] mt-1 min-h-[14px]"
                 style={{ color: STRENGTH_COLORS[score] }}
               >
                 {form.password ? STRENGTH_LABELS[score] : ""}
               </div>
-              {errors.password && <div className="err">{errors.password}</div>}
+              {errors.password && (
+                <div className={ERR_CLASS}>{errors.password}</div>
+              )}
             </div>
 
-            <div className="field">
-              <span className="label">Confirm password</span>
-              <div className="pw-wrap">
+            <div className="mb-4">
+              <span className={LABEL_CLASS}>Confirm password</span>
+              <div className="relative">
                 <input
-                  className={inputClass("confirmPassword")}
+                  className={cn(inputClass("confirmPassword"), "pr-[42px]")}
                   type={showPw2 ? "text" : "password"}
                   placeholder="Repeat your password"
                   value={form.confirmPassword}
@@ -363,7 +400,7 @@ export default function RegisterPage() {
                 />
                 <button
                   type="button"
-                  className="pw-eye"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-3 leading-none"
                   onClick={() => setShowPw2((s) => !s)}
                   aria-label={showPw2 ? "Hide password" : "Show password"}
                 >
@@ -371,18 +408,28 @@ export default function RegisterPage() {
                 </button>
               </div>
               {errors.confirmPassword && (
-                <div className="err">{errors.confirmPassword}</div>
+                <div className={ERR_CLASS}>{errors.confirmPassword}</div>
               )}
             </div>
 
-            <div className="btn-row">
-              <button type="button" className="btn-next" onClick={goToStep2}>
+            <div className="flex gap-2.5 mt-5">
+              <button
+                type="button"
+                className={BTN_NEXT_CLASS}
+                onClick={goToStep2}
+              >
                 Next →
               </button>
             </div>
-            <p className="terms">
-              By continuing you agree to our <Link href="/terms">Terms</Link>{" "}
-              and <Link href="/privacy">Privacy Policy</Link>
+            <p className="text-[11px] text-ink-3 text-center mt-3.5 leading-relaxed">
+              By continuing you agree to our{" "}
+              <Link href="/terms" className={TERMS_LINK_CLASS}>
+                Terms
+              </Link>{" "}
+              and{" "}
+              <Link href="/privacy" className={TERMS_LINK_CLASS}>
+                Privacy Policy
+              </Link>
             </p>
           </div>
         )}
@@ -390,57 +437,49 @@ export default function RegisterPage() {
         {/* STEP 2 — role */}
         {step === 2 && (
           <div>
-            <div className="card-title">
-              You are a<em>…</em>
+            <div className="font-serif text-[24px] font-normal text-ink mb-1">
+              You are a<em className="italic font-light text-gold-dark">…</em>
             </div>
-            <p className="card-sub">
+            <p className="text-[13px] text-ink-3 mb-6 leading-normal">
               This helps us personalise your experience
             </p>
-            <div className="role-grid">
-              <button
-                type="button"
-                className={`role-card${accountType === "employer" ? " selected" : ""}`}
+            <div className="grid grid-cols-2 gap-2.5 mb-2">
+              <RoleCard
+                selected={accountType === "employer"}
                 onClick={() => setAccountType("employer")}
-                aria-pressed={accountType === "employer"}
+                title="I need a fundi"
+                desc="Hire verified workers for any job"
               >
-                <span className="role-card-icon">
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <rect x="2" y="7" width="20" height="14" rx="2" />
-                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-                    <path d="M2 13h20" />
-                  </svg>
-                </span>
-                <div className="role-card-title">I need a fundi</div>
-                <div className="role-card-desc">
-                  Hire verified workers for any job
-                </div>
-              </button>
-              <button
-                type="button"
-                className={`role-card${accountType === "worker" ? " selected" : ""}`}
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="2" y="7" width="20" height="14" rx="2" />
+                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                  <path d="M2 13h20" />
+                </svg>
+              </RoleCard>
+              <RoleCard
+                selected={accountType === "worker"}
                 onClick={() => setAccountType("worker")}
-                aria-pressed={accountType === "worker"}
+                title="I am a fundi"
+                desc="Find jobs and grow your career"
               >
-                <span className="role-card-icon">
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
-                  </svg>
-                </span>
-                <div className="role-card-title">I am a fundi</div>
-                <div className="role-card-desc">
-                  Find jobs and grow your career
-                </div>
-              </button>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+                </svg>
+              </RoleCard>
             </div>
-            <div className="btn-row">
+            <div className="flex gap-2.5 mt-5">
               <button
                 type="button"
-                className="btn-back"
+                className={BTN_BACK_CLASS}
                 onClick={() => setStep(1)}
               >
                 ← Back
               </button>
-              <button type="button" className="btn-next" onClick={goToStep3}>
+              <button
+                type="button"
+                className={BTN_NEXT_CLASS}
+                onClick={goToStep3}
+              >
                 Next →
               </button>
             </div>
@@ -450,69 +489,60 @@ export default function RegisterPage() {
         {/* STEP 3 — employer */}
         {step === 3 && accountType === "employer" && (
           <div>
-            <div className="card-title">
-              Where are <em>you based?</em>
+            <div className="font-serif text-[24px] font-normal text-ink mb-1">
+              Where are{" "}
+              <em className="italic font-light text-gold-dark">you based?</em>
             </div>
-            <p className="card-sub">We’ll show you fundis near you first</p>
-            <div className="field">
-              <span className="label">Your location</span>
+            <p className="text-[13px] text-ink-3 mb-6 leading-normal">
+              We’ll show you fundis near you first
+            </p>
+            <div className="mb-4">
+              <span className={LABEL_CLASS}>Your location</span>
               <input
                 className={inputClass("location")}
                 placeholder="e.g. Westlands, Nairobi"
                 value={form.location}
                 onChange={set("location")}
               />
-              {errors.location && <div className="err">{errors.location}</div>}
+              {errors.location && (
+                <div className={ERR_CLASS}>{errors.location}</div>
+              )}
             </div>
-            <div className="field">
-              <span className="label">
+            <div className="mb-4">
+              <span className={LABEL_CLASS}>
                 What kind of work do you usually need?
               </span>
-              <div className="trade-grid">
+              <div className="flex flex-wrap gap-2 mt-1">
                 {EMPLOYER_TRADES.map((t) => (
-                  <button
-                    type="button"
+                  <TradePill
                     key={t}
-                    className={`trade-pill${interestedTrades.includes(t) ? " selected" : ""}`}
+                    selected={interestedTrades.includes(t)}
                     onClick={() => toggleInterested(t)}
-                    aria-pressed={interestedTrades.includes(t)}
                   >
                     {t}
-                  </button>
+                  </TradePill>
                 ))}
               </div>
-              <div className="hint" style={{ marginTop: 8 }}>
+              <div className={cn(HINT_CLASS, "mt-2")}>
                 Select all that apply
               </div>
             </div>
-            <div className="field">
-              <label className="check-item">
-                <input
-                  type="checkbox"
-                  checked={agreedToTerms}
-                  onChange={(e) => setAgreedToTerms(e.target.checked)}
-                />
-                <span>
-                  I agree to the{" "}
-                  <Link href="/terms">Terms &amp; Conditions</Link> and{" "}
-                  <Link href="/privacy">Privacy Policy</Link>
-                </span>
-              </label>
-              {errors.agreedToTerms && (
-                <div className="err">{errors.agreedToTerms}</div>
-              )}
-            </div>
-            <div className="btn-row">
+            <TermsCheckbox
+              checked={agreedToTerms}
+              onChange={setAgreedToTerms}
+              error={errors.agreedToTerms}
+            />
+            <div className="flex gap-2.5 mt-5">
               <button
                 type="button"
-                className="btn-back"
+                className={BTN_BACK_CLASS}
                 onClick={() => setStep(2)}
               >
                 ← Back
               </button>
               <button
                 type="button"
-                className="btn-next"
+                className={BTN_NEXT_CLASS}
                 onClick={submit}
                 disabled={isLoading}
               >
@@ -525,42 +555,47 @@ export default function RegisterPage() {
         {/* STEP 3 — worker */}
         {step === 3 && accountType === "worker" && (
           <div>
-            <div className="card-title">
-              Your <em>trade &amp; location</em>
+            <div className="font-serif text-[24px] font-normal text-ink mb-1">
+              Your{" "}
+              <em className="italic font-light text-gold-dark">
+                trade &amp; location
+              </em>
             </div>
-            <p className="card-sub">Help employers find you faster</p>
-            <div className="field">
-              <span className="label">Your location</span>
+            <p className="text-[13px] text-ink-3 mb-6 leading-normal">
+              Help employers find you faster
+            </p>
+            <div className="mb-4">
+              <span className={LABEL_CLASS}>Your location</span>
               <input
                 className={inputClass("location")}
                 placeholder="e.g. Westlands, Nairobi"
                 value={form.location}
                 onChange={set("location")}
               />
-              {errors.location && <div className="err">{errors.location}</div>}
+              {errors.location && (
+                <div className={ERR_CLASS}>{errors.location}</div>
+              )}
             </div>
-            <div className="field">
-              <span className="label">Your main trade</span>
-              <div className="trade-grid">
+            <div className="mb-4">
+              <span className={LABEL_CLASS}>Your main trade</span>
+              <div className="flex flex-wrap gap-2 mt-1">
                 {WORKER_TRADES.map((t) => (
-                  <button
-                    type="button"
+                  <TradePill
                     key={t}
-                    className={`trade-pill${trade === t ? " selected" : ""}`}
+                    selected={trade === t}
                     onClick={() => {
                       setTrade(t);
                       if (errors.trade) setErrors((p) => ({ ...p, trade: "" }));
                     }}
-                    aria-pressed={trade === t}
                   >
                     {t}
-                  </button>
+                  </TradePill>
                 ))}
               </div>
-              {errors.trade && <div className="err">{errors.trade}</div>}
+              {errors.trade && <div className={ERR_CLASS}>{errors.trade}</div>}
             </div>
-            <div className="field">
-              <span className="label">Daily rate (optional)</span>
+            <div className="mb-4">
+              <span className={LABEL_CLASS}>Daily rate (optional)</span>
               <input
                 className={inputClass("dailyRate")}
                 placeholder="e.g. KSh 2,500"
@@ -568,38 +603,26 @@ export default function RegisterPage() {
                 onChange={set("dailyRate")}
                 inputMode="numeric"
               />
-              <div className="hint">
+              <div className={HINT_CLASS}>
                 You can update this anytime on your profile
               </div>
             </div>
-            <div className="field">
-              <label className="check-item">
-                <input
-                  type="checkbox"
-                  checked={agreedToTerms}
-                  onChange={(e) => setAgreedToTerms(e.target.checked)}
-                />
-                <span>
-                  I agree to the{" "}
-                  <Link href="/terms">Terms &amp; Conditions</Link> and{" "}
-                  <Link href="/privacy">Privacy Policy</Link>
-                </span>
-              </label>
-              {errors.agreedToTerms && (
-                <div className="err">{errors.agreedToTerms}</div>
-              )}
-            </div>
-            <div className="btn-row">
+            <TermsCheckbox
+              checked={agreedToTerms}
+              onChange={setAgreedToTerms}
+              error={errors.agreedToTerms}
+            />
+            <div className="flex gap-2.5 mt-5">
               <button
                 type="button"
-                className="btn-back"
+                className={BTN_BACK_CLASS}
                 onClick={() => setStep(2)}
               >
                 ← Back
               </button>
               <button
                 type="button"
-                className="btn-next"
+                className={BTN_NEXT_CLASS}
                 onClick={submit}
                 disabled={isLoading}
               >
@@ -611,28 +634,32 @@ export default function RegisterPage() {
 
         {/* STEP 4 — success */}
         {step === 4 && (
-          <div className="success-wrap">
-            <div className="success-icon">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
+          <div className="text-center py-4">
+            <div className="w-16 h-16 rounded-full bg-gold-light border-2 border-gold/30 flex items-center justify-center mx-auto mb-5">
+              <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                className="w-7 h-7 stroke-gold-dark fill-none [stroke-width:2]"
+              >
                 <polyline points="20 6 9 17 4 12" />
               </svg>
             </div>
-            <div className="card-title" style={{ textAlign: "center" }}>
-              You’re on <em>Fundi!</em>
+            <div className="font-serif text-[24px] font-normal text-ink mb-1 text-center">
+              You’re on{" "}
+              <em className="italic font-light text-gold-dark">Tesilix!</em>
             </div>
-            <p className="success-msg">
+            <p className="text-sm text-ink-2 mt-2 mb-7 leading-relaxed">
               {accountType === "employer"
                 ? "Your account is ready. Let’s find you a great fundi."
                 : "Your profile is live. Employers can now find you."}
               <br />
-              <span style={{ color: "var(--ink3)", fontSize: 13 }}>
+              <span className="text-ink-3 text-[13px]">
                 First, verify your email to secure your account.
               </span>
             </p>
             <button
               type="button"
-              className="btn-next"
-              style={{ width: "100%" }}
+              className={cn(BTN_NEXT_CLASS, "w-full")}
               onClick={() => router.push("/verify-email")}
             >
               Verify your email →
@@ -641,11 +668,127 @@ export default function RegisterPage() {
         )}
       </div>
 
-      <div className="foot">
-        <span>© 2026 Fundi</span>
-        <Link href="/privacy">Privacy</Link>
-        <Link href="/terms">Terms</Link>
+      <div className="mt-7 flex items-center justify-center gap-3.5 text-[11px] text-ink-3">
+        <span>© 2026 Tesilix</span>
+        <Link
+          href="/privacy"
+          className="text-ink-3 no-underline hover:text-ink-2"
+        >
+          Privacy
+        </Link>
+        <Link
+          href="/terms"
+          className="text-ink-3 no-underline hover:text-ink-2"
+        >
+          Terms
+        </Link>
       </div>
+    </div>
+  );
+}
+
+function RoleCard({
+  selected,
+  onClick,
+  title,
+  desc,
+  children,
+}: {
+  selected: boolean;
+  onClick: () => void;
+  title: string;
+  desc: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      className={cn(
+        "w-full p-5 px-4 border-[1.5px] rounded-[10px] text-center transition-all",
+        selected
+          ? "border-gold bg-gold-light"
+          : "border-border bg-cream hover:border-gold",
+      )}
+      onClick={onClick}
+      aria-pressed={selected}
+    >
+      <span
+        className={cn(
+          "w-11 h-11 rounded-[11px] flex items-center justify-center mx-auto mb-3 transition-all border [&_svg]:w-[22px] [&_svg]:h-[22px] [&_svg]:stroke-gold-dark [&_svg]:fill-none [&_svg]:[stroke-width:1.6] [&_svg]:[stroke-linecap:round] [&_svg]:[stroke-linejoin:round]",
+          selected ? "bg-white border-gold" : "bg-gold-light border-gold/25",
+        )}
+      >
+        {children}
+      </span>
+      <div
+        className={cn(
+          "text-sm font-medium mb-1",
+          selected ? "text-gold-dark" : "text-ink",
+        )}
+      >
+        {title}
+      </div>
+      <div className="text-[11px] text-ink-3 leading-normal">{desc}</div>
+    </button>
+  );
+}
+
+function TradePill({
+  selected,
+  onClick,
+  children,
+}: {
+  selected: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      className={cn(
+        "px-3.5 py-[7px] border rounded-[20px] text-[13px] transition-all select-none",
+        selected
+          ? "border-gold bg-gold-light text-gold-dark font-medium"
+          : "border-border bg-cream text-ink-2 hover:border-gold",
+      )}
+      onClick={onClick}
+      aria-pressed={selected}
+    >
+      {children}
+    </button>
+  );
+}
+
+function TermsCheckbox({
+  checked,
+  onChange,
+  error,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  error?: string;
+}) {
+  return (
+    <div className="mb-4">
+      <label className="flex items-start gap-2.5 text-[13px] text-ink-2 mb-1 cursor-pointer leading-normal">
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+          className="mt-0.5 w-[15px] h-[15px] flex-shrink-0 accent-gold"
+        />
+        <span>
+          I agree to the{" "}
+          <Link href="/terms" className="text-gold-dark no-underline">
+            Terms &amp; Conditions
+          </Link>{" "}
+          and{" "}
+          <Link href="/privacy" className="text-gold-dark no-underline">
+            Privacy Policy
+          </Link>
+        </span>
+      </label>
+      {error && <div className={ERR_CLASS}>{error}</div>}
     </div>
   );
 }

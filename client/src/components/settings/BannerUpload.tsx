@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
 import { Camera, X } from "lucide-react";
+import { useRef, useState } from "react";
 import { useToastContext } from "@/context/ToastContext";
 import client from "@/lib/axios";
 
@@ -11,7 +11,11 @@ interface BannerUploadProps {
   onRemove?: () => void;
 }
 
-export default function BannerUpload({ bannerUrl, onSuccess, onRemove }: BannerUploadProps) {
+export default function BannerUpload({
+  bannerUrl,
+  onSuccess,
+  onRemove,
+}: BannerUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [removing, setRemoving] = useState(false);
@@ -59,13 +63,18 @@ export default function BannerUpload({ bannerUrl, onSuccess, onRemove }: BannerU
   };
 
   return (
-    <div className="relative w-full rounded-xl overflow-hidden" style={{ height: 160 }}>
+    <div className="relative w-full h-40 rounded-xl overflow-hidden">
       {/* Banner or gradient placeholder */}
       {bannerUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={bannerUrl} alt="Profile banner" className="w-full h-full object-cover" />
+        // biome-ignore lint/performance/noImgElement: banner URLs are arbitrary external/blob hosts
+        <img
+          src={bannerUrl}
+          alt="Profile banner"
+          className="w-full h-full object-cover"
+        />
       ) : (
-        <div className="w-full h-full bg-gradient-to-r from-orange-400 to-orange-600" />
+        <div className="w-full h-full bg-gradient-to-r from-navy-2 to-navy" />
       )}
 
       {/* Overlay while uploading */}
@@ -81,6 +90,7 @@ export default function BannerUpload({ bannerUrl, onSuccess, onRemove }: BannerU
       {!uploading && !removing && (
         <div className="absolute bottom-3 right-3 flex gap-2">
           <button
+            type="button"
             onClick={() => inputRef.current?.click()}
             className="flex items-center gap-1.5 bg-black/50 hover:bg-black/70 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors backdrop-blur-sm"
           >
@@ -89,6 +99,7 @@ export default function BannerUpload({ bannerUrl, onSuccess, onRemove }: BannerU
           </button>
           {bannerUrl && (
             <button
+              type="button"
               onClick={handleRemove}
               className="flex items-center gap-1 bg-black/50 hover:bg-red-600/80 text-white text-xs font-medium px-2 py-1.5 rounded-lg transition-colors backdrop-blur-sm"
               aria-label="Remove banner"

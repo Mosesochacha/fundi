@@ -10,7 +10,6 @@ import {
   useGetWorkerSettings,
   type WorkerSettings,
 } from "@/features/worker/settings";
-import "@/app/worker/settings/settings.css";
 
 /**
  * Shared account settings, used by both worker and employer. One component —
@@ -43,16 +42,18 @@ export default function SettingsView({
   const onDirty = useCallback((d: boolean) => setDirty(d), []);
 
   return (
-    <div className="ws">
-      <div className="ws-pagehead">
-        <h1 className="ws-pagetitle">Settings</h1>
-        <p className="ws-pagesub">
+    <div className="flex flex-col gap-5 font-sans text-ink-2">
+      <div className="flex flex-col gap-0.5">
+        <h1 className="font-serif text-[26px] font-normal text-ink m-0">
+          Settings
+        </h1>
+        <p className="text-[13px] text-ink-3 m-0">
           Manage your account, notifications
           {isWorker ? ", availability" : ""} and privacy.
         </p>
       </div>
 
-      <div className="ws-panels">
+      <div className="min-w-0 flex flex-col gap-5">
         {isLoading ? (
           <PanelSkeleton />
         ) : (
@@ -73,28 +74,24 @@ export default function SettingsView({
 }
 
 /* ── Loading skeleton — mirrors a panel's shape ───────────────────────────── */
+const SKEL = "bg-border rounded-md animate-pulse";
+
 function PanelSkeleton() {
   return (
-    <div className="ws-panel">
-      <div className="ws-panel-head">
-        <div className="ws-skel" style={{ width: 140, height: 14 }} />
-        <div
-          className="ws-skel"
-          style={{ width: 220, height: 11, marginTop: 8 }}
-        />
+    <div className="bg-white border-[0.5px] border-border rounded-xl overflow-hidden">
+      <div className="py-4 px-5 border-b-[0.5px] border-border">
+        <div className={`${SKEL} w-[140px] h-3.5`} />
+        <div className={`${SKEL} w-[220px] h-[11px] mt-2`} />
       </div>
-      <div className="ws-panel-body">
+      <div className="p-5">
         {Array.from({ length: 5 }, (_, i) => (
           <div
             // biome-ignore lint/suspicious/noArrayIndexKey: fixed skeleton rows
             key={i}
-            style={{ marginBottom: 16 }}
+            className="mb-4"
           >
-            <div className="ws-skel" style={{ width: 90, height: 11 }} />
-            <div
-              className="ws-skel"
-              style={{ width: "100%", height: 38, marginTop: 6 }}
-            />
+            <div className={`${SKEL} w-[90px] h-[11px]`} />
+            <div className={`${SKEL} w-full h-[38px] mt-1.5`} />
           </div>
         ))}
       </div>

@@ -1,17 +1,16 @@
 "use client";
 
-import Link from "next/link";
-import { Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { motion } from "framer-motion";
-import { useResetPassword } from "@/features/auth";
-import { useToastContext } from "@/context/ToastContext";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import PasswordInput from "@/components/auth/PasswordInput";
-import Button from "@/components/ui/Button";
-import PageHeader from "@/components/ui/PageHeader";
+import { Button } from "@/components/ui";
+import { useToastContext } from "@/context/ToastContext";
+import { useResetPassword } from "@/features/auth";
 
 const schema = z
   .object({
@@ -56,10 +55,17 @@ function ResetPasswordForm() {
       });
       success("Password reset! You can now sign in.");
       router.push("/login");
-    } catch (err: any) {
-      const msg = err?.response?.data?.message ?? "";
-      if (msg.toLowerCase().includes("expired") || msg.toLowerCase().includes("invalid")) {
-        toastError("This reset link is invalid or has expired. Request a new one.");
+    } catch (err) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "";
+      if (
+        msg.toLowerCase().includes("expired") ||
+        msg.toLowerCase().includes("invalid")
+      ) {
+        toastError(
+          "This reset link is invalid or has expired. Request a new one.",
+        );
       } else {
         toastError(msg || "Something went wrong. Please try again.");
       }
@@ -73,33 +79,40 @@ function ResetPasswordForm() {
       transition={{ duration: 0.35, ease: "easeOut" }}
     >
       {/* White card */}
-      <div
-        className="bg-white border border-gray-100 rounded-2xl p-8"
-        style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}
-      >
+      <div className="bg-white border border-border rounded-2xl p-8 shadow-[0_1px_3px_rgba(13,27,42,0.06)]">
         {!token ? (
           <div className="space-y-6 text-center">
-            <div className="bg-orange-50 border border-orange-200 rounded-xl p-6 space-y-3">
-              <h1 className="text-xl font-bold text-gray-900 font-playfair">Link expired</h1>
-              <p className="text-sm text-gray-500 font-dm-sans">
+            <div className="bg-gold-light border border-gold/30 rounded-xl p-6 space-y-3">
+              <h1 className="text-xl font-medium text-navy font-serif">
+                Link expired
+              </h1>
+              <p className="text-sm text-ink-3">
                 This reset link has expired or already been used.
               </p>
             </div>
             <Link
               href="/forgot-password"
-              className="block w-full h-12 rounded-xl border border-orange-300 text-orange-500 hover:bg-orange-50 font-dm-sans text-sm font-medium flex items-center justify-center transition-colors"
+              className="block w-full h-12 rounded-xl border border-gold/40 text-gold-dark hover:bg-gold-light text-sm font-medium flex items-center justify-center transition-colors"
             >
               Request a new link →
             </Link>
           </div>
         ) : (
           <div className="space-y-6">
-            <PageHeader
-              title="Set new password"
-              subtitle="Choose a strong password for your account"
-            />
+            <div>
+              <h1 className="text-2xl font-medium text-navy font-serif leading-tight tracking-tight">
+                Set new password
+              </h1>
+              <p className="text-sm text-ink-3 mt-1">
+                Choose a strong password for your account
+              </p>
+            </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="space-y-4"
+              noValidate
+            >
               <PasswordInput
                 label="New password"
                 autoComplete="new-password"
@@ -123,13 +136,22 @@ function ResetPasswordForm() {
                 {...register("confirmPassword")}
               />
 
-              <Button type="submit" variant="primary" fullWidth loading={isLoading}>
-                Update password
+              <Button
+                type="submit"
+                variant="gold"
+                size="lg"
+                className="w-full"
+                disabled={isLoading}
+              >
+                {isLoading ? "Updating…" : "Update password"}
               </Button>
             </form>
 
-            <p className="text-center font-dm-sans text-sm text-gray-400">
-              <Link href="/login" className="hover:text-gray-600 transition-colors">
+            <p className="text-center text-sm text-ink-3">
+              <Link
+                href="/login"
+                className="hover:text-ink-2 transition-colors"
+              >
                 ← Back to sign in
               </Link>
             </p>

@@ -1,16 +1,15 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
-import { profilesService, type BrowseParams } from "./services/profiles.service";
+  type BrowseParams,
+  profilesService,
+} from "./services/profiles.service";
 
 export * from "./services/profiles.service";
 
 export function useGetProfile(username: string | undefined) {
   return useQuery({
     queryKey: ["profiles", "detail", username],
-    queryFn: () => profilesService.getProfile(username!),
+    queryFn: () => profilesService.getProfile(username as string),
     enabled: !!username,
     select: (res) => res.data.data,
   });
@@ -19,7 +18,7 @@ export function useGetProfile(username: string | undefined) {
 export function useGetProfilePosts(username: string | undefined, page = 1) {
   return useQuery({
     queryKey: ["profiles", "posts", username, page],
-    queryFn: () => profilesService.getProfilePosts(username!, page),
+    queryFn: () => profilesService.getProfilePosts(username as string, page),
     enabled: !!username,
     select: (res) => res.data.data,
   });

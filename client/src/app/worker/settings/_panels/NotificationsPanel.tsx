@@ -101,8 +101,10 @@ export default function NotificationsPanel({
     >
       <PanelBody>
         {GROUPS.map((group) => (
-          <div className="ws-group" key={group.title}>
-            <div className="ws-group-title">{group.title}</div>
+          <div className="[&+&]:mt-[22px]" key={group.title}>
+            <div className="text-[11px] font-semibold tracking-[0.06em] uppercase text-ink-3 mb-1.5">
+              {group.title}
+            </div>
             {group.rows.map((row) => (
               <ToggleRow
                 key={row.key}

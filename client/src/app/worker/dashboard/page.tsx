@@ -18,6 +18,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback } from "react";
 import Shell from "@/components/dashboard/Shell";
+import { Button } from "@/components/ui";
 import WelcomeToast from "@/components/WelcomeToast";
 import { useAuth } from "@/features/auth";
 import type {
@@ -27,7 +28,7 @@ import type {
   UpcomingJob,
 } from "@/features/worker/dashboard";
 import { useGetWorkerDashboard } from "@/features/worker/dashboard";
-import "./dashboard.css";
+import { cn } from "@/lib/utils";
 
 const initialsOf = (n: string) =>
   n
@@ -67,6 +68,13 @@ const reqDateLabel = (iso: string) => {
 const shortDate = (iso: string) =>
   new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 
+const CARD = "bg-white border-[0.5px] border-border rounded-xl overflow-hidden";
+const CARD_HEAD =
+  "flex items-center justify-between gap-2 px-4 py-3.5 border-b-[0.5px] border-border";
+const CARD_TITLE = "flex items-center gap-2 text-[13px] font-semibold text-ink";
+const CARD_LINK =
+  "text-xs text-gold-dark no-underline whitespace-nowrap hover:underline";
+
 export default function WorkerDashboardPage() {
   const pathname = usePathname();
   const { profile, user } = useAuth();
@@ -88,7 +96,7 @@ export default function WorkerDashboardPage() {
         ? `${window.location.origin}/worker/${username ?? ""}`
         : "";
     if (typeof navigator !== "undefined" && navigator.share) {
-      navigator.share({ title: `${name} on Fundi`, url }).catch(() => {});
+      navigator.share({ title: `${name} on Tesilix`, url }).catch(() => {});
     } else if (typeof navigator !== "undefined" && navigator.clipboard) {
       navigator.clipboard.writeText(url).catch(() => {});
     }
@@ -97,35 +105,42 @@ export default function WorkerDashboardPage() {
   return (
     // biome-ignore lint/a11y/useValidAriaRole: `role` is a Shell prop, not an ARIA attribute
     <Shell role="worker" user={shellUser} currentPath={pathname}>
+      {/* biome-ignore lint/a11y/useValidAriaRole: `role` is a WelcomeToast prop, not an ARIA attribute */}
       <WelcomeToast role="worker" firstName={firstName} />
-      <div className="wd">
+      <div className="flex flex-col gap-4 text-ink-2">
         {/* ── Welcome row ─────────────────────────────────────────────── */}
-        <div className="wd-welcome">
+        <div className="flex items-end justify-between gap-4 flex-wrap">
           <div>
-            <div className="wd-date">{longDate(now)}</div>
-            <h1 className="wd-greeting">
+            <div className="text-[13px] text-ink-3">{longDate(now)}</div>
+            <h1 className="font-serif text-[26px] font-normal text-ink mt-0.5 leading-[1.15]">
               {greeting(now)}, {firstName}.
             </h1>
           </div>
-          <div className="wd-welcome-actions">
-            <button
+          <div className="flex gap-2">
+            <Button
               type="button"
-              className="wd-btn wd-btn-sm wd-btn-outline"
+              variant="outline"
+              size="sm"
+              className="bg-white"
               onClick={shareProfile}
+              icon={<Share2 size={14} />}
             >
-              <Share2 size={14} /> Share profile
-            </button>
-            <Link
-              href="/worker/profile"
-              className="wd-btn wd-btn-sm wd-btn-gold"
-            >
-              Edit profile
+              Share profile
+            </Button>
+            <Link href="/worker/profile">
+              <Button type="button" variant="gold" size="sm">
+                Edit profile
+              </Button>
             </Link>
           </div>
         </div>
 
         {isError && (
-          <button type="button" className="wd-error" onClick={() => refetch()}>
+          <button
+            type="button"
+            className="block w-full text-center bg-red-50 text-red-600 border border-red-200 rounded-lg p-3 text-xs font-medium font-sans cursor-pointer"
+            onClick={() => refetch()}
+          >
             Could not load your dashboard. Tap to retry.
           </button>
         )}
@@ -135,7 +150,7 @@ export default function WorkerDashboardPage() {
         ) : (
           <>
             {/* ── Stats grid ───────────────────────────────────────────── */}
-            <div className="wd-stats">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               <StatCard
                 highlighted
                 value={data?.stats.newRequests ?? 0}
@@ -146,7 +161,7 @@ export default function WorkerDashboardPage() {
               <StatCard
                 value={data?.stats.totalJobs ?? 0}
                 label="Total jobs done"
-                sub="Since joining Fundi"
+                sub="Since joining Tesilix"
               />
               <StatCard
                 value={
@@ -180,15 +195,15 @@ export default function WorkerDashboardPage() {
             </div>
 
             {/* ── Two-column layout ────────────────────────────────────── */}
-            <div className="wd-cols">
+            <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-4 items-start">
               {/* LEFT */}
-              <div className="wd-col">
+              <div className="flex flex-col gap-4">
                 <JobRequestsCard requests={data?.recentRequests ?? []} />
                 <UpcomingJobsCard jobs={data?.upcomingJobs ?? []} />
               </div>
 
               {/* RIGHT */}
-              <div className="wd-col">
+              <div className="flex flex-col gap-4">
                 <ProfileStrengthCard
                   percentage={data?.profileStrength.percentage ?? 0}
                   completed={data?.profileStrength.completedItems ?? []}
@@ -224,17 +239,24 @@ function StatCard({
   trend?: string;
 }) {
   return (
-    <div className="wd-stat">
-      <div className={`wd-stat-bar${highlighted ? " gold" : ""}`} />
-      <div className="wd-stat-body">
-        <div className={`wd-stat-num${gold ? " gold" : ""}`}>{value}</div>
-        <div className="wd-stat-label">{label}</div>
+    <div className="bg-white border-[0.5px] border-border rounded-xl overflow-hidden">
+      <div className={cn("h-[3px]", highlighted ? "bg-gold" : "bg-border")} />
+      <div className="px-[18px] py-4">
+        <div
+          className={cn(
+            "font-serif text-[28px] font-normal leading-none",
+            gold ? "text-gold-dark" : "text-ink",
+          )}
+        >
+          {value}
+        </div>
+        <div className="text-xs font-medium text-ink-2 mt-2">{label}</div>
         {trend ? (
-          <div className="wd-trend">
+          <div className="inline-flex items-center gap-[3px] bg-green-100 text-green-700 text-[10px] font-semibold rounded-full px-[7px] py-0.5 mt-2">
             <TrendingUp size={11} /> {trend}
           </div>
         ) : sub ? (
-          <div className="wd-stat-sub">{sub}</div>
+          <div className="text-[11px] text-ink-3 mt-0.5">{sub}</div>
         ) : null}
       </div>
     </div>
@@ -245,24 +267,26 @@ function StatCard({
    Job requests
    ───────────────────────────────────────────────────────────────────────── */
 const TAG: Record<JobRequest["status"], { label: string; cls: string }> = {
-  new: { label: "New", cls: "wd-tag-new" },
-  today: { label: "Today", cls: "wd-tag-today" },
-  active: { label: "Active", cls: "wd-tag-today" },
-  completed: { label: "Completed", cls: "wd-tag-completed" },
+  new: { label: "New", cls: "bg-gold-light text-gold-dark" },
+  today: { label: "Today", cls: "bg-blue-50 text-blue-600" },
+  active: { label: "Active", cls: "bg-blue-50 text-blue-600" },
+  completed: { label: "Completed", cls: "bg-green-50 text-green-600" },
 };
 
 function JobRequestsCard({ requests }: { requests: JobRequest[] }) {
   return (
-    <div className="wd-card">
-      <div className="wd-card-head">
-        <div className="wd-card-title">
+    <div className={CARD}>
+      <div className={CARD_HEAD}>
+        <div className={CARD_TITLE}>
           Job requests
           {requests.length > 0 && (
-            <span className="wd-count-badge">{requests.length}</span>
+            <span className="bg-gold-light text-gold-dark border border-gold/30 text-[11px] font-semibold rounded-full px-[7px] leading-[18px]">
+              {requests.length}
+            </span>
           )}
         </div>
         {requests.length > 0 && (
-          <Link href="/worker/requests" className="wd-card-link">
+          <Link href="/worker/requests" className={CARD_LINK}>
             View all →
           </Link>
         )}
@@ -288,16 +312,30 @@ function JobRequestItem({ req }: { req: JobRequest }) {
   const isActive = req.status === "today" || req.status === "active";
 
   return (
-    <div className={`wd-req${isNew ? " new" : ""}`}>
-      <div className="wd-avatar">{initialsOf(req.clientName)}</div>
-      <div className="wd-req-body">
-        <div className="wd-req-top">
-          <span className="wd-req-title">
+    <div
+      className={cn(
+        "flex gap-3 px-4 py-3.5 border-b-[0.5px] border-border last:border-b-0 transition-colors hover:bg-cream",
+        isNew && "border-l-[3px] border-l-gold pl-[13px]",
+      )}
+    >
+      <div className="w-9 h-9 rounded-full bg-gold-light border-[1.5px] border-gold/30 text-gold-dark text-xs font-semibold flex items-center justify-center shrink-0">
+        {initialsOf(req.clientName)}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[13px] font-medium text-ink">
             {req.jobType} · {req.location}
           </span>
-          <span className={`wd-tag ${tag.cls}`}>{tag.label}</span>
+          <span
+            className={cn(
+              "text-[10px] font-semibold rounded-full px-2 py-0.5 whitespace-nowrap shrink-0",
+              tag.cls,
+            )}
+          >
+            {tag.label}
+          </span>
         </div>
-        <div className="wd-req-meta">
+        <div className="flex items-center flex-wrap gap-1.5 text-[11px] text-ink-3 mt-[5px] [&>span]:inline-flex [&>span]:items-center [&>span]:gap-[3px]">
           <span>
             <Calendar size={12} /> {reqDateLabel(req.date)}
           </span>
@@ -305,26 +343,36 @@ function JobRequestItem({ req }: { req: JobRequest }) {
             <MapPin size={12} /> {req.location}
           </span>
         </div>
-        <p className="wd-req-desc wd-clamp2">{req.description}</p>
-        <div className="wd-req-actions">
+        <p className="text-xs text-ink-2 mt-1.5 leading-normal line-clamp-2">
+          {req.description}
+        </p>
+        <div className="flex gap-2 mt-2.5">
           {req.status === "completed" ? (
-            <Link
-              href={`/worker/requests/${req.id}`}
-              className="wd-btn wd-btn-sm wd-btn-outline"
-            >
-              Leave review
+            <Link href={`/worker/requests/${req.id}`}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="bg-white"
+              >
+                Leave review
+              </Button>
             </Link>
           ) : (
             <>
-              <Link
-                href={`/worker/messages?to=${req.id}`}
-                className="wd-btn wd-btn-sm wd-btn-outline"
-              >
-                {isActive ? "Message client" : "Message"}
+              <Link href={`/worker/messages?to=${req.id}`}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="bg-white"
+                >
+                  {isActive ? "Message client" : "Message"}
+                </Button>
               </Link>
-              <button type="button" className="wd-btn wd-btn-sm wd-btn-gold">
+              <Button type="button" variant="gold" size="sm">
                 {isActive ? "Mark complete" : "Accept job"}
-              </button>
+              </Button>
             </>
           )}
         </div>
@@ -338,11 +386,11 @@ function JobRequestItem({ req }: { req: JobRequest }) {
    ───────────────────────────────────────────────────────────────────────── */
 function UpcomingJobsCard({ jobs }: { jobs: UpcomingJob[] }) {
   return (
-    <div className="wd-card">
-      <div className="wd-card-head">
-        <div className="wd-card-title">Upcoming jobs</div>
+    <div className={CARD}>
+      <div className={CARD_HEAD}>
+        <div className={CARD_TITLE}>Upcoming jobs</div>
         {jobs.length > 0 && (
-          <Link href="/worker/calendar" className="wd-card-link">
+          <Link href="/worker/calendar" className={CARD_LINK}>
             Calendar →
           </Link>
         )}
@@ -359,24 +407,29 @@ function UpcomingJobsCard({ jobs }: { jobs: UpcomingJob[] }) {
         jobs.map((j) => {
           const d = new Date(j.date);
           return (
-            <div key={j.id} className="wd-job">
-              <div className="wd-date-tile">
-                <span className="wd-date-day">{d.getDate()}</span>
-                <span className="wd-date-mon">
+            <div
+              key={j.id}
+              className="flex items-center gap-3 px-4 py-3 border-b-[0.5px] border-border last:border-b-0"
+            >
+              <div className="w-10 h-10 rounded-lg bg-gold-light border border-gold/40 flex flex-col items-center justify-center shrink-0">
+                <span className="font-serif text-base font-medium leading-none text-gold-dark">
+                  {d.getDate()}
+                </span>
+                <span className="text-[8px] uppercase tracking-[0.06em] text-gold-dark mt-px">
                   {d.toLocaleDateString("en-GB", { month: "short" })}
                 </span>
               </div>
-              <div className="wd-job-body">
-                <div className="wd-job-title">
+              <div className="flex-1 min-w-0">
+                <div className="text-[13px] font-medium text-ink">
                   {j.title} · {j.clientName}
                 </div>
-                <div className="wd-job-meta">
+                <div className="text-[11px] text-ink-3 mt-0.5">
                   {j.location} · {j.time}
                 </div>
               </div>
               <Link
                 href={`/worker/messages?to=${j.id}`}
-                className="wd-btn wd-btn-icon wd-btn-outline"
+                className="flex items-center justify-center w-[30px] h-[30px] rounded-lg border-[0.5px] border-border bg-white text-ink-2 transition-colors hover:border-gold hover:bg-gold-light hover:text-ink"
                 aria-label="Message client"
               >
                 <MessageSquare size={15} />
@@ -402,36 +455,47 @@ function ProfileStrengthCard({
   todo: ChecklistItem[];
 }) {
   return (
-    <div className="wd-card">
-      <div className="wd-card-pad">
-        <div className="wd-strength-head">
-          <div className="wd-card-title">Profile strength</div>
-          <span className="wd-pct">{percentage}%</span>
+    <div className={CARD}>
+      <div className="p-4">
+        <div className="flex items-center justify-between">
+          <div className={CARD_TITLE}>Profile strength</div>
+          <span className="font-serif text-lg font-medium text-gold-dark">
+            {percentage}%
+          </span>
         </div>
-        <div className="wd-bar">
-          <div className="wd-bar-fill" style={{ width: `${percentage}%` }} />
+        <div className="h-[5px] rounded-full bg-cream-2 overflow-hidden mt-2.5">
+          <div
+            className="h-full bg-gold rounded-full transition-[width] duration-[400ms] ease"
+            style={{ width: `${percentage}%` }}
+          />
         </div>
-        <p className="wd-hint">
+        <p className="text-[11px] text-ink-3 mt-2 mb-3.5 leading-normal">
           Complete your profile to get more job requests
         </p>
 
         {completed.map((item) => (
-          <div key={item.key} className="wd-check done">
-            <span className="wd-check-icon">
+          <div
+            key={item.key}
+            className="flex items-center gap-2 text-xs text-ink-2 mb-2 last:mb-0"
+          >
+            <span className="shrink-0 inline-flex text-green-600">
               <CheckCircle2 size={15} />
             </span>
             {item.label}
           </div>
         ))}
         {todo.map((item) => (
-          <div key={item.key} className="wd-check todo">
-            <span className="wd-check-icon">
+          <div
+            key={item.key}
+            className="flex items-center gap-2 text-xs text-ink-3 mb-2 last:mb-0"
+          >
+            <span className="shrink-0 inline-flex text-ink-3">
               <CircleDashed size={15} />
             </span>
             {item.label}
             <Link
               href={item.href ?? "/worker/profile"}
-              className="wd-btn wd-btn-xs wd-btn-gold wd-check-add"
+              className="ml-auto inline-flex items-center justify-center bg-gold text-navy border border-gold text-[11px] font-medium px-[9px] py-[3px] rounded-md no-underline transition-colors hover:bg-gold-dark hover:border-gold-dark"
             >
               Add
             </Link>
@@ -447,11 +511,11 @@ function ProfileStrengthCard({
    ───────────────────────────────────────────────────────────────────────── */
 function QuickActionsCard({ onShare }: { onShare: () => void }) {
   return (
-    <div className="wd-card">
-      <div className="wd-card-head">
-        <div className="wd-card-title">Quick actions</div>
+    <div className={CARD}>
+      <div className={CARD_HEAD}>
+        <div className={CARD_TITLE}>Quick actions</div>
       </div>
-      <div className="wd-actions-grid">
+      <div className="grid grid-cols-2 gap-2 px-4 py-3.5">
         <QuickAction
           href="/worker/profile#portfolio"
           icon={<ImageIcon size={15} />}
@@ -481,6 +545,9 @@ function QuickActionsCard({ onShare }: { onShare: () => void }) {
   );
 }
 
+const QUICK_ACTION =
+  "flex flex-col gap-1.5 p-3 rounded-[10px] bg-white border-[0.5px] border-border text-left no-underline cursor-pointer font-sans transition-colors hover:border-gold hover:bg-gold-light";
+
 function QuickAction({
   href,
   onClick,
@@ -496,20 +563,22 @@ function QuickAction({
 }) {
   const inner = (
     <>
-      <span className="wd-action-icon">{icon}</span>
-      <span className="wd-action-label">{label}</span>
-      <span className="wd-action-sub">{sub}</span>
+      <span className="w-7 h-7 rounded-lg bg-gold-light text-gold-dark flex items-center justify-center">
+        {icon}
+      </span>
+      <span className="text-xs font-medium text-ink">{label}</span>
+      <span className="text-[10px] text-ink-3">{sub}</span>
     </>
   );
   if (href) {
     return (
-      <Link href={href} className="wd-action">
+      <Link href={href} className={QUICK_ACTION}>
         {inner}
       </Link>
     );
   }
   return (
-    <button type="button" className="wd-action" onClick={onClick}>
+    <button type="button" className={QUICK_ACTION} onClick={onClick}>
       {inner}
     </button>
   );
@@ -520,11 +589,11 @@ function QuickAction({
    ───────────────────────────────────────────────────────────────────────── */
 function ReviewsCard({ reviews }: { reviews: Review[] }) {
   return (
-    <div className="wd-card">
-      <div className="wd-card-head">
-        <div className="wd-card-title">Recent reviews</div>
+    <div className={CARD}>
+      <div className={CARD_HEAD}>
+        <div className={CARD_TITLE}>Recent reviews</div>
         {reviews.length > 0 && (
-          <Link href="/worker/reviews" className="wd-card-link">
+          <Link href="/worker/reviews" className={CARD_LINK}>
             See all →
           </Link>
         )}
@@ -539,16 +608,25 @@ function ReviewsCard({ reviews }: { reviews: Review[] }) {
         />
       ) : (
         reviews.map((rev) => (
-          <div key={rev.id} className="wd-review">
-            <div className="wd-review-top">
-              <span className="wd-avatar wd-avatar-sm">
+          <div
+            key={rev.id}
+            className="px-4 py-3 border-b-[0.5px] border-border last:border-b-0"
+          >
+            <div className="flex items-center gap-2">
+              <span className="w-[26px] h-[26px] rounded-full bg-gold-light border-[1.5px] border-gold/30 text-gold-dark text-[10px] font-semibold flex items-center justify-center shrink-0">
                 {initialsOf(rev.authorName)}
               </span>
-              <span className="wd-review-name">{rev.authorName}</span>
+              <span className="flex-1 text-xs font-medium text-ink">
+                {rev.authorName}
+              </span>
               <Stars value={rev.rating} />
             </div>
-            <p className="wd-review-text wd-clamp2">{rev.text}</p>
-            <div className="wd-review-date">{shortDate(rev.date)}</div>
+            <p className="text-[11px] text-ink-2 mt-[5px] leading-normal line-clamp-2">
+              {rev.text}
+            </p>
+            <div className="text-[10px] text-ink-3 mt-1">
+              {shortDate(rev.date)}
+            </div>
           </div>
         ))
       )}
@@ -558,7 +636,11 @@ function ReviewsCard({ reviews }: { reviews: Review[] }) {
 
 function Stars({ value }: { value: number }) {
   return (
-    <span className="wd-stars" role="img" aria-label={`${value} out of 5`}>
+    <span
+      className="inline-flex gap-px text-gold"
+      role="img"
+      aria-label={`${value} out of 5`}
+    >
       {Array.from({ length: 5 }, (_, i) => (
         <Star
           // biome-ignore lint/suspicious/noArrayIndexKey: fixed 5-star row
@@ -589,13 +671,22 @@ function EmptyState({
   sm?: boolean;
 }) {
   return (
-    <div className={`wd-empty${sm ? " sm" : ""}`}>
-      <span className="wd-empty-icon">{icon}</span>
-      <div className="wd-empty-title">{title}</div>
-      <p className="wd-empty-sub">{sub}</p>
+    <div
+      className={cn(
+        "flex flex-col items-center text-center px-6",
+        sm ? "py-8" : "py-10",
+      )}
+    >
+      <span className="text-border leading-none">{icon}</span>
+      <div className="text-sm font-medium text-ink-2 mt-3">{title}</div>
+      <p className="text-[13px] text-ink-3 leading-relaxed max-w-[240px] mt-1">
+        {sub}
+      </p>
       {cta && (
-        <Link href={cta.href} className="wd-btn wd-btn-sm wd-btn-gold">
-          {cta.label}
+        <Link href={cta.href} className="mt-3.5">
+          <Button type="button" variant="gold" size="sm">
+            {cta.label}
+          </Button>
         </Link>
       )}
     </div>
@@ -605,66 +696,60 @@ function EmptyState({
 /* ─────────────────────────────────────────────────────────────────────────
    Loading skeleton — mirrors the real layout
    ───────────────────────────────────────────────────────────────────────── */
+const SKEL = "bg-cream-2 rounded-md animate-pulse";
+
 function DashboardSkeleton() {
   return (
     <>
-      <div className="wd-stats">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {Array.from({ length: 4 }, (_, i) => (
           <div
             // biome-ignore lint/suspicious/noArrayIndexKey: fixed skeleton row
             key={i}
-            className="wd-stat"
+            className="bg-white border-[0.5px] border-border rounded-xl overflow-hidden"
           >
-            <div className="wd-stat-bar" />
-            <div className="wd-stat-body">
-              <div className="wd-skel" style={{ width: 48, height: 28 }} />
-              <div
-                className="wd-skel"
-                style={{ width: "70%", height: 12, marginTop: 12 }}
-              />
-              <div
-                className="wd-skel"
-                style={{ width: "55%", height: 10, marginTop: 8 }}
-              />
+            <div className="h-[3px] bg-border" />
+            <div className="px-[18px] py-4">
+              <div className={cn(SKEL, "w-12 h-7")} />
+              <div className={cn(SKEL, "w-[70%] h-3 mt-3")} />
+              <div className={cn(SKEL, "w-[55%] h-2.5 mt-2")} />
             </div>
           </div>
         ))}
       </div>
-      <div className="wd-cols">
-        <div className="wd-col">
-          <SkeletonCard rows={3} height={92} />
-          <SkeletonCard rows={2} height={56} />
+      <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-4 items-start">
+        <div className="flex flex-col gap-4">
+          <SkeletonCard rows={3} heightClass="h-[92px]" />
+          <SkeletonCard rows={2} heightClass="h-14" />
         </div>
-        <div className="wd-col">
-          <SkeletonCard rows={4} height={20} />
-          <SkeletonCard rows={2} height={64} />
-          <SkeletonCard rows={2} height={48} />
+        <div className="flex flex-col gap-4">
+          <SkeletonCard rows={4} heightClass="h-5" />
+          <SkeletonCard rows={2} heightClass="h-16" />
+          <SkeletonCard rows={2} heightClass="h-12" />
         </div>
       </div>
     </>
   );
 }
 
-function SkeletonCard({ rows, height }: { rows: number; height: number }) {
+function SkeletonCard({
+  rows,
+  heightClass,
+}: {
+  rows: number;
+  heightClass: string;
+}) {
   return (
-    <div className="wd-card">
-      <div className="wd-card-head">
-        <div className="wd-skel" style={{ width: 120, height: 14 }} />
+    <div className={CARD}>
+      <div className={CARD_HEAD}>
+        <div className={cn(SKEL, "w-[120px] h-3.5")} />
       </div>
-      <div
-        style={{
-          padding: 16,
-          display: "flex",
-          flexDirection: "column",
-          gap: 12,
-        }}
-      >
+      <div className="p-4 flex flex-col gap-3">
         {Array.from({ length: rows }, (_, i) => (
           <div
             // biome-ignore lint/suspicious/noArrayIndexKey: fixed skeleton row
             key={i}
-            className="wd-skel"
-            style={{ width: "100%", height }}
+            className={cn(SKEL, "w-full", heightClass)}
           />
         ))}
       </div>

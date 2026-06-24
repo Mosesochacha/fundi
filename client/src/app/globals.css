@@ -1,204 +1,158 @@
 @import "tailwindcss";
 
-:root {
-  --orange-950: #431407;
-  --orange-900: #7c2d12;
-  --orange-700: #c2410c;
-  --orange-500: #f97316;
-  --orange-300: #fdba74;
-  --orange-100: #ffedd5;
-  --orange-50:  #fff7ed;
-  --orange-25:  #fffaf5;
-  --cream:      #FDFAF6;
-  --coral:      #E05A2B;
-  --coral-lt:   #FEF0E8;
-  --ink:        #1c1410;     /* Warm near-black for body text */
-  --ink-soft:   #5c4a3f;     /* Warm gray for secondary text */
-  --paper:      #fdf8f2;     /* Slightly warmer paper */
-  --line:       #f0e6da;     /* Warm divider color */
-  --line-soft:  #faf2e8;     /* Even warmer divider */
+@theme {
+  --color-gold: #c9a84c;
+  --color-gold-dark: #a8872e;
+  --color-gold-light: #fdf6e3;
+  --color-navy: #0d1b2a;
+  --color-navy-2: #1a2e42;
+  --color-cream: #faf8f4;
+  --color-cream-2: #f2efe8;
+  --color-ink: #0e0e0d;
+  --color-ink-2: #4a4a47;
+  --color-ink-3: #8a8a85;
+  --color-ink-4: #c2bdb0;
+  --color-border: #e5e0d5;
+
+  --font-sans: var(--font-dm-sans), sans-serif;
+  --font-serif: var(--font-fraunces), serif;
 }
 
-@theme inline {
-  --color-primary:    #f97316;
-  --color-primaryDark: #ea580c;
-  --color-error:      #ef4444;
-  --color-success:    #22c55e;
-  --color-cream:      #FDFAF6;
-  --color-coral:      #E05A2B;
-  --color-coral-lt:   #FEF0E8;
-  --color-brand-dark: #431407;
-  /* Explicit orange palette so Tailwind v4 uses correct values */
-  --color-orange-50:  #fff7ed;
-  --color-orange-100: #ffedd5;
-  --color-orange-200: #fed7aa;
-  --color-orange-300: #fdba74;
-  --color-orange-400: #fb923c;
-  --color-orange-500: #f97316;
-  --color-orange-600: #ea580c;
-  --color-orange-700: #c2410c;
-  --color-orange-800: #9a3412;
-  --color-orange-900: #7c2d12;
-  --color-orange-950: #431407;
+/* ── Primitives that cannot be expressed as utilities ───────────────── */
+
+/* Warm editorial atmosphere — subtle gold wash, used on hero/section areas */
+.bg-paper {
+  background:
+    radial-gradient(
+      ellipse 800px 500px at 0% 0%,
+      rgba(201, 168, 76, 0.07),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 600px 400px at 100% 0%,
+      rgba(13, 27, 42, 0.04),
+      transparent 55%
+    ), var(--color-cream);
 }
 
-/* Font utilities — reference Next.js font CSS variables set on <body> */
-@layer utilities {
-  .font-playfair { font-family: var(--font-playfair); }
-  .font-dm-sans  { font-family: var(--font-dm-sans);  }
-  .animate-marquee { animation: marquee 35s linear infinite; }
-  .animate-marquee-reverse { animation: marquee-reverse 35s linear infinite; }
-
-  /* Warm editorial atmosphere — subtle radial wash on top-left, brand-dark vignette */
-  .bg-paper {
-    background:
-      radial-gradient(ellipse 800px 500px at 0% 0%, rgba(249, 115, 22, 0.06), transparent 60%),
-      radial-gradient(ellipse 600px 400px at 100% 0%, rgba(224, 90, 43, 0.04), transparent 55%),
-      var(--orange-25);
-  }
-
-  /* Subtle paper-grain texture for cards / hero areas */
-  .grain::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    opacity: 0.4;
-    mix-blend-mode: multiply;
-    background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.4 0 0 0 0 0.25 0 0 0 0 0.1 0 0 0 0.08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-  }
-
-  /* Reveal-on-load: stagger via inline style for nth child */
-  .reveal {
-    opacity: 0;
-    transform: translateY(8px);
-    animation: reveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
-
-  /* Like-button burst */
-  .like-burst { animation: likeBurst 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
-
-  /* Skeleton shimmer — warm orange tint slides across instead of flat pulse */
-  .animate-shimmer {
-    background: linear-gradient(90deg, var(--line-soft) 25%, rgba(249,115,22,0.07) 50%, var(--line-soft) 75%);
-    background-size: 400% 100%;
-    animation: shimmer 1.6s ease-in-out infinite;
-  }
-
-  /* Spark radial that fires under the hammer on appreciation */
-  .like-spark {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    border-radius: 9999px;
-    background: radial-gradient(circle, rgba(249,115,22,0.45) 0%, rgba(249,115,22,0) 65%);
-    animation: likeSpark 0.55s ease-out forwards;
-  }
-
-  /* Editorial rule — a thin double line, used under section labels */
-  .rule-double {
-    position: relative;
-    height: 4px;
-  }
-  .rule-double::before,
-  .rule-double::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: var(--line);
-  }
-  .rule-double::before { top: 0; }
-  .rule-double::after  { top: 3px; opacity: 0.55; }
-
-  /* Hand-stamped chip — slight rotation + inset shadow gives it a printed feel */
-  .stamp {
-    box-shadow: inset 0 0 0 1px currentColor, 0 1px 0 rgba(28,20,16,0.04);
-  }
-
-  /* Wood-grain micro pattern — used as decorative banner texture */
-  .grain-wood {
-    background-image:
-      repeating-linear-gradient(
-        90deg,
-        rgba(67,20,7,0.08) 0 1px,
-        transparent 1px 4px,
-        rgba(67,20,7,0.04) 4px 5px,
-        transparent 5px 11px
-      );
-  }
-
-  /* Subtle marker-underline for emphasis on display text */
-  .ink-underline {
-    background-image: linear-gradient(transparent 65%, rgba(249,115,22,0.28) 65%, rgba(249,115,22,0.28) 92%, transparent 92%);
-    background-repeat: no-repeat;
-    background-size: 100% 100%;
-    padding: 0 0.05em;
-  }
-
-  /* Floating action button shadow — warm and deep */
-  .shadow-warm {
-    box-shadow:
-      0 1px 2px rgba(67,20,7,0.06),
-      0 8px 24px -10px rgba(67,20,7,0.18);
-  }
-  .shadow-warm-lg {
-    box-shadow:
-      0 2px 4px rgba(67,20,7,0.06),
-      0 14px 36px -10px rgba(67,20,7,0.22);
-  }
+/* Subtle paper-grain texture for cards / hero areas */
+.grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.4;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.25 0 0 0 0 0.2 0 0 0 0 0.1 0 0 0 0.08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
 
-@keyframes shimmer {
-  from { background-position: 200% center; }
-  to   { background-position: -200% center; }
+/* Reveal-on-load */
+.reveal {
+  opacity: 0;
+  transform: translateY(8px);
+  animation: reveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes reveal {
-  to { opacity: 1; transform: translateY(0); }
+/* Like-button burst */
+.like-burst {
+  animation: likeBurst 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-@keyframes likeBurst {
-  0%   { transform: scale(1); }
-  35%  { transform: scale(1.35) rotate(-8deg); }
-  60%  { transform: scale(0.92) rotate(4deg); }
-  100% { transform: scale(1); }
+/* Skeleton shimmer — warm gold tint slides across */
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-cream-2) 25%,
+    rgba(201, 168, 76, 0.1) 50%,
+    var(--color-cream-2) 75%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
 }
 
-/* Landing page marquee animations */
-@keyframes marquee {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
+/* Marquee (landing logo strip) */
+.animate-marquee {
+  animation: marquee 35s linear infinite;
 }
-@keyframes marquee-reverse {
-  from { transform: translateX(-50%); }
-  to   { transform: translateX(0); }
+.animate-marquee-reverse {
+  animation: marquee-reverse 35s linear infinite;
 }
-
 .marquee-wrapper:hover .animate-marquee,
 .marquee-wrapper:hover .animate-marquee-reverse {
   animation-play-state: paused;
 }
 
-/* Smooth scroll with reduced-motion support */
-html { scroll-behavior: smooth; }
+@keyframes shimmer {
+  from {
+    background-position: 200% center;
+  }
+  to {
+    background-position: -200% center;
+  }
+}
+@keyframes reveal {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes likeBurst {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.35) rotate(-8deg);
+  }
+  60% {
+    transform: scale(0.92) rotate(4deg);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes marquee-reverse {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
+  html {
+    scroll-behavior: auto;
+  }
   .animate-marquee,
-  .animate-marquee-reverse { animation: none; }
+  .animate-marquee-reverse {
+    animation: none;
+  }
 }
 
 @utility scrollbar-hide {
-  &::-webkit-scrollbar { display: none; }
+  &::-webkit-scrollbar {
+    display: none;
+  }
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 
+/* Keep autofilled inputs on the cream surface instead of browser yellow */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0px 1000px white inset;
-  box-shadow: 0 0 0px 1000px white inset;
-  -webkit-text-fill-color: #111827;
+  -webkit-box-shadow: 0 0 0px 1000px var(--color-cream) inset;
+  box-shadow: 0 0 0px 1000px var(--color-cream) inset;
+  -webkit-text-fill-color: var(--color-ink);
 }

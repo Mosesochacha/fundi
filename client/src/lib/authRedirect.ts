@@ -31,7 +31,6 @@ export function dashboardPathForRole(role: AppRole | undefined): string {
       return "/admin/dashboard";
     case "moderator":
       return "/moderator/dashboard";
-    case "worker":
     default:
       return "/worker/dashboard";
   }

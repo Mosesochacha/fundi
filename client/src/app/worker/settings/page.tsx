@@ -26,6 +26,7 @@ export default function WorkerSettingsPage() {
   return (
     // biome-ignore lint/a11y/useValidAriaRole: `role` is a Shell prop, not an ARIA attribute
     <Shell role="worker" user={shellUser} currentPath={pathname}>
+      {/* biome-ignore lint/a11y/useValidAriaRole: `role` is a SettingsView prop, not an ARIA attribute */}
       <SettingsView role="worker" />
     </Shell>
   );

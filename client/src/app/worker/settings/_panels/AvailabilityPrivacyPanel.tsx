@@ -11,8 +11,10 @@ import {
   useUpdatePrivacy,
   type WorkerSettings,
 } from "@/features/worker/settings";
+import { cn } from "@/lib/utils";
 import {
   apiError,
+  FIELD_INPUT,
   Field,
   Panel,
   PanelBody,
@@ -59,7 +61,7 @@ const PRIVACY_ROWS: {
   {
     key: "publicProfile",
     title: "Public profile",
-    sub: "Your profile is visible to anyone browsing Fundi",
+    sub: "Your profile is visible to anyone browsing Tesilix",
   },
   {
     key: "showPhone",
@@ -91,7 +93,9 @@ const PRIVACY_ROWS: {
 ];
 
 const sameAvail = (a: AvailabilitySettings, b: AvailabilitySettings) =>
-  (Object.keys(a) as (keyof AvailabilitySettings)[]).every((k) => a[k] === b[k]);
+  (Object.keys(a) as (keyof AvailabilitySettings)[]).every(
+    (k) => a[k] === b[k],
+  );
 const samePriv = (a: PrivacySettings, b: PrivacySettings) =>
   (Object.keys(a) as (keyof PrivacySettings)[]).every((k) => a[k] === b[k]);
 
@@ -154,57 +158,76 @@ export default function AvailabilityPrivacyPanel({
       <PanelBody>
         {/* ── Availability (workers only) ── */}
         {showAvailability && (
-          <div className="ws-group">
-            <div className="ws-group-title">Availability</div>
-          <ToggleRow
-            title="Available for work"
-            sub="Turn off to pause all new job requests"
-            checked={avail.available}
-            onChange={(next) => setA("available", next)}
-          />
-          {!avail.available && (
-            <div className="ws-banner">
-              <AlertTriangle size={15} />
-              <span>Your profile is paused. Employers cannot see you.</span>
+          <div>
+            <div className="text-[11px] font-semibold tracking-[0.06em] uppercase text-ink-3 mb-1.5">
+              Availability
             </div>
-          )}
-          <ToggleRow
-            title="Emergency callouts"
-            sub="Available for same-day urgent jobs"
-            checked={avail.emergencyCallouts}
-            onChange={(next) => setA("emergencyCallouts", next)}
-          />
-          <ToggleRow
-            title="Weekend availability"
-            sub="Accept jobs on Saturdays and Sundays"
-            checked={avail.weekends}
-            onChange={(next) => setA("weekends", next)}
-          />
+            <ToggleRow
+              title="Available for work"
+              sub="Turn off to pause all new job requests"
+              checked={avail.available}
+              onChange={(next) => setA("available", next)}
+            />
+            {!avail.available && (
+              <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg py-2.5 px-3 text-xs leading-[1.45] mt-3.5 [&>svg]:shrink-0 [&>svg]:mt-px">
+                <AlertTriangle size={15} />
+                <span>Your profile is paused. Employers cannot see you.</span>
+              </div>
+            )}
+            <ToggleRow
+              title="Emergency callouts"
+              sub="Available for same-day urgent jobs"
+              checked={avail.emergencyCallouts}
+              onChange={(next) => setA("emergencyCallouts", next)}
+            />
+            <ToggleRow
+              title="Weekend availability"
+              sub="Accept jobs on Saturdays and Sundays"
+              checked={avail.weekends}
+              onChange={(next) => setA("weekends", next)}
+            />
 
-          <div className="ws-section">
-            <div className="ws-grid2">
-              <Field label="Working hours from" htmlFor="hoursFrom">
+            <div className="pt-4 mt-4 border-t-[0.5px] border-border">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <Field label="Working hours from" htmlFor="hoursFrom">
+                  <select
+                    id="hoursFrom"
+                    className={FIELD_INPUT}
+                    value={avail.workingHoursFrom}
+                    onChange={(e) => setA("workingHoursFrom", e.target.value)}
+                  >
+                    {FROM_OPTIONS.map((o) => (
+                      <option key={o.value} value={o.value}>
+                        {o.label}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+                <Field label="Working hours to" htmlFor="hoursTo">
+                  <select
+                    id="hoursTo"
+                    className={FIELD_INPUT}
+                    value={avail.workingHoursTo}
+                    onChange={(e) => setA("workingHoursTo", e.target.value)}
+                  >
+                    {TO_OPTIONS.map((o) => (
+                      <option key={o.value} value={o.value}>
+                        {o.label}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              </div>
+              <Field label="Max job distance" htmlFor="maxDistance">
                 <select
-                  id="hoursFrom"
-                  className="ws-select"
-                  value={avail.workingHoursFrom}
-                  onChange={(e) => setA("workingHoursFrom", e.target.value)}
+                  id="maxDistance"
+                  className={FIELD_INPUT}
+                  value={avail.maxDistance}
+                  onChange={(e) =>
+                    setA("maxDistance", e.target.value as MaxDistance)
+                  }
                 >
-                  {FROM_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <Field label="Working hours to" htmlFor="hoursTo">
-                <select
-                  id="hoursTo"
-                  className="ws-select"
-                  value={avail.workingHoursTo}
-                  onChange={(e) => setA("workingHoursTo", e.target.value)}
-                >
-                  {TO_OPTIONS.map((o) => (
+                  {DISTANCE_OPTIONS.map((o) => (
                     <option key={o.value} value={o.value}>
                       {o.label}
                     </option>
@@ -212,27 +235,14 @@ export default function AvailabilityPrivacyPanel({
                 </select>
               </Field>
             </div>
-            <Field label="Max job distance" htmlFor="maxDistance">
-              <select
-                id="maxDistance"
-                className="ws-select"
-                value={avail.maxDistance}
-                onChange={(e) => setA("maxDistance", e.target.value as MaxDistance)}
-              >
-                {DISTANCE_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
-            </Field>
-          </div>
           </div>
         )}
 
         {/* ── Privacy ── */}
-        <div className="ws-group">
-          <div className="ws-group-title">Privacy</div>
+        <div className={cn(showAvailability && "mt-[22px]")}>
+          <div className="text-[11px] font-semibold tracking-[0.06em] uppercase text-ink-3 mb-1.5">
+            Privacy
+          </div>
           {PRIVACY_ROWS.filter(
             (row) => showAvailability || !row.workerOnly,
           ).map((row) => (

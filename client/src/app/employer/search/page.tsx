@@ -1,8 +1,15 @@
 "use client";
 
 import { CheckCircle2, MapPin, Search, Star } from "lucide-react";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import {
+  bannerGradient,
+  formatRate,
+  SORT_OPTIONS,
+  TRADES,
+  tradeAccent,
+} from "@/app/browse/constants";
 import Shell from "@/components/dashboard/Shell";
 import { useAuth } from "@/features/auth";
 import {
@@ -11,15 +18,7 @@ import {
   useBrowseWorkers,
 } from "@/features/browse";
 import { useSearchStore } from "@/store/searchStore";
-import {
-  bannerGradient,
-  formatRate,
-  SORT_OPTIONS,
-  TRADES,
-  tradeAccent,
-} from "@/app/browse/constants";
 import HireModal from "../dashboard/HireModal";
-import "./search.css";
 
 const initialsOf = (n: string) =>
   n
@@ -156,22 +155,25 @@ export default function EmployerSearchPage() {
   return (
     // biome-ignore lint/a11y/useValidAriaRole: `role` is a Shell prop, not an ARIA attribute
     <Shell role="employer" user={shellUser} currentPath={pathname}>
-      <div className="es">
+      <div className="flex flex-col gap-4 text-ink-2">
         {/* ── Header ──────────────────────────────────────────────────── */}
         <div>
-          <div className="es-head-date">Hire a fundi</div>
-          <h1 className="es-title">Find a fundi.</h1>
-          <p className="es-sub">
+          <div className="text-xs text-ink-3">Hire a fundi</div>
+          <h1 className="font-serif text-[26px] font-normal text-ink mt-0.5 leading-[1.15]">
+            Find a fundi.
+          </h1>
+          <p className="text-[13px] text-ink-3 mt-1">
             Browse verified tradespeople near you and send a hire request.
           </p>
         </div>
 
         {/* ── Search bar ──────────────────────────────────────────────── */}
-        <div className="es-search">
-          <div className="es-search-field">
+        <div className="flex gap-2 flex-wrap">
+          <div className={SEARCH_FIELD}>
             <Search size={17} aria-hidden />
             <input
               type="text"
+              className={SEARCH_INPUT}
               value={nameInput}
               onChange={(e) => setNameInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -179,10 +181,11 @@ export default function EmployerSearchPage() {
               aria-label="Search by name, skill or profession"
             />
           </div>
-          <div className="es-search-field">
+          <div className={SEARCH_FIELD}>
             <MapPin size={16} aria-hidden />
             <input
               type="text"
+              className={SEARCH_INPUT}
               value={locInput}
               onChange={(e) => setLocInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -190,21 +193,29 @@ export default function EmployerSearchPage() {
               aria-label="City or location"
             />
           </div>
-          <button type="button" className="es-search-btn" onClick={handleSearch}>
+          <button
+            type="button"
+            className="inline-flex items-center gap-1.5 bg-gold text-navy border border-gold rounded-[10px] px-[18px] py-2.5 text-[13px] font-medium cursor-pointer hover:bg-gold-dark hover:border-gold-dark"
+            onClick={handleSearch}
+          >
             <Search size={15} /> Search
           </button>
         </div>
 
         {/* ── Filter toolbar ──────────────────────────────────────────── */}
-        <div className="es-filters">
-          <div className="es-chips">
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex gap-1.5 overflow-x-auto flex-1 min-w-0 pb-0.5">
             {TRADES.map((t) => {
               const active = selectedTrades.includes(t.name);
               return (
                 <button
                   key={t.name}
                   type="button"
-                  className={`es-chip${active ? " is-active" : ""}`}
+                  className={`inline-flex items-center gap-[5px] whitespace-nowrap border rounded-full px-3 py-1.5 text-xs cursor-pointer transition-colors ${
+                    active
+                      ? "bg-gold-light border-gold text-gold-dark font-semibold"
+                      : "bg-white border-border text-ink-2 hover:border-gold"
+                  }`}
                   onClick={() => toggleTrade(t.name)}
                 >
                   <span aria-hidden>{t.emoji}</span> {t.name}
@@ -214,13 +225,17 @@ export default function EmployerSearchPage() {
           </div>
           <button
             type="button"
-            className={`es-toggle${availableNow ? " is-active" : ""}`}
+            className={`inline-flex items-center gap-1.5 whitespace-nowrap border rounded-full px-3 py-1.5 text-xs cursor-pointer ${
+              availableNow
+                ? "bg-gold-light border-gold text-gold-dark font-semibold"
+                : "bg-white border-border text-ink-2"
+            }`}
             onClick={() => setFilter("availableNow", !availableNow)}
           >
             Available now
           </button>
           <select
-            className="es-select"
+            className="text-xs text-ink-2 bg-white border border-border rounded-full px-3 py-1.5 cursor-pointer"
             value={sortBy}
             onChange={(e) => setFilter("sortBy", e.target.value)}
             aria-label="Sort by"
@@ -232,7 +247,7 @@ export default function EmployerSearchPage() {
             ))}
           </select>
           {hasActiveFilters && (
-            <button type="button" className="es-clear" onClick={clearAll}>
+            <button type="button" className={CLEAR_BTN} onClick={clearAll}>
               Clear all
             </button>
           )}
@@ -240,27 +255,36 @@ export default function EmployerSearchPage() {
 
         {/* ── Results ─────────────────────────────────────────────────── */}
         {isLoading ? (
-          <div className="es-grid">
+          <div className={GRID}>
             {Array.from({ length: 9 }, (_, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: fixed skeleton tiles
-              <div key={i} className="es-skel" />
+              <div
+                // biome-ignore lint/suspicious/noArrayIndexKey: fixed skeleton tiles
+                key={i}
+                className="h-[232px] bg-border rounded-xl animate-pulse"
+              />
             ))}
           </div>
         ) : workers.length === 0 ? (
-          <div className="es-empty">
-            <div className="es-empty-title">No fundis match those filters</div>
-            <p className="es-empty-sub">
+          <div className="flex flex-col items-center text-center px-6 py-12 bg-white border border-border rounded-xl">
+            <div className="text-sm font-medium text-ink-2">
+              No fundis match those filters
+            </div>
+            <p className="text-[13px] text-ink-3 mt-1 max-w-[280px] leading-relaxed">
               Try widening your trade, location or availability filters.
             </p>
             {hasActiveFilters && (
-              <button type="button" className="es-clear" onClick={clearAll}>
+              <button
+                type="button"
+                className={`${CLEAR_BTN} mt-3`}
+                onClick={clearAll}
+              >
                 Clear all filters
               </button>
             )}
           </div>
         ) : (
           <>
-            <div className="es-grid">
+            <div className={GRID}>
               {workers.map((w) => (
                 <WorkerCard
                   key={w.id}
@@ -274,9 +298,13 @@ export default function EmployerSearchPage() {
             </div>
 
             {showPagination && (
-              <nav className="es-pager" aria-label="Pagination">
+              <nav
+                className="flex items-center justify-center gap-1 mt-2"
+                aria-label="Pagination"
+              >
                 <button
                   type="button"
+                  className={PAGER_BTN}
                   onClick={() => goToPage(page - 1)}
                   disabled={page <= 1}
                 >
@@ -285,14 +313,18 @@ export default function EmployerSearchPage() {
                 {pageList(page, totalPages).map((p, i) =>
                   p === "…" ? (
                     // biome-ignore lint/suspicious/noArrayIndexKey: ellipsis gaps have no stable id
-                    <span key={`gap-${i}`} className="es-pager-gap">
+                    <span key={`gap-${i}`} className="text-ink-3 px-1">
                       …
                     </span>
                   ) : (
                     <button
                       key={p}
                       type="button"
-                      className={p === page ? "is-current" : ""}
+                      className={`${PAGER_BTN} ${
+                        p === page
+                          ? "bg-gold border-gold text-navy font-semibold"
+                          : ""
+                      }`}
                       onClick={() => goToPage(p)}
                       aria-current={p === page ? "page" : undefined}
                     >
@@ -302,6 +334,7 @@ export default function EmployerSearchPage() {
                 )}
                 <button
                   type="button"
+                  className={PAGER_BTN}
                   onClick={() => goToPage(page + 1)}
                   disabled={page >= totalPages}
                 >
@@ -336,61 +369,80 @@ function WorkerCard({
 }) {
   const accent = tradeAccent(worker.trade);
   return (
-    <article className="es-card">
+    <article className="flex flex-col bg-white border border-border rounded-xl overflow-hidden">
       <div
-        className="es-card-banner"
+        className="h-14 relative"
         style={{ background: bannerGradient(worker.trade) }}
       >
         <span
-          className={`es-avail ${worker.isAvailable ? "is-avail" : "is-booked"}`}
+          className={`absolute top-2 right-2 inline-flex items-center gap-1 text-[10px] font-semibold rounded-full px-2 py-0.5 bg-white/85 ${
+            worker.isAvailable ? "text-green-600" : "text-ink-3"
+          }`}
         >
-          <span className="es-avail-dot" />
+          <span className="w-1.5 h-1.5 rounded-full bg-current" />
           {worker.isAvailable ? "Available" : "Booked"}
         </span>
       </div>
-      <div className="es-card-body">
+      <div className="px-4 pb-4 -mt-[22px]">
         <span
-          className="es-card-avatar"
-          style={{ background: "var(--gold-light)", color: accent }}
+          className="w-11 h-11 rounded-full border-2 border-white flex items-center justify-center text-[15px] font-semibold overflow-hidden bg-gold-light"
+          style={{ color: accent }}
         >
           {worker.avatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={worker.avatarUrl} alt="" />
+            // biome-ignore lint/performance/noImgElement: avatar URLs are arbitrary external hosts
+            <img
+              src={worker.avatarUrl}
+              alt=""
+              className="w-full h-full object-cover"
+            />
           ) : (
             worker.initials || initialsOf(worker.name)
           )}
         </span>
 
-        <div className="es-card-name">
+        <div className="flex items-center gap-[5px] text-sm font-semibold text-ink mt-2">
           {worker.name}
           {worker.isVerified && (
-            <span className="es-card-check" aria-label="Verified">
+            <span
+              className="text-gold-dark inline-flex"
+              role="img"
+              aria-label="Verified"
+            >
               <CheckCircle2 size={14} />
             </span>
           )}
         </div>
 
-        <div className="es-card-trade" style={{ color: accent }}>
-          <span className="es-card-dot" style={{ background: accent }} />
+        <div
+          className="flex items-center gap-[5px] text-xs font-medium mt-[3px]"
+          style={{ color: accent }}
+        >
+          <span
+            className="w-1.5 h-1.5 rounded-full"
+            style={{ background: accent }}
+          />
           {worker.trade}
         </div>
 
         {worker.location && (
-          <p className="es-card-loc">
+          <p className="flex items-center gap-1 text-[11px] text-ink-3 mt-[5px]">
             <MapPin size={12} aria-hidden /> {worker.location}
           </p>
         )}
 
-        <p className="es-card-bio">{worker.bio || "No bio yet."}</p>
+        <p className="text-xs text-ink-2 leading-normal mt-2 line-clamp-2 min-h-9">
+          {worker.bio || "No bio yet."}
+        </p>
 
-        <div className="es-card-meta">
+        <div className="flex items-center flex-wrap gap-1.5 text-[11px] text-ink-3 mt-2.5 pt-2.5 border-t border-border [&_strong]:text-ink">
           {worker.reviewCount > 0 && (
             <span>
               <Star
                 size={11}
                 fill="currentColor"
                 strokeWidth={0}
-                style={{ color: "var(--gold)" }}
+                className="text-gold"
               />{" "}
               <strong>{worker.rating.toFixed(1)}</strong>
             </span>
@@ -398,16 +450,24 @@ function WorkerCard({
           <span>
             <strong>{worker.jobsDone}</strong> jobs
           </span>
-          <span className="es-card-rate">
+          <span className="ml-auto bg-gold-light border border-gold/40 text-gold-dark text-[11px] font-semibold rounded-full px-2 py-px">
             {formatRate(worker.currency, worker.dailyRate)}
           </span>
         </div>
 
-        <div className="es-card-actions">
-          <button type="button" className="es-btn es-btn-outline" onClick={onView}>
+        <div className="flex gap-2 mt-3">
+          <button
+            type="button"
+            className={`${ES_BTN} ${ES_BTN_OUTLINE}`}
+            onClick={onView}
+          >
             Profile
           </button>
-          <button type="button" className="es-btn es-btn-gold" onClick={onHire}>
+          <button
+            type="button"
+            className={`${ES_BTN} ${ES_BTN_GOLD}`}
+            onClick={onHire}
+          >
             Hire
           </button>
         </div>
@@ -415,3 +475,21 @@ function WorkerCard({
     </article>
   );
 }
+
+/* ─── Shared class strings (ported from search.css) ──────────────────────── */
+const GRID =
+  "grid grid-cols-1 min-[640px]:grid-cols-2 min-[1200px]:grid-cols-3 gap-3";
+const SEARCH_FIELD =
+  "flex items-center gap-2 flex-1 min-w-[180px] bg-white border border-border rounded-[10px] px-3 py-2.5 text-ink-3 focus-within:border-gold";
+const SEARCH_INPUT =
+  "border-0 outline-none bg-transparent text-[13px] text-ink w-full";
+const CLEAR_BTN =
+  "text-xs text-gold-dark bg-none border-0 cursor-pointer underline whitespace-nowrap";
+const PAGER_BTN =
+  "text-xs text-ink-2 bg-white border border-border rounded-lg px-[11px] py-1.5 cursor-pointer enabled:hover:border-gold disabled:opacity-50 disabled:cursor-not-allowed";
+const ES_BTN =
+  "flex-1 inline-flex items-center justify-center gap-1.5 font-medium text-xs px-3 py-2 rounded-lg border border-transparent cursor-pointer no-underline";
+const ES_BTN_OUTLINE =
+  "bg-white text-ink-2 border-border hover:border-gold hover:bg-gold-light hover:text-ink";
+const ES_BTN_GOLD =
+  "bg-gold text-navy border-gold hover:bg-gold-dark hover:border-gold-dark";

@@ -203,10 +203,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // Credentials sign-in (password or firebase-google): seed the token.
       // authorize() always sets these on first sign-in.
       if (user?.accessToken && user.backendUser) {
-        token.id = user.id!;
-        token.role = user.role!;
+        token.id = user.id as string;
+        token.role = user.role as typeof token.role;
         token.accessToken = user.accessToken;
-        token.refreshToken = user.refreshToken!;
+        token.refreshToken = user.refreshToken as string;
         token.accessTokenExpires = Date.now() + ACCESS_TTL_MS;
         token.user = user.backendUser;
         token.profile = user.backendProfile ?? null;
@@ -218,7 +218,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // while the snapshot is still incomplete — so onboarding completion is
       // reflected on the very next request (middleware runs this via auth()),
       // without a re-login. Once isProfileComplete flips true this stops firing.
-      if (trigger === "update" || (token.user && !token.user.isProfileComplete)) {
+      if (
+        trigger === "update" ||
+        (token.user && !token.user.isProfileComplete)
+      ) {
         await refreshBackendUser(token);
       }
 

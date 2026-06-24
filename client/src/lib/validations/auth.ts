@@ -8,10 +8,19 @@ export const loginSchema = z.object({
 // Step 1 — account creation. Validated before advancing to role selection.
 export const accountStepSchema = z
   .object({
-    firstName: z.string().min(2, "First name must be at least 2 characters").max(50, "First name is too long"),
-    lastName: z.string().min(2, "Last name must be at least 2 characters").max(50, "Last name is too long"),
+    firstName: z
+      .string()
+      .min(2, "First name must be at least 2 characters")
+      .max(50, "First name is too long"),
+    lastName: z
+      .string()
+      .min(2, "Last name must be at least 2 characters")
+      .max(50, "Last name is too long"),
     email: z.string().email("Please enter a valid email address"),
-    phoneNumber: z.string().min(7, "Please enter a valid phone number").max(30, "Phone number is too long"),
+    phoneNumber: z
+      .string()
+      .min(7, "Please enter a valid phone number")
+      .max(30, "Phone number is too long"),
     password: z
       .string()
       .min(8, "Password must be at least 8 characters")

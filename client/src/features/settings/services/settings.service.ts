@@ -27,8 +27,7 @@ export interface GenerateProfileInput {
 }
 
 export const settingsService = {
-  updateProfile: (data: UpdateProfileInput) =>
-    client.patch("/profile", data),
+  updateProfile: (data: UpdateProfileInput) => client.patch("/profile", data),
   publishProfile: () => client.post("/profile/publish"),
   generateProfile: (data: GenerateProfileInput) =>
     client.post("/generate/profile", data),

@@ -15,6 +15,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import Shell from "@/components/dashboard/Shell";
+import { StatCard } from "@/components/ui";
 import WelcomeToast from "@/components/WelcomeToast";
 import { useToastContext } from "@/context/ToastContext";
 import { useAuth } from "@/features/auth";
@@ -31,7 +32,6 @@ import {
 } from "@/features/employer/dashboard";
 import HireModal from "./HireModal";
 import ReviewModal from "./ReviewModal";
-import "./dashboard.css";
 
 const initialsOf = (n: string) =>
   n
@@ -77,6 +77,16 @@ function summary(active: number, pending: number) {
 
 const mapsHref = (location: string) =>
   `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
+
+/* Shared button class strings (ported from dashboard.css .ed-btn*). */
+const BTN_BASE =
+  "inline-flex items-center justify-center gap-1.5 font-medium rounded-lg border whitespace-nowrap cursor-pointer transition-colors disabled:opacity-60 disabled:cursor-not-allowed no-underline";
+const BTN_SM = "text-xs px-[11px] py-1.5";
+const BTN_GOLD =
+  "bg-gold text-navy border-gold hover:bg-gold-dark hover:border-gold-dark";
+const BTN_OUTLINE =
+  "bg-white text-ink-2 border-border hover:border-gold hover:bg-gold-light hover:text-ink";
+const BTN_DANGER = "bg-white text-red-600 border-red-300 hover:bg-red-50";
 
 type HireTarget = { id: string; name: string; trade: string };
 type ReviewTarget = { jobId: string; workerName: string; jobType: string };
@@ -125,29 +135,30 @@ export default function EmployerDashboardPage() {
   return (
     // biome-ignore lint/a11y/useValidAriaRole: `role` is a Shell prop, not an ARIA attribute
     <Shell role="employer" user={shellUser} currentPath={pathname}>
+      {/* biome-ignore lint/a11y/useValidAriaRole: `role` is a WelcomeToast prop, not an ARIA attribute */}
       <WelcomeToast role="employer" firstName={firstName} />
-      <div className="ed">
+      <div className="flex flex-col gap-4 text-ink-2">
         {/* ── Welcome row ─────────────────────────────────────────────── */}
-        <div className="ed-welcome">
+        <div className="flex items-end justify-between gap-4 flex-wrap">
           <div>
-            <div className="ed-date">{longDate(now)}</div>
-            <h1 className="ed-greeting">
+            <div className="text-xs text-ink-3">{longDate(now)}</div>
+            <h1 className="font-serif text-[26px] font-normal text-ink mt-0.5 leading-[1.15]">
               {greeting(now)}, {firstName}.
             </h1>
-            <p className="ed-sub">
+            <p className="text-[13px] text-ink-3 mt-1">
               {summary(stats?.activeJobs ?? 0, stats?.pendingResponses ?? 0)}
             </p>
           </div>
-          <div className="ed-welcome-actions">
+          <div className="flex gap-2">
             <Link
               href="/employer/hires"
-              className="ed-btn ed-btn-sm ed-btn-outline"
+              className={`${BTN_BASE} ${BTN_SM} ${BTN_OUTLINE}`}
             >
               <Clock size={14} /> Past hires
             </Link>
             <Link
               href="/employer/search"
-              className="ed-btn ed-btn-sm ed-btn-gold"
+              className={`${BTN_BASE} ${BTN_SM} ${BTN_GOLD}`}
             >
               <Search size={14} /> Find a fundi
             </Link>
@@ -155,7 +166,11 @@ export default function EmployerDashboardPage() {
         </div>
 
         {isError && (
-          <button type="button" className="ed-error" onClick={() => refetch()}>
+          <button
+            type="button"
+            className="block w-full text-center bg-red-50 text-red-600 border border-red-200 rounded-lg p-3 text-xs font-medium cursor-pointer"
+            onClick={() => refetch()}
+          >
             Could not load your dashboard. Tap to retry.
           </button>
         )}
@@ -165,29 +180,28 @@ export default function EmployerDashboardPage() {
         ) : (
           <>
             {/* ── Stats grid ───────────────────────────────────────────── */}
-            <div className="ed-stats">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               <StatCard
-                accent="#c9a84c"
-                numGold
-                value={stats?.activeJobs ?? 0}
+                accent="gold"
+                number={stats?.activeJobs ?? 0}
                 label="Active jobs"
                 sub="In progress now"
               />
               <StatCard
-                accent="#3b82f6"
-                value={stats?.pendingResponses ?? 0}
+                accent="blue"
+                number={stats?.pendingResponses ?? 0}
                 label="Pending responses"
                 sub="Awaiting fundi reply"
               />
               <StatCard
-                accent="#4ade80"
-                value={stats?.totalHires ?? 0}
+                accent="green"
+                number={stats?.totalHires ?? 0}
                 label="Total hires"
-                sub="Since joining Fundi"
+                sub="Since joining Tesilix"
               />
               <StatCard
-                accent="#8b5cf6"
-                value={fmtK(stats?.totalSpent ?? 0)}
+                accent="purple"
+                number={fmtK(stats?.totalSpent ?? 0)}
                 label="Total spent this month"
                 sub="KSh this month"
                 trend={
@@ -201,9 +215,9 @@ export default function EmployerDashboardPage() {
             {brandNew ? (
               <FirstRunHero />
             ) : (
-              <div className="ed-cols">
+              <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-4 items-start">
                 {/* LEFT */}
-                <div className="ed-col">
+                <div className="flex flex-col gap-4">
                   <ActiveJobsCard
                     jobs={activeJobs}
                     onComplete={onComplete}
@@ -225,7 +239,7 @@ export default function EmployerDashboardPage() {
                 </div>
 
                 {/* RIGHT */}
-                <div className="ed-col">
+                <div className="flex flex-col gap-4">
                   <QuickActionsCard />
                   <SpendingCard
                     items={data?.spending.items ?? []}
@@ -253,42 +267,11 @@ export default function EmployerDashboardPage() {
         defaultLocation={employerLocation}
         onClose={() => setHireTarget(null)}
       />
-      <ReviewModal target={reviewTarget} onClose={() => setReviewTarget(null)} />
+      <ReviewModal
+        target={reviewTarget}
+        onClose={() => setReviewTarget(null)}
+      />
     </Shell>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────────────────
-   Stat card
-   ───────────────────────────────────────────────────────────────────────── */
-function StatCard({
-  value,
-  label,
-  sub,
-  accent,
-  numGold,
-  trend,
-}: {
-  value: number | string;
-  label: string;
-  sub?: string;
-  accent: string;
-  numGold?: boolean;
-  trend?: string;
-}) {
-  return (
-    <div className="ed-stat">
-      <div className="ed-stat-bar" style={{ background: accent }} />
-      <div className={`ed-stat-num${numGold ? " gold" : ""}`}>{value}</div>
-      <div className="ed-stat-label">{label}</div>
-      {trend ? (
-        <div className="ed-trend">
-          <TrendingUp size={11} /> {trend}
-        </div>
-      ) : sub ? (
-        <div className="ed-stat-sub">{sub}</div>
-      ) : null}
-    </div>
   );
 }
 
@@ -304,11 +287,68 @@ function Avatar({
   url?: string | null;
   size?: "" | "sm" | "xs";
 }) {
-  const cls = `ed-avatar${size ? ` ed-avatar-${size}` : ""}`;
+  const dims =
+    size === "sm"
+      ? "w-9 h-9 text-xs"
+      : size === "xs"
+        ? "w-8 h-8 text-[11px]"
+        : "w-10 h-10 text-[13px]";
   return (
-    <span className={cls}>
-      {url ? <img src={url} alt="" /> : initialsOf(name)}
+    <span
+      className={`${dims} rounded-full bg-gold-light border-[1.5px] border-gold/30 text-gold-dark font-semibold flex items-center justify-center overflow-hidden`}
+    >
+      {url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        // biome-ignore lint/performance/noImgElement: avatar URLs are arbitrary external hosts
+        <img src={url} alt="" className="w-full h-full object-cover" />
+      ) : (
+        initialsOf(name)
+      )}
     </span>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Card shell
+   ───────────────────────────────────────────────────────────────────────── */
+function CardShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="bg-white border border-border rounded-xl overflow-hidden">
+      {children}
+    </div>
+  );
+}
+
+function CardHead({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-2 px-4 py-3.5 border-b border-border">
+      {children}
+    </div>
+  );
+}
+
+function CardTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-2 text-[13px] font-semibold text-ink">
+      {children}
+    </div>
+  );
+}
+
+function CardLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className="text-xs text-gold-dark underline whitespace-nowrap"
+    >
+      {children}
+    </Link>
   );
 }
 
@@ -327,20 +367,20 @@ function ActiveJobsCard({
   onReview: (job: ActiveJob) => void;
 }) {
   return (
-    <div className="ed-card">
-      <div className="ed-card-head">
-        <div className="ed-card-title">
+    <CardShell>
+      <CardHead>
+        <CardTitle>
           Active jobs
           {jobs.length > 0 && (
-            <span className="ed-count-badge">{jobs.length}</span>
+            <span className="bg-gold-light text-gold-dark border border-gold/30 text-[11px] font-semibold rounded-full px-[7px] leading-[18px]">
+              {jobs.length}
+            </span>
           )}
-        </div>
+        </CardTitle>
         {jobs.length > 0 && (
-          <Link href="/employer/jobs" className="ed-card-link">
-            View all →
-          </Link>
+          <CardLink href="/employer/jobs">View all →</CardLink>
         )}
-      </div>
+      </CardHead>
 
       {jobs.length === 0 ? (
         <EmptyState
@@ -360,27 +400,27 @@ function ActiveJobsCard({
           />
         ))
       )}
-    </div>
+    </CardShell>
   );
 }
 
 function JobBadge({ job }: { job: ActiveJob }) {
   if (job.state === "today") {
     return (
-      <span className="ed-badge ed-badge-today">
+      <span className="inline-flex items-center gap-[3px] text-[10px] font-semibold rounded-full px-2 py-0.5 whitespace-nowrap shrink-0 bg-orange-50 text-orange-600">
         <Zap size={10} /> Today{job.time ? ` · ${job.time}` : ""}
       </span>
     );
   }
   if (job.state === "in_progress") {
     return (
-      <span className="ed-badge ed-badge-progress">
+      <span className="inline-flex items-center gap-[3px] text-[10px] font-semibold rounded-full px-2 py-0.5 whitespace-nowrap shrink-0 bg-blue-50 text-blue-600">
         Day {job.dayX ?? 1} of {job.dayY ?? 1}
       </span>
     );
   }
   return (
-    <span className="ed-badge ed-badge-pending">
+    <span className="inline-flex items-center gap-[3px] text-[10px] font-semibold rounded-full px-2 py-0.5 whitespace-nowrap shrink-0 bg-gold-light text-gold-dark">
       <Clock size={10} /> Awaiting reply
     </span>
   );
@@ -419,32 +459,34 @@ function ActiveJobItem({
   };
 
   return (
-    <div className="ed-job">
-      <div className="ed-avatar-wrap">
+    <div className="flex gap-3 px-4 py-3.5 border-b border-border last:border-b-0 cursor-pointer transition-colors hover:bg-cream">
+      <div className="relative shrink-0">
         <Avatar name={job.workerName} url={job.avatarUrl} />
       </div>
-      <div className="ed-job-body">
-        <div className="ed-job-top">
-          <span className="ed-job-name">
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[13px] font-medium text-ink">
             {job.workerName}
             {job.trade ? ` — ${job.trade}` : ""}
           </span>
           <JobBadge job={job} />
         </div>
-        <div className="ed-job-meta">
+        <div className="text-xs text-ink-3 mt-1">
           {job.jobType} · {job.location}
         </div>
 
         {confirm === "complete" ? (
-          <div className="ed-confirm">
-            <div className="ed-confirm-title">Mark this job as complete?</div>
-            <div className="ed-confirm-sub">
+          <div className="mt-2.5 px-3 py-2.5 bg-cream border border-border rounded-lg">
+            <div className="text-xs font-semibold text-ink">
+              Mark this job as complete?
+            </div>
+            <div className="text-[11px] text-ink-3 mt-0.5 leading-normal">
               The fundi will be notified and you can leave a review.
             </div>
-            <div className="ed-confirm-actions">
+            <div className="flex gap-2 mt-2.5">
               <button
                 type="button"
-                className="ed-btn ed-btn-sm ed-btn-gold"
+                className={`${BTN_BASE} ${BTN_SM} ${BTN_GOLD}`}
                 disabled={busy}
                 onClick={() => run(() => onComplete(job))}
               >
@@ -452,7 +494,7 @@ function ActiveJobItem({
               </button>
               <button
                 type="button"
-                className="ed-btn ed-btn-sm ed-btn-outline"
+                className={`${BTN_BASE} ${BTN_SM} ${BTN_OUTLINE}`}
                 onClick={() => setConfirm(null)}
               >
                 Cancel
@@ -460,13 +502,17 @@ function ActiveJobItem({
             </div>
           </div>
         ) : confirm === "cancel" ? (
-          <div className="ed-confirm">
-            <div className="ed-confirm-title">Cancel this request?</div>
-            <div className="ed-confirm-sub">The fundi will be notified.</div>
-            <div className="ed-confirm-actions">
+          <div className="mt-2.5 px-3 py-2.5 bg-cream border border-border rounded-lg">
+            <div className="text-xs font-semibold text-ink">
+              Cancel this request?
+            </div>
+            <div className="text-[11px] text-ink-3 mt-0.5 leading-normal">
+              The fundi will be notified.
+            </div>
+            <div className="flex gap-2 mt-2.5">
               <button
                 type="button"
-                className="ed-btn ed-btn-sm ed-btn-danger"
+                className={`${BTN_BASE} ${BTN_SM} ${BTN_DANGER}`}
                 disabled={busy}
                 onClick={() => run(() => onCancel(job))}
               >
@@ -474,7 +520,7 @@ function ActiveJobItem({
               </button>
               <button
                 type="button"
-                className="ed-btn ed-btn-sm ed-btn-outline"
+                className={`${BTN_BASE} ${BTN_SM} ${BTN_OUTLINE}`}
                 onClick={() => setConfirm(null)}
               >
                 Keep it
@@ -482,10 +528,10 @@ function ActiveJobItem({
             </div>
           </div>
         ) : (
-          <div className="ed-job-actions">
+          <div className="flex flex-wrap gap-2 mt-2.5">
             <Link
               href={`/employer/messages?to=${job.workerId}`}
-              className="ed-btn ed-btn-sm ed-btn-outline"
+              className={`${BTN_BASE} ${BTN_SM} ${BTN_OUTLINE}`}
             >
               Message
             </Link>
@@ -496,14 +542,14 @@ function ActiveJobItem({
                   href={mapsHref(job.location)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="ed-btn ed-btn-sm ed-btn-outline"
+                  className={`${BTN_BASE} ${BTN_SM} ${BTN_OUTLINE}`}
                 >
                   <Navigation size={13} /> Directions
                 </a>
                 {job.endPassed && (
                   <button
                     type="button"
-                    className="ed-btn ed-btn-sm ed-btn-gold"
+                    className={`${BTN_BASE} ${BTN_SM} ${BTN_GOLD}`}
                     onClick={() => onReview(job)}
                   >
                     Leave review
@@ -515,7 +561,7 @@ function ActiveJobItem({
             {job.state === "in_progress" && (
               <button
                 type="button"
-                className="ed-btn ed-btn-sm ed-btn-gold"
+                className={`${BTN_BASE} ${BTN_SM} ${BTN_GOLD}`}
                 onClick={() => setConfirm("complete")}
               >
                 Mark complete
@@ -525,7 +571,7 @@ function ActiveJobItem({
             {job.state === "pending" && (
               <button
                 type="button"
-                className="ed-btn ed-btn-sm ed-btn-danger"
+                className={`${BTN_BASE} ${BTN_SM} ${BTN_DANGER}`}
                 onClick={() => setConfirm("cancel")}
               >
                 Cancel
@@ -549,15 +595,13 @@ function SuggestedFundisCard({
   onHire: (w: SuggestedWorker) => void;
 }) {
   return (
-    <div className="ed-card">
-      <div className="ed-card-head">
-        <div className="ed-card-title">Suggested fundis near you</div>
+    <CardShell>
+      <CardHead>
+        <CardTitle>Suggested fundis near you</CardTitle>
         {workers.length > 0 && (
-          <Link href="/employer/search" className="ed-card-link">
-            Browse all →
-          </Link>
+          <CardLink href="/employer/search">Browse all →</CardLink>
         )}
-      </div>
+      </CardHead>
 
       {workers.length === 0 ? (
         <EmptyState
@@ -569,38 +613,41 @@ function SuggestedFundisCard({
         />
       ) : (
         workers.map((w) => (
-          <div key={w.id} className="ed-worker">
-            <div className="ed-avatar-wrap">
+          <div
+            key={w.id}
+            className="flex gap-3 px-4 py-3 border-b border-border last:border-b-0"
+          >
+            <div className="relative shrink-0">
               <Avatar name={w.name} url={w.avatarUrl} size="sm" />
             </div>
-            <div className="ed-worker-body">
-              <div className="ed-worker-name">{w.name}</div>
-              <div className="ed-worker-trade">
+            <div className="flex-1 min-w-0">
+              <div className="text-[13px] font-medium text-ink">{w.name}</div>
+              <div className="text-[11px] text-ink-2 mt-px">
                 {w.trade}
                 {w.location ? ` · ${w.location}` : ""}
               </div>
-              <div className="ed-worker-stats">
-                <span className="ed-worker-rating">
+              <div className="flex items-center flex-wrap gap-2 mt-1.5">
+                <span className="inline-flex items-center gap-[3px] text-[11px] text-ink-3">
                   <Star size={11} fill="currentColor" strokeWidth={0} />
                   {w.rating > 0 ? w.rating.toFixed(1) : "New"}
                   {w.jobCount > 0 ? ` · ${w.jobCount} jobs` : ""}
                 </span>
                 {w.rate != null && (
-                  <span className="ed-rate-pill">
+                  <span className="bg-gold-light border border-gold/40 text-gold-dark text-[11px] font-semibold rounded-full px-2 py-px">
                     KSh {fmtMoney(w.rate)}/day
                   </span>
                 )}
               </div>
-              <div className="ed-worker-actions">
+              <div className="flex gap-1.5 mt-2.5">
                 <Link
                   href={`/worker/${w.id}`}
-                  className="ed-btn ed-btn-sm ed-btn-outline"
+                  className={`${BTN_BASE} ${BTN_SM} ${BTN_OUTLINE}`}
                 >
                   Profile
                 </Link>
                 <button
                   type="button"
-                  className="ed-btn ed-btn-sm ed-btn-gold"
+                  className={`${BTN_BASE} ${BTN_SM} ${BTN_GOLD}`}
                   onClick={() => onHire(w)}
                 >
                   Hire
@@ -610,7 +657,7 @@ function SuggestedFundisCard({
           </div>
         ))
       )}
-    </div>
+    </CardShell>
   );
 }
 
@@ -619,11 +666,11 @@ function SuggestedFundisCard({
    ───────────────────────────────────────────────────────────────────────── */
 function QuickActionsCard() {
   return (
-    <div className="ed-card">
-      <div className="ed-card-head">
-        <div className="ed-card-title">Quick actions</div>
-      </div>
-      <div className="ed-actions-grid">
+    <CardShell>
+      <CardHead>
+        <CardTitle>Quick actions</CardTitle>
+      </CardHead>
+      <div className="grid grid-cols-2 gap-2 px-4 py-3.5">
         <QuickAction
           href="/employer/search"
           icon={<Search size={15} />}
@@ -649,7 +696,7 @@ function QuickActionsCard() {
           sub="Manage feedback"
         />
       </div>
-    </div>
+    </CardShell>
   );
 }
 
@@ -665,10 +712,15 @@ function QuickAction({
   sub: string;
 }) {
   return (
-    <Link href={href} className="ed-action">
-      <span className="ed-action-icon">{icon}</span>
-      <span className="ed-action-label">{label}</span>
-      <span className="ed-action-sub">{sub}</span>
+    <Link
+      href={href}
+      className="flex flex-col gap-1.5 p-3 rounded-lg bg-cream border border-border text-left no-underline transition-colors hover:border-gold hover:bg-gold-light"
+    >
+      <span className="w-7 h-7 rounded-lg bg-gold-light text-gold-dark flex items-center justify-center">
+        {icon}
+      </span>
+      <span className="text-xs font-medium text-ink">{label}</span>
+      <span className="text-[10px] text-ink-3">{sub}</span>
     </Link>
   );
 }
@@ -679,10 +731,10 @@ function QuickAction({
 function SpendingCard({ items, total }: { items: SpendItem[]; total: number }) {
   const max = items.reduce((m, i) => Math.max(m, i.amount), 0) || 1;
   return (
-    <div className="ed-card">
-      <div className="ed-card-head">
-        <div className="ed-card-title">Spending this month</div>
-      </div>
+    <CardShell>
+      <CardHead>
+        <CardTitle>Spending this month</CardTitle>
+      </CardHead>
 
       {items.length === 0 ? (
         <EmptyState
@@ -694,31 +746,39 @@ function SpendingCard({ items, total }: { items: SpendItem[]; total: number }) {
       ) : (
         <>
           {items.map((it) => (
-            <div key={it.category} className="ed-spend">
-              <div className="ed-spend-top">
+            <div key={it.category} className="px-4 py-3 border-b border-border">
+              <div className="flex items-baseline justify-between gap-2">
                 <span>
-                  <span className="ed-spend-cat">{it.category}</span>{" "}
-                  <span className="ed-spend-count">
+                  <span className="text-xs font-medium text-ink">
+                    {it.category}
+                  </span>{" "}
+                  <span className="text-[11px] text-ink-3">
                     · {it.jobCount} job{it.jobCount === 1 ? "" : "s"}
                   </span>
                 </span>
-                <span className="ed-spend-amt">KSh {fmtMoney(it.amount)}</span>
+                <span className="text-xs font-medium text-ink-2">
+                  KSh {fmtMoney(it.amount)}
+                </span>
               </div>
-              <div className="ed-spend-bar">
+              <div className="h-1 rounded-full bg-cream-2 overflow-hidden mt-1.5">
                 <div
-                  className="ed-spend-fill"
+                  className="h-full bg-gold rounded-full"
                   style={{ width: `${Math.round((it.amount / max) * 100)}%` }}
                 />
               </div>
             </div>
           ))}
-          <div className="ed-spend-total">
-            <span className="ed-spend-total-label">Total this month</span>
-            <span className="ed-spend-total-amt">KSh {fmtMoney(total)}</span>
+          <div className="flex items-center justify-between px-4 py-3">
+            <span className="text-xs font-medium text-ink-2">
+              Total this month
+            </span>
+            <span className="font-serif text-base text-gold-dark">
+              KSh {fmtMoney(total)}
+            </span>
           </div>
         </>
       )}
-    </div>
+    </CardShell>
   );
 }
 
@@ -733,15 +793,13 @@ function RecentHiresCard({
   onHireAgain: (h: RecentHire) => void;
 }) {
   return (
-    <div className="ed-card">
-      <div className="ed-card-head">
-        <div className="ed-card-title">Recent hires</div>
+    <CardShell>
+      <CardHead>
+        <CardTitle>Recent hires</CardTitle>
         {hires.length > 0 && (
-          <Link href="/employer/hires" className="ed-card-link">
-            View all →
-          </Link>
+          <CardLink href="/employer/hires">View all →</CardLink>
         )}
-      </div>
+      </CardHead>
 
       {hires.length === 0 ? (
         <EmptyState
@@ -752,27 +810,32 @@ function RecentHiresCard({
         />
       ) : (
         hires.map((h) => (
-          <div key={h.id} className="ed-hire">
-            <div className="ed-avatar-wrap">
+          <div
+            key={h.id}
+            className="flex gap-3 px-4 py-3 border-b border-border last:border-b-0"
+          >
+            <div className="relative shrink-0">
               <Avatar name={h.workerName} url={h.avatarUrl} size="xs" />
             </div>
-            <div className="ed-hire-body">
-              <div className="ed-hire-name">
+            <div className="flex-1 min-w-0">
+              <div className="text-xs font-medium text-ink">
                 {h.workerName} · {h.jobType}
               </div>
-              <div className="ed-hire-meta">
+              <div className="text-[11px] text-ink-3 mt-0.5">
                 {shortDate(h.date)}
                 {h.location ? ` · ${h.location}` : ""}
               </div>
             </div>
-            <div className="ed-hire-right">
+            <div className="flex flex-col items-end gap-0.5 shrink-0">
               {h.rate > 0 && (
-                <span className="ed-hire-rate">KSh {fmtMoney(h.rate)}</span>
+                <span className="text-[11px] font-medium text-gold-dark">
+                  KSh {fmtMoney(h.rate)}
+                </span>
               )}
               {h.rating != null && <Stars value={h.rating} />}
               <button
                 type="button"
-                className="ed-hire-again"
+                className="text-[10px] text-gold-dark underline bg-none border-0 cursor-pointer p-0"
                 onClick={() => onHireAgain(h)}
               >
                 Hire again
@@ -781,13 +844,17 @@ function RecentHiresCard({
           </div>
         ))
       )}
-    </div>
+    </CardShell>
   );
 }
 
 function Stars({ value }: { value: number }) {
   return (
-    <span className="ed-stars" role="img" aria-label={`${value} out of 5`}>
+    <span
+      className="inline-flex gap-px text-gold"
+      role="img"
+      aria-label={`${value} out of 5`}
+    >
       {Array.from({ length: 5 }, (_, i) => (
         <Star
           // biome-ignore lint/suspicious/noArrayIndexKey: fixed 5-star row
@@ -818,12 +885,19 @@ function EmptyState({
   sm?: boolean;
 }) {
   return (
-    <div className={`ed-empty${sm ? " sm" : ""}`}>
-      <span className="ed-empty-icon">{icon}</span>
-      <div className="ed-empty-title">{title}</div>
-      <p className="ed-empty-sub">{sub}</p>
+    <div
+      className={`flex flex-col items-center text-center ${sm ? "px-6 py-7" : "px-6 py-10"}`}
+    >
+      <span className="text-ink-4 leading-none">{icon}</span>
+      <div className="text-sm font-medium text-ink-2 mt-3">{title}</div>
+      <p className="text-[13px] text-ink-3 leading-relaxed max-w-[260px] mt-1">
+        {sub}
+      </p>
       {cta && (
-        <Link href={cta.href} className="ed-btn ed-btn-sm ed-btn-gold">
+        <Link
+          href={cta.href}
+          className={`${BTN_BASE} ${BTN_SM} ${BTN_GOLD} mt-3.5`}
+        >
           {cta.label}
         </Link>
       )}
@@ -836,13 +910,18 @@ function EmptyState({
    ───────────────────────────────────────────────────────────────────────── */
 function FirstRunHero() {
   return (
-    <div className="ed-hero">
-      <span className="ed-empty-emoji">🔧</span>
-      <div className="ed-empty-title">Find your first fundi</div>
-      <p className="ed-empty-sub">
+    <div className="flex flex-col items-center text-center px-6 py-14 bg-white border border-border rounded-xl">
+      <span className="text-[32px]">🔧</span>
+      <div className="text-sm font-medium text-ink-2 mt-3">
+        Find your first fundi
+      </div>
+      <p className="text-[13px] text-ink-3 leading-relaxed max-w-[260px] mt-1">
         Browse verified plumbers, electricians, carpenters and more near you.
       </p>
-      <Link href="/employer/search" className="ed-btn ed-btn-gold">
+      <Link
+        href="/employer/search"
+        className={`${BTN_BASE} text-[13px] px-3.5 py-2 ${BTN_GOLD} mt-3.5`}
+      >
         Browse workers
       </Link>
     </div>
@@ -852,70 +931,55 @@ function FirstRunHero() {
 /* ─────────────────────────────────────────────────────────────────────────
    Loading skeleton — mirrors the real layout
    ───────────────────────────────────────────────────────────────────────── */
+const SKEL = "bg-border rounded-md animate-pulse";
+
 function DashboardSkeleton() {
   return (
     <>
-      <div className="ed-stats">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {Array.from({ length: 4 }, (_, i) => (
           <div
             // biome-ignore lint/suspicious/noArrayIndexKey: fixed skeleton row
             key={i}
-            className="ed-stat"
+            className="relative bg-white border border-border rounded-xl px-[18px] py-4 overflow-hidden"
           >
-            <div
-              className="ed-stat-bar"
-              style={{ background: "var(--border)" }}
-            />
-            <div className="ed-skel" style={{ width: 48, height: 26 }} />
-            <div
-              className="ed-skel"
-              style={{ width: "70%", height: 12, marginTop: 12 }}
-            />
-            <div
-              className="ed-skel"
-              style={{ width: "55%", height: 10, marginTop: 8 }}
-            />
+            <div className="absolute top-0 left-0 right-0 h-0.5 bg-border" />
+            <div className={`${SKEL} w-12 h-[26px]`} />
+            <div className={`${SKEL} w-[70%] h-3 mt-3`} />
+            <div className={`${SKEL} w-[55%] h-2.5 mt-2`} />
           </div>
         ))}
       </div>
-      <div className="ed-cols">
-        <div className="ed-col">
-          <SkeletonCard rows={3} height={86} />
-          <SkeletonCard rows={3} height={64} />
+      <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-4 items-start">
+        <div className="flex flex-col gap-4">
+          <SkeletonCard rows={3} height="h-[86px]" />
+          <SkeletonCard rows={3} height="h-16" />
         </div>
-        <div className="ed-col">
-          <SkeletonCard rows={2} height={48} />
-          <SkeletonCard rows={3} height={28} />
-          <SkeletonCard rows={2} height={44} />
+        <div className="flex flex-col gap-4">
+          <SkeletonCard rows={2} height="h-12" />
+          <SkeletonCard rows={3} height="h-7" />
+          <SkeletonCard rows={2} height="h-11" />
         </div>
       </div>
     </>
   );
 }
 
-function SkeletonCard({ rows, height }: { rows: number; height: number }) {
+function SkeletonCard({ rows, height }: { rows: number; height: string }) {
   return (
-    <div className="ed-card">
-      <div className="ed-card-head">
-        <div className="ed-skel" style={{ width: 120, height: 14 }} />
-      </div>
-      <div
-        style={{
-          padding: 16,
-          display: "flex",
-          flexDirection: "column",
-          gap: 12,
-        }}
-      >
+    <CardShell>
+      <CardHead>
+        <div className={`${SKEL} w-[120px] h-3.5`} />
+      </CardHead>
+      <div className="p-4 flex flex-col gap-3">
         {Array.from({ length: rows }, (_, i) => (
           <div
             // biome-ignore lint/suspicious/noArrayIndexKey: fixed skeleton row
             key={i}
-            className="ed-skel"
-            style={{ width: "100%", height }}
+            className={`${SKEL} w-full ${height}`}
           />
         ))}
       </div>
-    </div>
+    </CardShell>
   );
 }

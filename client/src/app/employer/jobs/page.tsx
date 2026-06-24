@@ -14,20 +14,34 @@ import {
   useGetEmployerJobs,
   useMarkComplete,
 } from "@/features/employer/jobs";
-import ReviewModal from "../dashboard/ReviewModal";
 import {
   Avatar,
+  EL_BTN,
+  EL_BTN_DANGER,
+  EL_BTN_GOLD,
+  EL_BTN_OUTLINE,
+  EL_CARD,
+  EL_ROW,
+  EL_ROW_ACTIONS,
+  EL_ROW_BODY,
+  EL_ROW_META,
+  EL_ROW_NAME,
+  EL_ROW_TOP,
   EmptyCard,
   initialsOf,
   ListSkeleton,
   StatusBadge,
   shortDate,
 } from "../_shared/parts";
-import "../_shared/list.css";
+import ReviewModal from "../dashboard/ReviewModal";
 
 type ReviewTarget = { jobId: string; workerName: string; jobType: string };
 
-const TABS: { key: string; label: string; match: (s: EmployerJobStatus) => boolean }[] = [
+const TABS: {
+  key: string;
+  label: string;
+  match: (s: EmployerJobStatus) => boolean;
+}[] = [
   { key: "all", label: "All", match: () => true },
   { key: "pending", label: "Pending", match: (s) => s === "pending" },
   { key: "accepted", label: "Active", match: (s) => s === "accepted" },
@@ -66,24 +80,34 @@ export default function EmployerJobsPage() {
   return (
     // biome-ignore lint/a11y/useValidAriaRole: `role` is a Shell prop, not an ARIA attribute
     <Shell role="employer" user={shellUser} currentPath={pathname}>
-      <div className="el">
+      <div className="flex flex-col gap-4 text-ink-2">
         <div>
-          <div className="el-head-eyebrow">Your hires</div>
-          <h1 className="el-title">My jobs.</h1>
-          <p className="el-sub">Track every job you’ve sent to a fundi.</p>
+          <div className="text-xs text-ink-3">Your hires</div>
+          <h1 className="font-serif text-[26px] font-normal text-ink mt-0.5 leading-[1.15]">
+            My jobs.
+          </h1>
+          <p className="text-[13px] text-ink-3 mt-1">
+            Track every job you’ve sent to a fundi.
+          </p>
         </div>
 
-        <div className="el-tabs">
+        <div className="flex gap-1.5 flex-wrap">
           {TABS.map((t) => (
             <button
               key={t.key}
               type="button"
-              className={`el-tab${tab === t.key ? " is-active" : ""}`}
+              className={`inline-flex items-center gap-1.5 border rounded-full px-[13px] py-1.5 text-xs cursor-pointer ${
+                tab === t.key
+                  ? "bg-gold-light border-gold text-gold-dark font-semibold"
+                  : "bg-white border-border text-ink-2 hover:border-gold"
+              }`}
               onClick={() => setTab(t.key)}
             >
               {t.label}
               {!isLoading && (
-                <span className="el-tab-count">{countFor(t.key)}</span>
+                <span className="text-[10px] bg-black/[0.06] rounded-full px-1.5 leading-4">
+                  {countFor(t.key)}
+                </span>
               )}
             </button>
           ))}
@@ -97,13 +121,16 @@ export default function EmployerJobsPage() {
             title="No jobs here"
             sub="Find a fundi and send your first hire request."
             cta={
-              <Link href="/employer/search" className="el-btn el-btn-gold">
+              <Link
+                href="/employer/search"
+                className={`${EL_BTN} ${EL_BTN_GOLD}`}
+              >
                 Find a fundi
               </Link>
             }
           />
         ) : (
-          <div className="el-card">
+          <div className={EL_CARD}>
             {visible.map((job) => (
               <JobRow
                 key={job.id}
@@ -121,18 +148,15 @@ export default function EmployerJobsPage() {
         )}
       </div>
 
-      <ReviewModal target={reviewTarget} onClose={() => setReviewTarget(null)} />
+      <ReviewModal
+        target={reviewTarget}
+        onClose={() => setReviewTarget(null)}
+      />
     </Shell>
   );
 }
 
-function JobRow({
-  job,
-  onReview,
-}: {
-  job: EmployerJob;
-  onReview: () => void;
-}) {
+function JobRow({ job, onReview }: { job: EmployerJob; onReview: () => void }) {
   const { success, error: toastError } = useToastContext();
   const complete = useMarkComplete();
   const cancel = useCancelJob();
@@ -163,33 +187,39 @@ function JobRow({
   const busy = complete.isPending || cancel.isPending;
 
   return (
-    <div className="el-row">
+    <div className={EL_ROW}>
       <Avatar name={job.workerName} url={job.avatarUrl} />
-      <div className="el-row-body">
-        <div className="el-row-top">
-          <span className="el-row-name">
+      <div className={EL_ROW_BODY}>
+        <div className={EL_ROW_TOP}>
+          <span className={EL_ROW_NAME}>
             {job.workerName}
             {job.trade ? ` — ${job.trade}` : ""}
           </span>
           <StatusBadge status={job.status} />
         </div>
-        <div className="el-row-meta">
+        <div className={EL_ROW_META}>
           {job.jobType} · {job.location} · {shortDate(when)}
         </div>
-        {job.description && <p className="el-row-desc">{job.description}</p>}
+        {job.description && (
+          <p className="text-xs text-ink-2 leading-normal mt-1.5 line-clamp-2">
+            {job.description}
+          </p>
+        )}
 
         {confirm ? (
-          <div className="el-confirm">
-            <div className="el-confirm-title">
+          <div className="mt-2.5 px-3 py-2.5 bg-cream border border-border rounded-lg">
+            <div className="text-xs font-semibold text-ink">
               {confirm === "complete"
                 ? "Mark this job as complete?"
                 : "Cancel this request?"}
             </div>
-            <div className="el-confirm-sub">The fundi will be notified.</div>
-            <div className="el-confirm-actions">
+            <div className="text-[11px] text-ink-3 mt-0.5">
+              The fundi will be notified.
+            </div>
+            <div className="flex gap-2 mt-2.5">
               <button
                 type="button"
-                className={`el-btn ${confirm === "cancel" ? "el-btn-danger" : "el-btn-gold"}`}
+                className={`${EL_BTN} ${confirm === "cancel" ? EL_BTN_DANGER : EL_BTN_GOLD}`}
                 disabled={busy}
                 onClick={() => run(confirm)}
               >
@@ -201,7 +231,7 @@ function JobRow({
               </button>
               <button
                 type="button"
-                className="el-btn el-btn-outline"
+                className={`${EL_BTN} ${EL_BTN_OUTLINE}`}
                 onClick={() => setConfirm(null)}
               >
                 Back
@@ -209,17 +239,17 @@ function JobRow({
             </div>
           </div>
         ) : (
-          <div className="el-row-actions">
+          <div className={EL_ROW_ACTIONS}>
             <Link
               href={`/employer/messages?to=${job.workerId}`}
-              className="el-btn el-btn-outline"
+              className={`${EL_BTN} ${EL_BTN_OUTLINE}`}
             >
               Message
             </Link>
             {job.status === "pending" && (
               <button
                 type="button"
-                className="el-btn el-btn-danger"
+                className={`${EL_BTN} ${EL_BTN_DANGER}`}
                 onClick={() => setConfirm("cancel")}
               >
                 Cancel
@@ -228,7 +258,7 @@ function JobRow({
             {job.status === "accepted" && (
               <button
                 type="button"
-                className="el-btn el-btn-gold"
+                className={`${EL_BTN} ${EL_BTN_GOLD}`}
                 onClick={() => setConfirm("complete")}
               >
                 Mark complete
@@ -236,13 +266,13 @@ function JobRow({
             )}
             {job.status === "completed" &&
               (job.reviewedAt ? (
-                <span className="el-btn el-btn-outline" aria-disabled>
+                <span className={`${EL_BTN} ${EL_BTN_OUTLINE}`} aria-disabled>
                   Reviewed ✓
                 </span>
               ) : (
                 <button
                   type="button"
-                  className="el-btn el-btn-gold"
+                  className={`${EL_BTN} ${EL_BTN_GOLD}`}
                   onClick={onReview}
                 >
                   Leave review

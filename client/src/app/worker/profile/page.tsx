@@ -49,9 +49,7 @@ export default function WorkerProfilePage() {
       {data ? (
         <WorkerProfile mode="own" initialData={data} />
       ) : (
-        <div style={{ padding: 24, color: "#8a8a85", fontSize: 14 }}>
-          Loading…
-        </div>
+        <div className="p-6 text-ink-3 text-sm">Loading…</div>
       )}
     </Shell>
   );

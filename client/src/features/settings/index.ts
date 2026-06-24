@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  settingsService,
   type GenerateProfileInput,
+  settingsService,
   type UpdateProfileInput,
 } from "./services/settings.service";
 
@@ -10,7 +10,8 @@ export * from "./services/settings.service";
 export function useUpdateProfile() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: UpdateProfileInput) => settingsService.updateProfile(data),
+    mutationFn: (data: UpdateProfileInput) =>
+      settingsService.updateProfile(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["auth", "me"] });
       qc.invalidateQueries({ queryKey: ["profiles"] });
@@ -64,7 +65,8 @@ export function useUpdatePrivacy() {
   return useMutation({
     mutationFn: (data: Record<string, boolean>) =>
       settingsService.updatePrivacy(data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["settings", "privacy"] }),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: ["settings", "privacy"] }),
   });
 }
 

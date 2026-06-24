@@ -89,7 +89,9 @@ async function optimisticTransition(
           ? {
               ...r,
               status: next,
-              ...(next === "active" ? { isToday: true, isMultiDay: false } : {}),
+              ...(next === "active"
+                ? { isToday: true, isMultiDay: false }
+                : {}),
             }
           : r,
       );

@@ -7,7 +7,9 @@ export function useGetProfile(id: string | undefined) {
   return useQuery({
     queryKey: ["worker", "profile", id],
     queryFn: () =>
-      id === "me" ? profileService.getMine() : profileService.getById(id!),
+      id === "me"
+        ? profileService.getMine()
+        : profileService.getById(id as string),
     enabled: !!id,
     select: (res) => res.data.data as WorkerProfile,
   });

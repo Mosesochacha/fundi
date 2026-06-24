@@ -37,7 +37,7 @@ const WORKER_PROTECTED = [
 ];
 
 const matches = (path: string, prefix: string) =>
-  path === prefix || path.startsWith(prefix + "/");
+  path === prefix || path.startsWith(`${prefix}/`);
 
 /** True for protected worker routes; false for `/worker/[id]` public profiles. */
 const isProtectedWorkerPath = (path: string) => {
@@ -112,5 +112,7 @@ export const config = {
   // Run on every route except static assets and files with an extension.
   // The handler allow-lists public paths via fallthrough, so broad coverage
   // here is defense-in-depth: a new protected page can't ship unguarded.
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|icons|images|.*\\.).*)"],
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|icons|images|.*\\.).*)",
+  ],
 };

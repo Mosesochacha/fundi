@@ -50,49 +50,16 @@ export default function WelcomeToast({
     <button
       type="button"
       onClick={() => setShow(false)}
-      style={{
-        position: "fixed",
-        top: 16,
-        left: "50%",
-        transform: "translateX(-50%)",
-        zIndex: 100,
-        display: "flex",
-        alignItems: "center",
-        gap: 12,
-        maxWidth: 460,
-        width: "calc(100% - 32px)",
-        textAlign: "left",
-        background: "#0d1b2a",
-        color: "#fff",
-        border: "none",
-        borderRadius: 10,
-        padding: "12px 16px",
-        boxShadow: "0 8px 24px -6px rgba(0,0,0,0.4)",
-        cursor: "pointer",
-        fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
-      }}
+      className="fixed top-4 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 max-w-[460px] w-[calc(100%-32px)] text-left bg-navy text-white border-none rounded-[10px] px-4 py-3 shadow-[0_8px_24px_-6px_rgba(0,0,0,0.4)] cursor-pointer font-sans"
     >
-      <span
-        style={{
-          flexShrink: 0,
-          width: 28,
-          height: 28,
-          borderRadius: "50%",
-          background: "#c9a84c",
-          color: "#0d1b2a",
-          display: "grid",
-          placeItems: "center",
-        }}
-      >
+      <span className="shrink-0 w-7 h-7 rounded-full bg-gold text-navy grid place-items-center">
         <CircleCheck size={17} />
       </span>
-      <span style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        <span style={{ fontSize: 14, fontWeight: 600 }}>
-          Welcome to Fundi, {firstName}! 🎉
+      <span className="flex flex-col gap-0.5">
+        <span className="text-sm font-semibold">
+          Welcome to Tesilix, {firstName}! 🎉
         </span>
-        <span style={{ fontSize: 12, color: "rgba(255,255,255,0.7)" }}>
-          {sub}
-        </span>
+        <span className="text-xs text-white/70">{sub}</span>
       </span>
     </button>
   );

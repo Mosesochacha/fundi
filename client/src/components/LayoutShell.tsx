@@ -25,6 +25,7 @@ function OnboardingGuard() {
   const { isLoggedIn, user } = useAuth();
   const isAuth = AUTH_PATHS.some((p) => pathname.startsWith(p));
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `pathname` re-triggers the onboarding guard on every route change
   useEffect(() => {
     if (!isLoggedIn || isAuth) return;
     if (!user) return; // /auth/me still loading — don't redirect prematurely

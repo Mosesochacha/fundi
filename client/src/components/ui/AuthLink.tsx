@@ -8,9 +8,9 @@ interface AuthLinkProps {
 
 export default function AuthLink({ question, linkText, href }: AuthLinkProps) {
   return (
-    <p className="text-center text-[14px] text-gray-600 font-dm-sans">
+    <p className="text-center text-[14px] text-ink-2">
       {question}{" "}
-      <Link href={href} className="font-medium" style={{ color: "var(--orange-500)" }}>
+      <Link href={href} className="font-medium text-gold-dark hover:text-navy">
         {linkText} →
       </Link>
     </p>

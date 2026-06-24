@@ -10,7 +10,6 @@ export function useSetAvailability() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: { available: boolean }) => availabilityService.set(data),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: ["worker", "profile"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["worker", "profile"] }),
   });
 }

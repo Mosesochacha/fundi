@@ -3,8 +3,6 @@
 import { MapPin, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import "@/app/landing.css";
-import "./browse.css";
 import LandingNav from "@/components/landing/LandingNav";
 import {
   type BrowseFilters,
@@ -12,6 +10,7 @@ import {
   type BrowseWorkersResponse,
   useBrowseWorkers,
 } from "@/features/browse";
+import { cn } from "@/lib/utils";
 import { useSearchStore } from "@/store/searchStore";
 import AskAiModal from "./AskAiModal";
 import FilterBar from "./FilterBar";
@@ -36,6 +35,9 @@ function pageList(current: number, total: number): (number | "…")[] {
   pages.push(total);
   return pages;
 }
+
+const PAGER_EDGE =
+  "flex h-[38px] items-center gap-1.5 rounded-[10px] border border-border bg-white px-4 text-sm font-semibold text-ink-2 transition-colors duration-150 enabled:hover:border-gold-dark enabled:hover:text-ink disabled:cursor-not-allowed disabled:text-ink-4";
 
 export default function BrowseClient({ initialData, fontClass }: Props) {
   const router = useRouter();
@@ -148,24 +150,32 @@ export default function BrowseClient({ initialData, fontClass }: Props) {
   const showPagination = !nameQuery.trim() && totalPages > 1;
 
   return (
-    <div className={`lp browse ${fontClass ?? ""}`}>
+    <div
+      className={cn(
+        "min-h-screen bg-cream text-ink font-sans overflow-x-hidden",
+        fontClass,
+      )}
+    >
       <LandingNav />
 
-      <main className="browse-main">
+      <main className="pb-[90px]">
         {/* HERO */}
-        <header className="bh">
-          <p className="bh-eyebrow">Discover skilled professionals</p>
-          <h1 className="bh-title">
-            Find your <em>fundi.</em>
+        <header className="mx-auto max-w-[1240px] px-5 pt-[82px] md:px-10 md:pt-[116px]">
+          <p className="m-0 text-xs font-semibold uppercase tracking-[0.18em] text-ink-3">
+            Discover skilled professionals
+          </p>
+          <h1 className="mt-3.5 font-serif text-[34px] font-medium leading-[1.06] tracking-[-0.02em] text-ink md:text-[clamp(40px,7vw,66px)] md:leading-[0.98]">
+            Find your{" "}
+            <em className="font-serif italic text-gold-dark">fundi.</em>
           </h1>
-          <p className="bh-sub">
+          <p className="mt-3 max-w-[560px] text-[15px] leading-[1.55] text-ink-2 md:mt-[18px] md:text-[17px]">
             Browse vetted tradespeople across Kenya — every profile ID-verified,
             skill-assessed, and reviewed by real customers.
           </p>
 
           {/* SEARCH BAR */}
-          <div className="bh-search">
-            <div className="bh-search-field bh-search-main">
+          <div className="mt-[22px] flex flex-wrap items-stretch rounded-[18px] border border-border bg-white p-2 shadow-[0_2px_10px_rgba(33,28,20,0.05)] md:mt-[30px] md:flex-nowrap">
+            <div className="flex flex-[1_1_100%] items-center gap-3 px-[18px] text-ink-3 md:flex-1">
               <Search size={19} aria-hidden />
               <input
                 type="text"
@@ -174,10 +184,11 @@ export default function BrowseClient({ initialData, fontClass }: Props) {
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                 placeholder="Search by name, skill, or profession…"
                 aria-label="Search by name, skill or profession"
+                className="flex-1 border-none bg-transparent py-[15px] text-[15.5px] text-ink outline-none placeholder:text-ink-4"
               />
             </div>
-            <span className="bh-search-div" aria-hidden />
-            <div className="bh-search-field bh-search-loc">
+            <span className="my-2 hidden w-px bg-border md:block" aria-hidden />
+            <div className="flex flex-[1_1_100%] items-center gap-3 px-[18px] text-ink-3 md:flex-[0_0_280px]">
               <MapPin size={17} aria-hidden />
               <input
                 type="text"
@@ -186,11 +197,12 @@ export default function BrowseClient({ initialData, fontClass }: Props) {
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                 placeholder="City or location"
                 aria-label="City or location"
+                className="flex-1 border-none bg-transparent py-[15px] text-[15.5px] text-ink outline-none placeholder:text-ink-4"
               />
             </div>
             <button
               type="button"
-              className="bh-search-btn"
+              className="flex-[1_1_100%] rounded-xl border-none bg-gold-dark py-[13px] text-[15px] font-semibold text-white transition-colors duration-[180ms] hover:bg-gold md:flex-none md:px-9 md:py-0"
               onClick={handleSearch}
             >
               Search
@@ -202,37 +214,52 @@ export default function BrowseClient({ initialData, fontClass }: Props) {
         <FilterBar onAskAi={() => setAiOpen(true)} />
 
         {/* RESULTS */}
-        <section className="results" aria-busy={isFetching}>
+        <section
+          className="mx-auto max-w-[1240px] px-5 pt-[26px] md:px-10"
+          aria-busy={isFetching}
+        >
           {isLoading ? (
-            <div className="wk-grid">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(244px,1fr))] gap-5">
               {Array.from({ length: 8 }).map((_, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: fixed skeleton tiles
-                <div key={i} className="wk-skel" />
+                <div
+                  // biome-ignore lint/suspicious/noArrayIndexKey: fixed skeleton tiles
+                  key={i}
+                  className="h-[280px] animate-shimmer rounded-[18px]"
+                />
               ))}
             </div>
           ) : workers.length === 0 ? (
-            <div className="empty-state">
-              <p className="empty-title">No fundis match those filters</p>
-              <p className="empty-sub">
+            <div className="rounded-[18px] border border-dashed border-border bg-white px-6 py-[72px] text-center">
+              <p className="m-0 font-serif text-2xl font-medium text-ink">
+                No fundis match those filters
+              </p>
+              <p className="mb-5 mt-2.5 text-[15px] text-ink-3">
                 Try widening your trade, location or rating filters.
               </p>
-              <button type="button" className="empty-btn" onClick={clearAll}>
+              <button
+                type="button"
+                className="rounded-full border-none bg-navy px-6 py-3 text-sm font-semibold text-white transition-colors duration-[180ms] hover:bg-gold-dark"
+                onClick={clearAll}
+              >
                 Clear all filters
               </button>
             </div>
           ) : (
             <>
-              <div className="wk-grid">
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(244px,1fr))] gap-5">
                 {workers.map((w) => (
                   <WorkerCardGrid key={w.id} worker={w} onView={handleView} />
                 ))}
               </div>
 
               {showPagination && (
-                <nav className="pager" aria-label="Pagination">
+                <nav
+                  className="mt-[38px] flex items-center justify-center gap-1.5"
+                  aria-label="Pagination"
+                >
                   <button
                     type="button"
-                    className="pager-edge"
+                    className={PAGER_EDGE}
                     onClick={() => goToPage(page - 1)}
                     disabled={page <= 1}
                   >
@@ -240,15 +267,23 @@ export default function BrowseClient({ initialData, fontClass }: Props) {
                   </button>
                   {pageList(page, totalPages).map((p, i) =>
                     p === "…" ? (
-                      // biome-ignore lint/suspicious/noArrayIndexKey: ellipsis gaps have no stable id
-                      <span key={`gap-${i}`} className="pager-gap">
+                      <span
+                        // biome-ignore lint/suspicious/noArrayIndexKey: ellipsis gaps have no stable id
+                        key={`gap-${i}`}
+                        className="w-6 text-center text-ink-4"
+                      >
                         …
                       </span>
                     ) : (
                       <button
                         key={p}
                         type="button"
-                        className={`pager-num ${p === page ? "is-current" : ""}`}
+                        className={cn(
+                          "h-[38px] w-[38px] rounded-[10px] border text-sm font-semibold transition-colors duration-150",
+                          p === page
+                            ? "border-navy bg-navy font-bold text-white"
+                            : "border-border bg-white text-ink-2 hover:border-gold-dark hover:text-ink",
+                        )}
                         onClick={() => goToPage(p)}
                         aria-current={p === page ? "page" : undefined}
                       >
@@ -258,7 +293,7 @@ export default function BrowseClient({ initialData, fontClass }: Props) {
                   )}
                   <button
                     type="button"
-                    className="pager-edge"
+                    className={PAGER_EDGE}
                     onClick={() => goToPage(page + 1)}
                     disabled={page >= totalPages}
                   >

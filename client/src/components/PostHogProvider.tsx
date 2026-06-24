@@ -6,7 +6,8 @@ import { useEffect } from "react";
 import { useAuth } from "@/features/auth";
 
 const POSTHOG_KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY;
-const POSTHOG_HOST = process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://app.posthog.com";
+const POSTHOG_HOST =
+  process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://app.posthog.com";
 
 function PostHogIdentifier() {
   const { isLoggedIn, user } = useAuth();
@@ -22,7 +23,11 @@ function PostHogIdentifier() {
   return null;
 }
 
-export default function PostHogProvider({ children }: { children: React.ReactNode }) {
+export default function PostHogProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   useEffect(() => {
     if (!POSTHOG_KEY) return;
     posthog.init(POSTHOG_KEY, {

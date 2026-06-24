@@ -19,7 +19,13 @@ export const profilesService = {
     client.get(`/profiles/check-username?u=${encodeURIComponent(u)}`),
   checkUsernamePublic: (u: string) =>
     client.get(`/public/check-username?u=${encodeURIComponent(u)}`),
-  browse: ({ q, profession, location, page = 1, limit = 20 }: BrowseParams = {}) => {
+  browse: ({
+    q,
+    profession,
+    location,
+    page = 1,
+    limit = 20,
+  }: BrowseParams = {}) => {
     const params = new URLSearchParams();
     if (q) params.set("q", q);
     if (profession) params.set("profession", profession);

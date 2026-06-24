@@ -13,8 +13,7 @@ export interface CertificationInput {
 export const certificationsService = {
   add: (data: CertificationInput) =>
     client.post("/worker/profile/certifications", data),
-  remove: (id: string) =>
-    client.delete(`/worker/profile/certifications/${id}`),
+  remove: (id: string) => client.delete(`/worker/profile/certifications/${id}`),
 };
 
 const invalidate = (qc: ReturnType<typeof useQueryClient>) =>

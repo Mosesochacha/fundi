@@ -5,6 +5,7 @@ import { MessagesSquare } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "@/features/auth";
 import { useSocket } from "@/hooks/useSocket";
+import { cn } from "@/lib/utils";
 import { useConversations } from "../hooks/useConversations";
 import { useJobAction } from "../hooks/useJobActions";
 import { useMarkRead, useSendMessage } from "../hooks/useMessageActions";
@@ -14,7 +15,6 @@ import type { Conversation, ConversationParticipant, Message } from "../types";
 import ChatPanel from "./ChatPanel";
 import ConversationList from "./ConversationList";
 import { avatarColorOf, initialsOf } from "./helpers";
-import "./messages.css";
 
 type Role = "worker" | "employer";
 
@@ -295,8 +295,15 @@ export default function MessagesView({
     );
   }, [conversations, search]);
 
+  const hasSelection = !!(selectedId || draft);
+
   return (
-    <div className={`msg${selectedId || draft ? " has-selection" : ""}`}>
+    <div
+      className={cn(
+        "group font-sans text-ink grid grid-cols-1 overflow-hidden bg-white -mx-4 -mt-5 -mb-[82px] h-[calc(100dvh-112px-58px)] lg:grid-cols-[280px_1fr] lg:-mx-8 lg:-my-6 lg:h-[calc(100dvh-60px)]",
+        hasSelection && "has-selection",
+      )}
+    >
       <ConversationList
         conversations={filtered}
         selectedId={selectedId}
@@ -306,7 +313,7 @@ export default function MessagesView({
         presence={presence}
         loading={convLoading}
       />
-      <div className="msg-panel">
+      <div className="flex-col overflow-hidden bg-cream-2 min-w-0 hidden group-[.has-selection]:flex lg:flex">
         {active ? (
           <ChatPanel
             conversation={active}
@@ -323,10 +330,12 @@ export default function MessagesView({
             onBack={handleBack}
           />
         ) : (
-          <div className="msg-empty">
-            <MessagesSquare size={48} className="msg-empty-icon" />
-            <h3 className="msg-empty-title">No messages yet</h3>
-            <p className="msg-empty-sub">
+          <div className="flex-1 flex flex-col items-center justify-center text-center p-6 gap-1.5">
+            <MessagesSquare size={48} className="text-ink-4" />
+            <h3 className="text-sm font-medium text-ink-2 mt-1 mb-0">
+              No messages yet
+            </h3>
+            <p className="text-xs text-ink-3 max-w-[280px] leading-normal m-0">
               {role === "worker"
                 ? "When employers contact you about a job, the conversation will appear here."
                 : "Start a conversation by viewing a worker's profile and clicking Message."}

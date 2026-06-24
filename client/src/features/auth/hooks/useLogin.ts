@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { getSession, signIn } from "next-auth/react";
 import type { Session } from "next-auth";
+import { getSession, signIn } from "next-auth/react";
+import { useState } from "react";
 
 /**
  * Credentials login via NextAuth. Returns the established session so callers can

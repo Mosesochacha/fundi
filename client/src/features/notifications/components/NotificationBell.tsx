@@ -15,13 +15,13 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/features/auth";
 import { useSocket } from "@/hooks/useSocket";
+import { cn } from "@/lib/utils";
 import {
   useMarkAllNotificationsRead,
   useMarkNotificationRead,
 } from "../hooks/useNotificationActions";
 import { useNotifications } from "../hooks/useNotifications";
 import type { AppNotification } from "../types";
-import "./notifications.css";
 
 type Variant = "dash" | "bottom" | "nav";
 
@@ -121,21 +121,37 @@ export default function NotificationBell({
     if (href) router.push(href);
   };
 
+  // Unread count badge. Ring colour differs per surface (white dash/bottom is
+  // navy, nav sits on cream-2).
   const badge =
     unread > 0 ? (
-      <span className="notif-badge">{unread > 9 ? "9+" : unread}</span>
+      <span
+        className={cn(
+          "absolute min-w-[16px] h-4 px-1 rounded-full bg-gold text-navy text-[10px] font-bold leading-4 text-center",
+          variant === "bottom"
+            ? "-top-[7px] -right-[9px] ring-2 ring-navy"
+            : variant === "nav"
+              ? "-top-0.5 -right-0.5 ring-2 ring-cream-2"
+              : "-top-0.5 -right-0.5 ring-2 ring-white",
+        )}
+      >
+        {unread > 9 ? "9+" : unread}
+      </span>
     ) : null;
 
   const trigger =
     variant === "bottom" ? (
       <button
         type="button"
-        className={`dash-bottomitem notif-trigger${open ? " active" : ""}`}
+        className={cn(
+          "relative flex-1 flex flex-col items-center justify-center gap-[3px] text-[10px] no-underline",
+          open ? "text-gold" : "text-white/45",
+        )}
         onClick={() => setOpen((o) => !o)}
         aria-label="Notifications"
         aria-expanded={open}
       >
-        <span className="dash-bottomicon">
+        <span className="relative">
           <Bell size={19} />
           {badge}
         </span>
@@ -144,7 +160,7 @@ export default function NotificationBell({
     ) : variant === "nav" ? (
       <button
         type="button"
-        className="nav-bell notif-trigger"
+        className="relative w-[38px] h-[38px] rounded-lg border border-border bg-white flex items-center justify-center text-ink-2 transition-colors hover:border-gold hover:text-gold-dark cursor-pointer"
         onClick={() => setOpen((o) => !o)}
         aria-label="Notifications"
         aria-expanded={open}
@@ -155,7 +171,7 @@ export default function NotificationBell({
     ) : (
       <button
         type="button"
-        className="dash-bell notif-trigger"
+        className="relative w-9 h-9 rounded-full flex items-center justify-center text-ink-2 transition-colors hover:bg-cream cursor-pointer"
         onClick={() => setOpen((o) => !o)}
         aria-label="Notifications"
         aria-expanded={open}
@@ -166,16 +182,31 @@ export default function NotificationBell({
     );
 
   return (
-    <div className={`notif notif--${variant}`} ref={wrapRef}>
+    <div
+      className={cn(
+        "relative inline-flex",
+        variant === "bottom" && "flex-1 flex",
+      )}
+      ref={wrapRef}
+    >
       {trigger}
       {open && (
-        <div className="notif-pop" role="dialog" aria-label="Notifications">
-          <div className="notif-head">
-            <span className="notif-title">Notifications</span>
+        <div
+          className={cn(
+            "bg-white border border-border rounded-[14px] shadow-[0_18px_44px_-18px_rgba(13,27,42,0.4)] z-[200] overflow-hidden flex flex-col",
+            variant === "bottom"
+              ? "fixed left-2.5 right-2.5 bottom-[66px]"
+              : "absolute top-[calc(100%+10px)] right-0 w-[344px] max-w-[calc(100vw-24px)]",
+          )}
+          role="dialog"
+          aria-label="Notifications"
+        >
+          <div className="flex items-center justify-between px-4 py-[13px] border-b border-border">
+            <span className="text-sm font-bold text-navy">Notifications</span>
             {unread > 0 && (
               <button
                 type="button"
-                className="notif-markall"
+                className="border-none bg-transparent text-gold-dark text-xs font-semibold cursor-pointer p-0 hover:underline"
                 onClick={() => markAll.mutate()}
               >
                 Mark all read
@@ -183,12 +214,19 @@ export default function NotificationBell({
             )}
           </div>
 
-          <div className="notif-list">
+          <div
+            className={cn(
+              "overflow-y-auto",
+              variant === "bottom" ? "max-h-[56vh]" : "max-h-[60vh]",
+            )}
+          >
             {isLoading ? (
-              <div className="notif-empty">Loading…</div>
+              <div className="flex flex-col items-center gap-2.5 px-4 py-10 text-ink-3 text-[13px]">
+                Loading…
+              </div>
             ) : notifications.length === 0 ? (
-              <div className="notif-empty">
-                <Bell size={26} className="notif-empty-icon" />
+              <div className="flex flex-col items-center gap-2.5 px-4 py-10 text-ink-3 text-[13px]">
+                <Bell size={26} className="text-ink-4" />
                 <span>You're all caught up</span>
               </div>
             ) : (
@@ -198,22 +236,33 @@ export default function NotificationBell({
                   <button
                     type="button"
                     key={n.id}
-                    className={`notif-item${n.readAt ? "" : " unread"}`}
+                    className={cn(
+                      "flex gap-[11px] items-start w-full text-left px-4 py-3 border-none border-b border-border last:border-b-0 cursor-pointer",
+                      n.readAt
+                        ? "bg-transparent hover:bg-cream"
+                        : "bg-gold-light hover:bg-gold/15",
+                    )}
                     onClick={() => onItem(n)}
                   >
-                    <span className="notif-item-icon">
+                    <span className="flex-none w-[30px] h-[30px] rounded-full flex items-center justify-center bg-navy text-gold">
                       <Icon size={15} />
                     </span>
-                    <span className="notif-item-body">
-                      <span className="notif-item-title">{n.title}</span>
+                    <span className="flex flex-col gap-0.5 min-w-0 flex-1">
+                      <span className="text-[13px] font-semibold text-ink leading-[1.3]">
+                        {n.title}
+                      </span>
                       {n.body && (
-                        <span className="notif-item-sub">{n.body}</span>
+                        <span className="text-xs text-ink-2 overflow-hidden text-ellipsis whitespace-nowrap">
+                          {n.body}
+                        </span>
                       )}
-                      <span className="notif-item-time">
+                      <span className="text-[11px] text-ink-3 mt-px">
                         {relTime(n.createdAt)}
                       </span>
                     </span>
-                    {!n.readAt && <span className="notif-item-dot" />}
+                    {!n.readAt && (
+                      <span className="flex-none w-[7px] h-[7px] rounded-full bg-gold mt-1.5" />
+                    )}
                   </button>
                 );
               })

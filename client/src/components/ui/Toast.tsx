@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export type ToastType = "error" | "success" | "info" | "warning";
 
@@ -15,46 +15,96 @@ export interface Toast {
 
 const toastConfig = {
   error: {
-    bg: "#FEF2F2",
-    bar: "#DC2626",
-    iconBg: "#FEE2E2",
+    bg: "bg-red-50",
+    bar: "bg-red-600",
+    iconBg: "bg-red-100",
     icon: (
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <path d="M8 5v4M8 11h.01" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" />
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="none"
+        aria-hidden="true"
+      >
+        <path
+          d="M8 5v4M8 11h.01"
+          stroke="#DC2626"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
         <circle cx="8" cy="8" r="7" stroke="#DC2626" strokeWidth="1.5" />
       </svg>
     ),
   },
   success: {
-    bg: "#F0FDF4",
-    bar: "#16A34A",
-    iconBg: "#DCFCE7",
+    bg: "bg-green-50",
+    bar: "bg-green-600",
+    iconBg: "bg-green-100",
     icon: (
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <path d="M3 8l3.5 3.5L13 4.5" stroke="#16A34A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="none"
+        aria-hidden="true"
+      >
+        <path
+          d="M3 8l3.5 3.5L13 4.5"
+          stroke="#16A34A"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
         <circle cx="8" cy="8" r="7" stroke="#16A34A" strokeWidth="1.5" />
       </svg>
     ),
   },
   info: {
-    bg: "#EFF6FF",
-    bar: "#2563EB",
-    iconBg: "#DBEAFE",
+    bg: "bg-blue-50",
+    bar: "bg-blue-600",
+    iconBg: "bg-blue-100",
     icon: (
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <path d="M8 7v5M8 5h.01" stroke="#2563EB" strokeWidth="1.5" strokeLinecap="round" />
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="none"
+        aria-hidden="true"
+      >
+        <path
+          d="M8 7v5M8 5h.01"
+          stroke="#2563EB"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
         <circle cx="8" cy="8" r="7" stroke="#2563EB" strokeWidth="1.5" />
       </svg>
     ),
   },
   warning: {
-    bg: "#FFFBEB",
-    bar: "#D97706",
-    iconBg: "#FEF3C7",
+    bg: "bg-amber-50",
+    bar: "bg-amber-600",
+    iconBg: "bg-amber-100",
     icon: (
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <path d="M8 2L14.5 13H1.5L8 2z" stroke="#D97706" strokeWidth="1.5" strokeLinejoin="round" />
-        <path d="M8 6v4M8 11.5h.01" stroke="#D97706" strokeWidth="1.5" strokeLinecap="round" />
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="none"
+        aria-hidden="true"
+      >
+        <path
+          d="M8 2L14.5 13H1.5L8 2z"
+          stroke="#D97706"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M8 6v4M8 11.5h.01"
+          stroke="#D97706"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
       </svg>
     ),
   },
@@ -96,81 +146,29 @@ const ToastItem = ({ toast, onDismiss }: ToastItemProps) => {
       transition={{ type: "spring", stiffness: 400, damping: 28 }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
-      style={{
-        background: config.bg,
-        borderRadius: "12px",
-        boxShadow: "0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)",
-        overflow: "hidden",
-        position: "relative",
-        width: "100%",
-        maxWidth: "420px",
-        pointerEvents: "all",
-      }}
+      className={`relative w-full max-w-[420px] rounded-xl overflow-hidden pointer-events-auto shadow-[0_8px_32px_rgba(0,0,0,0.10),0_2px_8px_rgba(0,0,0,0.06)] ${config.bg}`}
     >
       {/* Left coloured bar */}
       <div
-        style={{
-          position: "absolute",
-          left: 0,
-          top: 0,
-          bottom: 0,
-          width: "4px",
-          background: config.bar,
-          borderRadius: "12px 0 0 12px",
-        }}
+        className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-xl ${config.bar}`}
       />
 
       {/* Content */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "12px",
-          padding: "14px 16px 14px 20px",
-        }}
-      >
+      <div className="flex items-center gap-3 pl-5 pr-4 py-3.5">
         <div
-          style={{
-            width: "32px",
-            height: "32px",
-            borderRadius: "50%",
-            background: config.iconBg,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-          }}
+          className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${config.iconBg}`}
         >
           {config.icon}
         </div>
 
-        <p
-          style={{
-            flex: 1,
-            margin: 0,
-            fontSize: "14px",
-            lineHeight: "1.5",
-            color: "#111827",
-            fontFamily: "DM Sans, sans-serif",
-            fontWeight: 400,
-          }}
-        >
+        <p className="flex-1 m-0 text-sm leading-normal text-gray-900 font-sans font-normal">
           {toast.message}
         </p>
 
         <button
+          type="button"
           onClick={() => onDismiss(toast.id)}
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            padding: "4px",
-            color: "#9CA3AF",
-            display: "flex",
-            alignItems: "center",
-            borderRadius: "6px",
-            flexShrink: 0,
-          }}
+          className="bg-transparent border-none cursor-pointer p-1 text-gray-400 flex items-center rounded-md shrink-0"
         >
           <X size={16} />
         </button>
@@ -178,16 +176,10 @@ const ToastItem = ({ toast, onDismiss }: ToastItemProps) => {
 
       {/* Progress bar */}
       <div
-        style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          height: "3px",
-          background: config.bar,
-          width: `${progress}%`,
-          transition: paused ? "none" : "width 50ms linear",
-          opacity: 0.4,
-        }}
+        className={`absolute bottom-0 left-0 h-[3px] opacity-40 ${config.bar} ${
+          paused ? "" : "transition-[width] duration-[50ms] ease-linear"
+        }`}
+        style={{ width: `${progress}%` }}
       />
     </motion.div>
   );
@@ -200,22 +192,7 @@ interface ToastContainerProps {
 
 export const ToastContainer = ({ toasts, onDismiss }: ToastContainerProps) => {
   return (
-    <div
-      style={{
-        position: "fixed",
-        top: "20px",
-        left: "50%",
-        transform: "translateX(-50%)",
-        zIndex: 9999,
-        display: "flex",
-        flexDirection: "column",
-        gap: "10px",
-        alignItems: "center",
-        width: "calc(100% - 32px)",
-        maxWidth: "420px",
-        pointerEvents: "none",
-      }}
-    >
+    <div className="fixed top-5 left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-2.5 items-center w-[calc(100%-32px)] max-w-[420px] pointer-events-none">
       <AnimatePresence mode="sync">
         {toasts.slice(0, 3).map((toast) => (
           <ToastItem key={toast.id} toast={toast} onDismiss={onDismiss} />

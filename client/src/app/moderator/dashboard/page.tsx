@@ -26,11 +26,11 @@ export default function ModeratorDashboardPage() {
   return (
     // biome-ignore lint/a11y/useValidAriaRole: `role` is a Shell prop, not an ARIA attribute
     <Shell role="moderator" user={shellUser} currentPath={pathname}>
-      <div style={{ padding: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: "#1c1410" }}>
+      <div className="p-6">
+        <h1 className="font-serif text-[22px] font-bold text-ink">
           Moderator dashboard
         </h1>
-        <p style={{ marginTop: 8, color: "#8a8a85", fontSize: 14 }}>
+        <p className="mt-2 text-ink-3 text-sm">
           The moderator dashboard is coming soon.
         </p>
       </div>

@@ -9,13 +9,20 @@ import { useAuth } from "@/features/auth";
 import { useGetEmployerJobs } from "@/features/employer/jobs";
 import {
   Avatar,
+  EL_BTN,
+  EL_BTN_GOLD,
+  EL_CARD,
+  EL_ROW,
+  EL_ROW_BODY,
+  EL_ROW_META,
+  EL_ROW_NAME,
+  EL_ROW_TOP,
   EmptyCard,
   initialsOf,
   ListSkeleton,
   Stars,
   shortDate,
 } from "../_shared/parts";
-import "../_shared/list.css";
 
 export default function EmployerReviewsPage() {
   const pathname = usePathname();
@@ -33,18 +40,26 @@ export default function EmployerReviewsPage() {
     () =>
       (jobs ?? [])
         .filter((j) => j.reviewedAt && j.rating != null)
-        .sort((a, b) => +new Date(b.reviewedAt!) - +new Date(a.reviewedAt!)),
+        .sort(
+          (a, b) =>
+            +new Date(b.reviewedAt as string) -
+            +new Date(a.reviewedAt as string),
+        ),
     [jobs],
   );
 
   return (
     // biome-ignore lint/a11y/useValidAriaRole: `role` is a Shell prop, not an ARIA attribute
     <Shell role="employer" user={shellUser} currentPath={pathname}>
-      <div className="el">
+      <div className="flex flex-col gap-4 text-ink-2">
         <div>
-          <div className="el-head-eyebrow">Feedback</div>
-          <h1 className="el-title">My reviews.</h1>
-          <p className="el-sub">Ratings you’ve left for the fundis you’ve hired.</p>
+          <div className="text-xs text-ink-3">Feedback</div>
+          <h1 className="font-serif text-[26px] font-normal text-ink mt-0.5 leading-[1.15]">
+            My reviews.
+          </h1>
+          <p className="text-[13px] text-ink-3 mt-1">
+            Ratings you’ve left for the fundis you’ve hired.
+          </p>
         </div>
 
         {isLoading ? (
@@ -55,32 +70,37 @@ export default function EmployerReviewsPage() {
             title="No reviews yet"
             sub="After a job is completed you can rate the fundi — your reviews show up here."
             cta={
-              <Link href="/employer/hires" className="el-btn el-btn-gold">
+              <Link
+                href="/employer/hires"
+                className={`${EL_BTN} ${EL_BTN_GOLD}`}
+              >
                 Go to past hires
               </Link>
             }
           />
         ) : (
-          <div className="el-card">
+          <div className={EL_CARD}>
             {reviews.map((r) => (
-              <div key={r.id} className="el-row">
+              <div key={r.id} className={EL_ROW}>
                 <Avatar name={r.workerName} url={r.avatarUrl} />
-                <div className="el-row-body">
-                  <div className="el-row-top">
-                    <span className="el-row-name">
+                <div className={EL_ROW_BODY}>
+                  <div className={EL_ROW_TOP}>
+                    <span className={EL_ROW_NAME}>
                       {r.workerName}
                       {r.trade ? ` — ${r.trade}` : ""}
                     </span>
                     <Stars value={r.rating ?? 0} />
                   </div>
-                  <div className="el-row-meta">
+                  <div className={EL_ROW_META}>
                     {r.jobType} · {r.location}
                   </div>
                   {r.reviewText && (
-                    <p className="el-review-text">“{r.reviewText}”</p>
+                    <p className="text-xs text-ink-2 leading-relaxed mt-2 italic">
+                      “{r.reviewText}”
+                    </p>
                   )}
                   {r.reviewedAt && (
-                    <div className="el-review-date">
+                    <div className="text-[11px] text-ink-3 mt-1.5">
                       Reviewed {shortDate(r.reviewedAt)}
                     </div>
                   )}

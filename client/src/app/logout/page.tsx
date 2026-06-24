@@ -20,15 +20,7 @@ export default function LogoutPage() {
   }, [logout]);
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "grid",
-        placeItems: "center",
-        fontFamily: "var(--font-dm-sans)",
-        color: "var(--ink)",
-      }}
-    >
+    <div className="min-h-screen grid place-items-center font-sans text-ink">
       Signing you out…
     </div>
   );

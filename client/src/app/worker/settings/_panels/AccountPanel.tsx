@@ -15,7 +15,17 @@ import {
   useVerifyPhone,
   type WorkerSettings,
 } from "@/features/worker/settings";
-import { apiError, Field, Panel, PanelBody } from "../_components/ui";
+import { cn } from "@/lib/utils";
+import {
+  apiError,
+  BTN_GOLD,
+  BTN_OUTLINE,
+  btn,
+  FIELD_INPUT,
+  Field,
+  Panel,
+  PanelBody,
+} from "../_components/ui";
 
 /* ── Email / phone forms ──────────────────────────────────────────────────── */
 const emailSchema = z.object({
@@ -53,10 +63,15 @@ function strengthOf(pw: string): 0 | 1 | 2 | 3 {
   return score as 0 | 1 | 2 | 3;
 }
 const STRENGTH = [
-  { label: "", cls: "", width: "0%" },
-  { label: "Weak", cls: "weak", width: "33%" },
-  { label: "Fair", cls: "fair", width: "66%" },
-  { label: "Strong", cls: "strong", width: "100%" },
+  { label: "", fill: "", text: "", width: "0%" },
+  { label: "Weak", fill: "bg-red-600", text: "text-red-600", width: "33%" },
+  { label: "Fair", fill: "bg-amber-600", text: "text-amber-600", width: "66%" },
+  {
+    label: "Strong",
+    fill: "bg-green-600",
+    text: "text-green-600",
+    width: "100%",
+  },
 ] as const;
 
 export default function AccountPanel({
@@ -174,22 +189,22 @@ export default function AccountPanel({
       <PanelBody>
         {/* Email */}
         <Field label="Email address" htmlFor="email">
-          <div className="ws-input-row">
+          <div className="flex items-center gap-2.5">
             <input
               id="email"
               type="email"
-              className="ws-input"
+              className={cn(FIELD_INPUT, "flex-1")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
             {account.emailVerified ? (
-              <span className="ws-verified">
+              <span className="inline-flex items-center gap-1 shrink-0 text-[11px] font-semibold text-gold-dark bg-gold-light border border-gold/40 rounded-[20px] py-1 px-2.5">
                 <ShieldCheck size={12} /> Verified
               </span>
             ) : (
               <button
                 type="button"
-                className="ws-btn ws-btn-sm ws-btn-outline"
+                className={btn(BTN_OUTLINE, true)}
                 onClick={onVerifyEmail}
                 disabled={verifyEmail.isPending}
               >
@@ -198,11 +213,11 @@ export default function AccountPanel({
             )}
           </div>
         </Field>
-        <div style={{ marginTop: -6, marginBottom: 16 }}>
+        <div className="-mt-1.5 mb-4">
           {email !== account.email && (
             <button
               type="button"
-              className="ws-btn ws-btn-sm ws-btn-gold"
+              className={btn(BTN_GOLD, true)}
               onClick={saveEmail}
               disabled={updateEmail.isPending}
             >
@@ -213,22 +228,22 @@ export default function AccountPanel({
 
         {/* Phone */}
         <Field label="Phone number" htmlFor="phone">
-          <div className="ws-input-row">
+          <div className="flex items-center gap-2.5">
             <input
               id="phone"
               type="tel"
-              className="ws-input"
+              className={cn(FIELD_INPUT, "flex-1")}
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
             />
             {account.phoneVerified ? (
-              <span className="ws-verified">
+              <span className="inline-flex items-center gap-1 shrink-0 text-[11px] font-semibold text-gold-dark bg-gold-light border border-gold/40 rounded-[20px] py-1 px-2.5">
                 <ShieldCheck size={12} /> Verified
               </span>
             ) : (
               <button
                 type="button"
-                className="ws-btn ws-btn-sm ws-btn-outline"
+                className={btn(BTN_OUTLINE, true)}
                 onClick={onVerifyPhone}
                 disabled={verifyPhone.isPending}
               >
@@ -237,11 +252,11 @@ export default function AccountPanel({
             )}
           </div>
         </Field>
-        <div style={{ marginTop: -6 }}>
+        <div className="-mt-1.5">
           {phone !== account.phone && (
             <button
               type="button"
-              className="ws-btn ws-btn-sm ws-btn-gold"
+              className={btn(BTN_GOLD, true)}
               onClick={savePhone}
               disabled={updatePhone.isPending}
             >
@@ -251,8 +266,13 @@ export default function AccountPanel({
         </div>
 
         {/* Change password */}
-        <form className="ws-section" onSubmit={onSubmitPassword}>
-          <div className="ws-section-title">Change password</div>
+        <form
+          className="pt-4 mt-4 border-t-[0.5px] border-border"
+          onSubmit={onSubmitPassword}
+        >
+          <div className="text-sm font-medium text-ink mb-3.5">
+            Change password
+          </div>
 
           <Field
             label="Current password"
@@ -263,12 +283,15 @@ export default function AccountPanel({
               id="currentPassword"
               type="password"
               autoComplete="current-password"
-              className={`ws-input${errors.currentPassword ? " invalid" : ""}`}
+              className={cn(
+                FIELD_INPUT,
+                errors.currentPassword && "border-red-600",
+              )}
               {...register("currentPassword")}
             />
           </Field>
 
-          <div className="ws-grid2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <Field
               label="New password"
               htmlFor="newPassword"
@@ -278,18 +301,29 @@ export default function AccountPanel({
                 id="newPassword"
                 type="password"
                 autoComplete="new-password"
-                className={`ws-input${errors.newPassword ? " invalid" : ""}`}
+                className={cn(
+                  FIELD_INPUT,
+                  errors.newPassword && "border-red-600",
+                )}
                 {...register("newPassword")}
               />
-              {strength.cls && (
-                <div className="ws-strength">
-                  <div className="ws-strength-track">
+              {strength.fill && (
+                <div className="flex items-center gap-2 mt-2">
+                  <div className="flex-1 h-[5px] rounded-[20px] bg-cream-2 overflow-hidden">
                     <div
-                      className={`ws-strength-fill ${strength.cls}`}
+                      className={cn(
+                        "h-full rounded-[20px] transition-[width,background-color] duration-[250ms]",
+                        strength.fill,
+                      )}
                       style={{ width: strength.width }}
                     />
                   </div>
-                  <span className={`ws-strength-label ${strength.cls}`}>
+                  <span
+                    className={cn(
+                      "text-[11px] font-semibold w-11 text-right",
+                      strength.text,
+                    )}
+                  >
                     {strength.label}
                   </span>
                 </div>
@@ -304,16 +338,19 @@ export default function AccountPanel({
                 id="confirmPassword"
                 type="password"
                 autoComplete="new-password"
-                className={`ws-input${errors.confirmPassword ? " invalid" : ""}`}
+                className={cn(
+                  FIELD_INPUT,
+                  errors.confirmPassword && "border-red-600",
+                )}
                 {...register("confirmPassword")}
               />
             </Field>
           </div>
 
-          <div style={{ marginTop: 4 }}>
+          <div className="mt-1">
             <button
               type="submit"
-              className="ws-btn ws-btn-sm ws-btn-gold"
+              className={btn(BTN_GOLD, true)}
               disabled={updatePassword.isPending || !isDirty}
             >
               {updatePassword.isPending ? "Saving…" : "Update password"}
@@ -322,18 +359,22 @@ export default function AccountPanel({
         </form>
 
         {/* Google */}
-        <div className="ws-section">
-          <div className="ws-section-title">Google account</div>
-          <div className="ws-connected">
+        <div className="pt-4 mt-4 border-t-[0.5px] border-border">
+          <div className="text-sm font-medium text-ink mb-3.5">
+            Google account
+          </div>
+          <div className="flex items-center justify-between gap-3">
             {account.googleConnected ? (
               <>
-                <span className="ws-connected-text">
+                <span className="text-[13px] text-ink-2">
                   Connected as{" "}
-                  <strong>{account.googleEmail ?? account.email}</strong>
+                  <strong className="text-ink font-medium">
+                    {account.googleEmail ?? account.email}
+                  </strong>
                 </span>
                 <button
                   type="button"
-                  className="ws-btn ws-btn-sm ws-btn-outline"
+                  className={btn(BTN_OUTLINE, true)}
                   onClick={onDisconnectGoogle}
                   disabled={disconnectGoogle.isPending}
                 >
@@ -342,11 +383,11 @@ export default function AccountPanel({
               </>
             ) : (
               <>
-                <span className="ws-connected-text">
+                <span className="text-[13px] text-ink-2">
                   Connect your Google account for faster sign-in.
                 </span>
                 <a
-                  className="ws-btn ws-btn-sm ws-btn-outline"
+                  className={btn(BTN_OUTLINE, true)}
                   href="/api/auth/signin/google"
                 >
                   Connect Google

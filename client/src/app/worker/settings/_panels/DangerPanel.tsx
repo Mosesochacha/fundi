@@ -8,7 +8,19 @@ import {
   useExportData,
   usePauseAccount,
 } from "@/features/worker/settings";
-import { apiError, Modal, Panel, PanelBody } from "../_components/ui";
+import { cn } from "@/lib/utils";
+import {
+  apiError,
+  BTN_DANGER,
+  BTN_DANGER_OUTLINE,
+  BTN_GOLD,
+  BTN_OUTLINE,
+  btn,
+  FIELD_INPUT,
+  Modal,
+  Panel,
+  PanelBody,
+} from "../_components/ui";
 
 type Dialog = null | "pause" | "delete";
 
@@ -75,17 +87,19 @@ export default function DangerPanel() {
     >
       <PanelBody>
         {/* Pause */}
-        <div className="ws-danger-row">
+        <div className="flex items-center justify-between gap-4 py-4 border-b-[0.5px] border-cream-2 first:pt-0 last:border-b-0 last:pb-0">
           <div>
-            <div className="ws-danger-title">Pause account</div>
-            <div className="ws-danger-sub">
+            <div className="text-[13px] font-medium text-ink">
+              Pause account
+            </div>
+            <div className="text-[11px] text-ink-3 mt-[3px] leading-[1.5] max-w-[420px]">
               Temporarily hide your profile from search and stop receiving
               requests. Reactivate anytime.
             </div>
           </div>
           <button
             type="button"
-            className="ws-btn ws-btn-sm ws-btn-outline"
+            className={btn(BTN_OUTLINE, true)}
             onClick={() => setDialog("pause")}
           >
             Pause account
@@ -93,17 +107,19 @@ export default function DangerPanel() {
         </div>
 
         {/* Export */}
-        <div className="ws-danger-row">
+        <div className="flex items-center justify-between gap-4 py-4 border-b-[0.5px] border-cream-2 first:pt-0 last:border-b-0 last:pb-0">
           <div>
-            <div className="ws-danger-title">Export my data</div>
-            <div className="ws-danger-sub">
+            <div className="text-[13px] font-medium text-ink">
+              Export my data
+            </div>
+            <div className="text-[11px] text-ink-3 mt-[3px] leading-[1.5] max-w-[420px]">
               Download all your profile data, job history, messages, and
               reviews.
             </div>
           </div>
           <button
             type="button"
-            className="ws-btn ws-btn-sm ws-btn-outline"
+            className={btn(BTN_OUTLINE, true)}
             onClick={onExport}
             disabled={exportData.isPending}
           >
@@ -113,17 +129,19 @@ export default function DangerPanel() {
         </div>
 
         {/* Delete */}
-        <div className="ws-danger-row">
+        <div className="flex items-center justify-between gap-4 py-4 border-b-[0.5px] border-cream-2 first:pt-0 last:border-b-0 last:pb-0">
           <div>
-            <div className="ws-danger-title red">Delete account</div>
-            <div className="ws-danger-sub">
+            <div className="text-[13px] font-medium text-red-600">
+              Delete account
+            </div>
+            <div className="text-[11px] text-ink-3 mt-[3px] leading-[1.5] max-w-[420px]">
               Permanently delete your account and all data. This cannot be
               undone.
             </div>
           </div>
           <button
             type="button"
-            className="ws-btn ws-btn-sm ws-btn-danger-outline"
+            className={btn(BTN_DANGER_OUTLINE, true)}
             onClick={() => setDialog("delete")}
           >
             Delete account
@@ -140,7 +158,7 @@ export default function DangerPanel() {
             <>
               <button
                 type="button"
-                className="ws-btn ws-btn-sm ws-btn-outline"
+                className={btn(BTN_OUTLINE, true)}
                 onClick={closeDialog}
                 disabled={pause.isPending}
               >
@@ -148,7 +166,7 @@ export default function DangerPanel() {
               </button>
               <button
                 type="button"
-                className="ws-btn ws-btn-sm ws-btn-gold"
+                className={btn(BTN_GOLD, true)}
                 onClick={onPause}
                 disabled={pause.isPending}
               >
@@ -157,7 +175,7 @@ export default function DangerPanel() {
             </>
           }
         >
-          <p className="ws-modal-text">
+          <p className="text-[13px] text-ink-2 leading-[1.55] mt-2">
             You won&apos;t appear in search until you reactivate. You can turn
             your account back on at any time.
           </p>
@@ -175,14 +193,14 @@ export default function DangerPanel() {
               <>
                 <button
                   type="button"
-                  className="ws-btn ws-btn-sm ws-btn-outline"
+                  className={btn(BTN_OUTLINE, true)}
                   onClick={closeDialog}
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
-                  className="ws-btn ws-btn-sm ws-btn-danger"
+                  className={btn(BTN_DANGER, true)}
                   onClick={() => setDeleteStep(2)}
                 >
                   Continue
@@ -192,7 +210,7 @@ export default function DangerPanel() {
               <>
                 <button
                   type="button"
-                  className="ws-btn ws-btn-sm ws-btn-outline"
+                  className={btn(BTN_OUTLINE, true)}
                   onClick={closeDialog}
                   disabled={del.isPending}
                 >
@@ -200,7 +218,7 @@ export default function DangerPanel() {
                 </button>
                 <button
                   type="button"
-                  className="ws-btn ws-btn-sm ws-btn-danger"
+                  className={btn(BTN_DANGER, true)}
                   onClick={onDelete}
                   disabled={confirmText !== "DELETE" || del.isPending}
                 >
@@ -211,18 +229,17 @@ export default function DangerPanel() {
           }
         >
           {deleteStep === 1 ? (
-            <p className="ws-modal-text">
+            <p className="text-[13px] text-ink-2 leading-[1.55] mt-2">
               This permanently deletes your profile, job history, messages, and
               reviews. This action cannot be undone.
             </p>
           ) : (
             <>
-              <p className="ws-modal-text">
+              <p className="text-[13px] text-ink-2 leading-[1.55] mt-2">
                 Type <strong>DELETE</strong> to confirm.
               </p>
               <input
-                className="ws-input"
-                style={{ marginTop: 10 }}
+                className={cn(FIELD_INPUT, "mt-2.5")}
                 value={confirmText}
                 onChange={(e) => setConfirmText(e.target.value)}
                 placeholder="DELETE"

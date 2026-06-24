@@ -1,7 +1,4 @@
-import axios, {
-  type AxiosError,
-  type InternalAxiosRequestConfig,
-} from "axios";
+import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { getSession, signOut } from "next-auth/react";
 import { API_BASE } from "@/lib/apiBase";
 

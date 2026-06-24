@@ -2,9 +2,9 @@
 
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui";
 import { useToastContext } from "@/context/ToastContext";
 import { useHireWorker } from "@/features/employer/dashboard";
-import "./modal.css";
 
 interface HireTarget {
   id: string;
@@ -78,7 +78,9 @@ export default function HireModal({ worker, defaultLocation, onClose }: Props) {
         : date
           ? new Date(date).toISOString()
           : undefined;
-    const budgetNum = budget ? Number(budget.replace(/[^0-9]/g, "")) : undefined;
+    const budgetNum = budget
+      ? Number(budget.replace(/[^0-9]/g, ""))
+      : undefined;
 
     try {
       await hire.mutateAsync({
@@ -92,32 +94,38 @@ export default function HireModal({ worker, defaultLocation, onClose }: Props) {
       success(`Request sent to ${worker.name}.`);
       onClose();
     } catch (e) {
-      toastError(errMessage(e, "Could not send the request. Please try again."));
+      toastError(
+        errMessage(e, "Could not send the request. Please try again."),
+      );
     }
   };
 
   return (
-    <div className="ed-overlay">
+    <div className="fixed inset-0 z-[200] grid place-items-center p-4 font-sans">
       <button
         type="button"
-        className="ed-scrim"
+        className="absolute inset-0 bg-navy/45 border-0 cursor-pointer"
         aria-label="Close dialog"
         onClick={onClose}
       />
       <div
-        className="ed-modal"
+        className="relative z-[1] w-full max-w-[440px] max-h-[calc(100vh-32px)] overflow-y-auto bg-white rounded-[14px] shadow-[0_16px_48px_-12px_rgba(0,0,0,0.4)]"
         role="dialog"
         aria-modal="true"
         aria-label={`Hire ${worker.name}`}
       >
-        <div className="ed-modal-head">
+        <div className="flex items-start justify-between gap-3 px-[18px] pt-[18px] pb-3 border-b border-border">
           <div>
-            <h2 className="ed-modal-title">Hire {worker.name}</h2>
-            <p className="ed-modal-sub">{worker.trade || "Fundi"}</p>
+            <h2 className="font-serif text-lg font-normal text-ink">
+              Hire {worker.name}
+            </h2>
+            <p className="text-xs text-ink-3 mt-0.5">
+              {worker.trade || "Tesilix"}
+            </p>
           </div>
           <button
             type="button"
-            className="ed-modal-close"
+            className="shrink-0 w-7 h-7 rounded-lg border border-border bg-white text-ink-2 grid place-items-center cursor-pointer hover:bg-cream"
             onClick={onClose}
             aria-label="Close"
           >
@@ -125,67 +133,67 @@ export default function HireModal({ worker, defaultLocation, onClose }: Props) {
           </button>
         </div>
 
-        <div className="ed-modal-body">
-          <div className="ed-field">
-            <label className="ed-label" htmlFor="hire-jobtype">
+        <div className="px-[18px] pt-4 pb-5 flex flex-col gap-3">
+          <div className={FIELD}>
+            <label className={LABEL} htmlFor="hire-jobtype">
               Job type
             </label>
             <input
               id="hire-jobtype"
-              className="ed-input"
+              className={INPUT}
               value={jobType}
               onChange={(e) => setJobType(e.target.value)}
               placeholder="e.g. Kitchen sink repair"
             />
           </div>
 
-          <div className="ed-row2">
-            <div className="ed-field">
-              <label className="ed-label" htmlFor="hire-date">
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className={FIELD}>
+              <label className={LABEL} htmlFor="hire-date">
                 Date
               </label>
               <input
                 id="hire-date"
                 type="date"
-                className="ed-input"
+                className={INPUT}
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
               />
             </div>
-            <div className="ed-field">
-              <label className="ed-label" htmlFor="hire-time">
+            <div className={FIELD}>
+              <label className={LABEL} htmlFor="hire-time">
                 Time
               </label>
               <input
                 id="hire-time"
                 type="time"
-                className="ed-input"
+                className={INPUT}
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
               />
             </div>
           </div>
 
-          <div className="ed-field">
-            <label className="ed-label" htmlFor="hire-location">
+          <div className={FIELD}>
+            <label className={LABEL} htmlFor="hire-location">
               Location
             </label>
             <input
               id="hire-location"
-              className="ed-input"
+              className={INPUT}
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               placeholder="Where is the job?"
             />
           </div>
 
-          <div className="ed-field">
-            <label className="ed-label" htmlFor="hire-desc">
+          <div className={FIELD}>
+            <label className={LABEL} htmlFor="hire-desc">
               Description
             </label>
             <textarea
               id="hire-desc"
-              className="ed-textarea"
+              className={TEXTAREA}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe what you need done…"
@@ -193,13 +201,13 @@ export default function HireModal({ worker, defaultLocation, onClose }: Props) {
             />
           </div>
 
-          <div className="ed-field">
-            <label className="ed-label" htmlFor="hire-budget">
+          <div className={FIELD}>
+            <label className={LABEL} htmlFor="hire-budget">
               Budget (optional)
             </label>
             <input
               id="hire-budget"
-              className="ed-input"
+              className={INPUT}
               inputMode="numeric"
               value={budget}
               onChange={(e) => setBudget(e.target.value)}
@@ -207,18 +215,25 @@ export default function HireModal({ worker, defaultLocation, onClose }: Props) {
             />
           </div>
 
-          <div className="ed-modal-foot">
-            <button
+          <div className="mt-1">
+            <Button
               type="button"
-              className="ed-btn ed-btn-gold"
+              variant="gold"
+              className="w-full"
               onClick={submit}
               disabled={hire.isPending}
             >
               {hire.isPending ? "Sending…" : "Send request"}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
     </div>
   );
 }
+
+const FIELD = "flex flex-col gap-[5px]";
+const LABEL = "text-xs font-medium text-ink-2";
+const INPUT =
+  "font-sans text-[13px] text-ink bg-white border border-border rounded-lg px-[11px] py-[9px] w-full outline-none focus:border-gold";
+const TEXTAREA = `${INPUT} resize-y min-h-[76px]`;

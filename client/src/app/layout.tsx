@@ -1,49 +1,43 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
-import Providers from "@/components/Providers";
+import { DM_Sans, Fraunces } from "next/font/google";
 import LayoutShell from "@/components/LayoutShell";
-import { ToastProvider } from "@/context/ToastContext";
 import PostHogProvider from "@/components/PostHogProvider";
+import Providers from "@/components/Providers";
+import { ToastProvider } from "@/context/ToastContext";
 import "./globals.css";
 
-const playfair = localFont({
-  src: [
-    { path: "../../node_modules/@fontsource/playfair-display/files/playfair-display-latin-400-normal.woff2", weight: "400", style: "normal" },
-    { path: "../../node_modules/@fontsource/playfair-display/files/playfair-display-latin-500-normal.woff2", weight: "500", style: "normal" },
-    { path: "../../node_modules/@fontsource/playfair-display/files/playfair-display-latin-600-normal.woff2", weight: "600", style: "normal" },
-    { path: "../../node_modules/@fontsource/playfair-display/files/playfair-display-latin-700-normal.woff2", weight: "700", style: "normal" },
-    { path: "../../node_modules/@fontsource/playfair-display/files/playfair-display-latin-800-normal.woff2", weight: "800", style: "normal" },
-    { path: "../../node_modules/@fontsource/playfair-display/files/playfair-display-latin-900-normal.woff2", weight: "900", style: "normal" },
-  ],
-  variable: "--font-playfair",
-  display: "swap",
-});
-
-const dmSans = localFont({
-  src: [
-    { path: "../../node_modules/@fontsource/dm-sans/files/dm-sans-latin-300-normal.woff2", weight: "300", style: "normal" },
-    { path: "../../node_modules/@fontsource/dm-sans/files/dm-sans-latin-400-normal.woff2", weight: "400", style: "normal" },
-    { path: "../../node_modules/@fontsource/dm-sans/files/dm-sans-latin-500-normal.woff2", weight: "500", style: "normal" },
-    { path: "../../node_modules/@fontsource/dm-sans/files/dm-sans-latin-600-normal.woff2", weight: "600", style: "normal" },
-    { path: "../../node_modules/@fontsource/dm-sans/files/dm-sans-latin-700-normal.woff2", weight: "700", style: "normal" },
-    { path: "../../node_modules/@fontsource/dm-sans/files/dm-sans-latin-800-normal.woff2", weight: "800", style: "normal" },
-  ],
+const dmSans = DM_Sans({
+  subsets: ["latin"],
   variable: "--font-dm-sans",
   display: "swap",
 });
 
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  variable: "--font-fraunces",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: { default: "Fundi — Kenya's Professional Community", template: "%s | Fundi" },
-  description: "Where skilled professionals showcase their work and connect with customers across Kenya.",
+  title: {
+    default: "Tesilix — Hire Skilled Workers",
+    template: "%s | Tesilix",
+  },
+  description:
+    "The global marketplace where skilled workers showcase their work and connect with the people who need them.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <body
         suppressHydrationWarning
-        className={`${playfair.variable} ${dmSans.variable} antialiased font-dm-sans text-[color:var(--ink)]`}
-        style={{ background: "var(--orange-25)" }}
+        className={`${fraunces.variable} ${dmSans.variable} font-sans bg-cream text-ink antialiased`}
       >
         <PostHogProvider>
           <ToastProvider>
