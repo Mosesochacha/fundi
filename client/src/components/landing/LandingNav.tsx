@@ -85,13 +85,22 @@ export default function LandingNav() {
       >
         <div className="mx-auto flex h-full w-full max-w-[1280px] items-center justify-between px-4 md:px-8">
           <Link href="/" className="inline-flex items-center no-underline">
+            {/* Mobile: compact emblem. Desktop: full wordmark logo. */}
+            <Image
+              src="/brand/emblem.png"
+              alt="Tesilix"
+              width={192}
+              height={192}
+              priority
+              className="h-9 w-auto md:hidden"
+            />
             <Image
               src="/brand/lightlogo.png"
               alt="Tesilix"
               width={1027}
               height={219}
               priority
-              className="h-9 w-auto"
+              className="hidden h-9 w-auto md:block"
             />
           </Link>
 
