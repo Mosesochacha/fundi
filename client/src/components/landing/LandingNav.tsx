@@ -103,14 +103,11 @@ export default function LandingNav() {
                   key={l.href}
                   href={l.href}
                   className={cn(
-                    "text-[13px] no-underline transition-colors",
+                    "text-[15px] font-semibold tracking-[-0.01em] no-underline transition-colors",
                     isBrowse
-                      ? "text-ink-2 text-sm hover:text-ink"
+                      ? "text-ink-2 hover:text-ink"
                       : "text-ink-2 hover:text-ink",
-                    active &&
-                      (isBrowse
-                        ? "text-gold-dark font-semibold"
-                        : "text-gold-dark font-medium"),
+                    active && "text-gold-dark",
                   )}
                 >
                   {l.label}
