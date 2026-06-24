@@ -55,7 +55,7 @@ export function useGetEmployerDashboard() {
 }
 
 /**
- * Shared mutation factory — every employer action refreshes all employer
+ * Shared mutation factory - every employer action refreshes all employer
  * queries (dashboard aggregate + jobs lists) via the ["employer"] key prefix.
  */
 function useDashboardMutation<TInput>(

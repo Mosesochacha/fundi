@@ -11,7 +11,7 @@ export default function TermsPage() {
     <LegalLayout title="Terms of Service" updated="June 2026">
       <p>
         Welcome to Tesilix. These terms govern your access to and use of the
-        Tesilix platform — our website, apps and services that connect people
+        Tesilix platform - our website, apps and services that connect people
         who need work done with skilled workers (&ldquo;fundis&rdquo;). By
         creating an account or using Tesilix, you agree to these terms.
       </p>

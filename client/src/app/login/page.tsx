@@ -107,7 +107,7 @@ export default function LoginPage() {
         );
       }
     } catch {
-      // NextAuth credentials only surfaces a generic failure — count the attempt
+      // NextAuth credentials only surfaces a generic failure - count the attempt
       // client-side and offer the email-verification path heuristically.
       const attempts = Number(localStorage.getItem(ATTEMPTS_KEY) ?? 0) + 1;
       localStorage.setItem(ATTEMPTS_KEY, String(attempts));
@@ -170,7 +170,7 @@ export default function LoginPage() {
     try {
       await startVerification.mutateAsync({ identifier: unverifiedEmail });
     } catch {
-      // Generic by design — proceed regardless; the verify page redirects to
+      // Generic by design - proceed regardless; the verify page redirects to
       // register if no verification session was established.
     }
     router.push("/verify-email");

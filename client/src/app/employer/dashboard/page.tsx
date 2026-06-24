@@ -467,7 +467,7 @@ function ActiveJobItem({
         <div className="flex items-center justify-between gap-2">
           <span className="text-[13px] font-medium text-ink">
             {job.workerName}
-            {job.trade ? ` — ${job.trade}` : ""}
+            {job.trade ? ` - ${job.trade}` : ""}
           </span>
           <JobBadge job={job} />
         </div>
@@ -929,7 +929,7 @@ function FirstRunHero() {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   Loading skeleton — mirrors the real layout
+   Loading skeleton - mirrors the real layout
    ───────────────────────────────────────────────────────────────────────── */
 const SKEL = "bg-border rounded-md animate-pulse";
 

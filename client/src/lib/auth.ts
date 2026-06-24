@@ -131,7 +131,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // The user submits the 6-digit OTP; the email being verified lives in the
       // signed `lot_pv` cookie. We forward the browser's cookies to the backend
       // so it can read that email, verify the code, and hand back session tokens
-      // — auto-logging the user in the moment their email is confirmed.
+      // - auto-logging the user in the moment their email is confirmed.
       credentials: { code: {} },
       async authorize(credentials, request) {
         const code = credentials?.code;
@@ -215,7 +215,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
 
       // Refresh the cached backend user when explicitly asked (update()) or
-      // while the snapshot is still incomplete — so onboarding completion is
+      // while the snapshot is still incomplete - so onboarding completion is
       // reflected on the very next request (middleware runs this via auth()),
       // without a re-login. Once isProfileComplete flips true this stops firing.
       if (
@@ -225,7 +225,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         await refreshBackendUser(token);
       }
 
-      // Still valid — reuse.
+      // Still valid - reuse.
       if (
         token.accessTokenExpires &&
         Date.now() < token.accessTokenExpires - REFRESH_SKEW_MS
@@ -233,7 +233,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return token;
       }
 
-      // Expired — rotate.
+      // Expired - rotate.
       return refreshBackendToken(token);
     },
     async session({ session, token }) {

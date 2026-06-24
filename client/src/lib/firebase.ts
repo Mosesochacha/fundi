@@ -1,4 +1,4 @@
-// Firebase client SDK — used ONLY for the "Continue with Google" popup.
+// Firebase client SDK - used ONLY for the "Continue with Google" popup.
 // Email/phone + password auth stays on our own backend + NextAuth flow.
 // The config values below are public (they ship to the browser).
 import { getApp, getApps, initializeApp } from "firebase/app";
@@ -61,7 +61,7 @@ export async function signInWithGoogleFirebase(): Promise<string | null> {
       code === "auth/popup-closed-by-user" ||
       code === "auth/cancelled-popup-request"
     ) {
-      return null; // user dismissed — not an error
+      return null; // user dismissed - not an error
     }
     const msg = googleErrorMessage(code);
     throw new Error(

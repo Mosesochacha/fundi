@@ -2,7 +2,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 /**
- * Tesilix brand logo — a plumb-bob fused with a location pin ("skilled trades,
+ * Tesilix brand logo - a plumb-bob fused with a location pin ("skilled trades,
  * near you") + the Fraunces wordmark. Use <LogoMark> alone for favicons/avatars
  * and tight spaces; use <Logo> for the full lockup in nav/auth/footer.
  */

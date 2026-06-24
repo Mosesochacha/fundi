@@ -100,7 +100,7 @@ export default function ChatPanel({
       ? participant.role[0].toUpperCase() + participant.role.slice(1)
       : null,
     online ? "Online" : "Offline",
-    // location isn't on the conversation payload yet — omitted gracefully.
+    // location isn't on the conversation payload yet - omitted gracefully.
   ].filter(Boolean);
 
   const showBanner = linkedJob && BANNER_VISIBLE.includes(linkedJob.status);

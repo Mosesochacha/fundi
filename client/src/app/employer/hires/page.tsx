@@ -59,7 +59,7 @@ export default function EmployerHiresPage() {
             Past hires.
           </h1>
           <p className="text-[13px] text-ink-3 mt-1">
-            Workers you’ve completed jobs with — hire them again in a tap.
+            Workers you’ve completed jobs with - hire them again in a tap.
           </p>
         </div>
 
@@ -135,7 +135,7 @@ function HireRow({
         <div className={EL_ROW_TOP}>
           <span className={EL_ROW_NAME}>
             {job.workerName}
-            {job.trade ? ` — ${job.trade}` : ""}
+            {job.trade ? ` - ${job.trade}` : ""}
           </span>
           {job.rating != null ? (
             <Stars value={job.rating} />

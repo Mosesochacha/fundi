@@ -223,7 +223,7 @@ export default function RegisterPage() {
       </div>
 
       <div className="bg-white border border-border rounded-xl p-8 w-full max-w-[420px]">
-        {/* STEP 1 — account */}
+        {/* STEP 1 - account */}
         {step === 1 && (
           <div>
             <div className="font-serif text-[24px] font-normal text-ink mb-1">
@@ -335,7 +335,7 @@ export default function RegisterPage() {
               ) : (
                 <div className={HINT_CLASS}>
                   Include your country code (e.g. +254, +44, +1). For
-                  verification only — never shown publicly.
+                  verification only - never shown publicly.
                 </div>
               )}
             </div>
@@ -430,7 +430,7 @@ export default function RegisterPage() {
           </div>
         )}
 
-        {/* STEP 2 — role */}
+        {/* STEP 2 - role */}
         {step === 2 && (
           <div>
             <div className="font-serif text-[24px] font-normal text-ink mb-1">
@@ -482,7 +482,7 @@ export default function RegisterPage() {
           </div>
         )}
 
-        {/* STEP 3 — employer */}
+        {/* STEP 3 - employer */}
         {step === 3 && accountType === "employer" && (
           <div>
             <div className="font-serif text-[24px] font-normal text-ink mb-1">
@@ -548,7 +548,7 @@ export default function RegisterPage() {
           </div>
         )}
 
-        {/* STEP 3 — worker */}
+        {/* STEP 3 - worker */}
         {step === 3 && accountType === "worker" && (
           <div>
             <div className="font-serif text-[24px] font-normal text-ink mb-1">
@@ -628,7 +628,7 @@ export default function RegisterPage() {
           </div>
         )}
 
-        {/* STEP 4 — success */}
+        {/* STEP 4 - success */}
         {step === 4 && (
           <div className="text-center py-4">
             <div className="w-16 h-16 rounded-full bg-gold-light border-2 border-gold/30 flex items-center justify-center mx-auto mb-5">

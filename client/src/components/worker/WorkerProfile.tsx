@@ -356,21 +356,21 @@ export default function WorkerProfile({
           <div className="flex flex-wrap items-center gap-5 border-t-[0.5px] border-border mt-4 pt-4">
             <div className="text-left">
               <div className="font-serif text-2xl font-medium text-ink leading-none">
-                {data.jobsDone || "—"}
+                {data.jobsDone || "-"}
               </div>
               <div className="text-[11px] text-ink-3 mt-1">Jobs done</div>
             </div>
             <span className="w-1 h-1 rounded-full bg-gold" />
             <div className="text-left">
               <div className="font-serif text-2xl font-medium text-ink leading-none">
-                {data.reviewCount > 0 ? data.rating : "—"}
+                {data.reviewCount > 0 ? data.rating : "-"}
               </div>
               <div className="text-[11px] text-ink-3 mt-1">Rating</div>
             </div>
             <span className="w-1 h-1 rounded-full bg-gold" />
             <div className="text-left">
               <div className="font-serif text-2xl font-medium text-ink leading-none">
-                {data.yearsExperience || "—"}
+                {data.yearsExperience || "-"}
               </div>
               <div className="text-[11px] text-ink-3 mt-1">Years exp.</div>
             </div>

@@ -60,13 +60,13 @@ client.interceptors.response.use(
 
     if (error.response?.status === 401 && original && !original._retry) {
       original._retry = true;
-      // Force a fresh session — the jwt callback rotates the backend token.
+      // Force a fresh session - the jwt callback rotates the backend token.
       const token = await getAccessToken(true);
       if (token) {
         original.headers.set("Authorization", `Bearer ${token}`);
         return client(original);
       }
-      // No valid session left — bounce to login.
+      // No valid session left - bounce to login.
       await signOut({ redirect: false });
       if (typeof window !== "undefined") window.location.href = "/login";
     }

@@ -68,7 +68,7 @@ export default function EmployerReviewsPage() {
           <EmptyCard
             icon={<Star size={40} />}
             title="No reviews yet"
-            sub="After a job is completed you can rate the fundi — your reviews show up here."
+            sub="After a job is completed you can rate the fundi - your reviews show up here."
             cta={
               <Link
                 href="/employer/hires"
@@ -87,7 +87,7 @@ export default function EmployerReviewsPage() {
                   <div className={EL_ROW_TOP}>
                     <span className={EL_ROW_NAME}>
                       {r.workerName}
-                      {r.trade ? ` — ${r.trade}` : ""}
+                      {r.trade ? ` - ${r.trade}` : ""}
                     </span>
                     <Stars value={r.rating ?? 0} />
                   </div>

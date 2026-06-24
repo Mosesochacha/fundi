@@ -25,7 +25,7 @@ export const requestsService = {
   complete: (id: string) => client.patch(`/worker/requests/${id}/complete`),
 };
 
-/** Root key for every requests query — invalidating it refreshes lists + stats. */
+/** Root key for every requests query - invalidating it refreshes lists + stats. */
 const REQ_KEY = ["worker", "requests"] as const;
 
 /* ── Queries ──────────────────────────────────────────────────────────────── */

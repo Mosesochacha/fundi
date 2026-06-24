@@ -25,7 +25,7 @@ function errMessage(e: unknown, fallback: string): string {
   return fallback;
 }
 
-/** Review modal — the employer rates a completed job (1–5 + optional text). */
+/** Review modal - the employer rates a completed job (1–5 + optional text). */
 export default function ReviewModal({ target, onClose }: Props) {
   const { success, error: toastError } = useToastContext();
   const review = useSubmitReview();

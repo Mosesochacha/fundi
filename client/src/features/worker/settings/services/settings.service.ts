@@ -1,7 +1,7 @@
 import client from "@/lib/axios";
 
 /* ─────────────────────────────────────────────────────────────────────────
-   Worker settings — shared types.
+   Worker settings - shared types.
    The GET returns the whole settings document; each PATCH updates one slice.
    Endpoints live under the axios baseURL (`…/api/v1`), so paths are written
    without the `/api` prefix, matching every other feature service.

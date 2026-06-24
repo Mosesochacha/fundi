@@ -166,7 +166,7 @@ export default function WorkerDashboardPage() {
               <StatCard
                 value={
                   (data?.stats.reviewCount ?? 0) === 0
-                    ? "—"
+                    ? "-"
                     : (data?.stats.rating ?? 0).toFixed(1)
                 }
                 label="Your rating"
@@ -694,7 +694,7 @@ function EmptyState({
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   Loading skeleton — mirrors the real layout
+   Loading skeleton - mirrors the real layout
    ───────────────────────────────────────────────────────────────────────── */
 const SKEL = "bg-cream-2 rounded-md animate-pulse";
 

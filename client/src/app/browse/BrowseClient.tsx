@@ -169,7 +169,7 @@ export default function BrowseClient({ initialData, fontClass }: Props) {
             <em className="font-serif italic text-gold-dark">fundi.</em>
           </h1>
           <p className="mt-3 max-w-[560px] text-[15px] leading-[1.55] text-ink-2 md:mt-[18px] md:text-[17px]">
-            Browse vetted tradespeople across Kenya — every profile ID-verified,
+            Browse vetted tradespeople across Kenya - every profile ID-verified,
             skill-assessed, and reviewed by real customers.
           </p>
 

@@ -15,7 +15,7 @@ export interface LinkedJob {
 
 export interface ConversationParticipant {
   id: string;
-  /** The participant's User id (not profile id) — used to match real-time presence events. */
+  /** The participant's User id (not profile id) - used to match real-time presence events. */
   userId: string | null;
   name: string;
   initials: string;

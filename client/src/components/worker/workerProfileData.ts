@@ -114,12 +114,12 @@ export const MOCK_PROFILE: WorkerProfileData = {
     {
       id: "pb1",
       url: "",
-      caption: "Panel cleanup — before",
+      caption: "Panel cleanup - before",
       jobType: "Repair",
       isBefore: true,
       afterPhotoId: "pa1",
     },
-    { id: "pa1", url: "", caption: "Panel cleanup — after", jobType: "Repair" },
+    { id: "pa1", url: "", caption: "Panel cleanup - after", jobType: "Repair" },
   ],
   experience: [
     {

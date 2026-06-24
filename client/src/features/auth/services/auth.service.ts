@@ -20,7 +20,7 @@ export const authService = {
   logout: () => client.post("/auth/logout"),
 
   // Email for verification lives in a signed httpOnly cookie set at register /
-  // start-verification time — it is never sent in the body or the URL.
+  // start-verification time - it is never sent in the body or the URL.
   pendingVerification: () => client.get("/auth/pending-verification"),
   startVerification: (data: { identifier: string }) =>
     client.post("/auth/start-verification", data),

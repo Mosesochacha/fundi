@@ -12,7 +12,7 @@ const AUTH_PATHS = [
   "/verify-email",
   "/reset-password",
 ];
-// Pages that ship their own marketing chrome (LandingNav) — render bare.
+// Pages that ship their own marketing chrome (LandingNav) - render bare.
 // /logout and /onboarding are bare too (they self-redirect / are standalone).
 const BARE_PATHS = ["/", "/browse", "/logout", "/onboarding"];
 
@@ -28,7 +28,7 @@ function OnboardingGuard() {
   // biome-ignore lint/correctness/useExhaustiveDependencies: `pathname` re-triggers the onboarding guard on every route change
   useEffect(() => {
     if (!isLoggedIn || isAuth) return;
-    if (!user) return; // /auth/me still loading — don't redirect prematurely
+    if (!user) return; // /auth/me still loading - don't redirect prematurely
     // OAuth users land here with no role yet → finish onboarding first.
     if (!user.isProfileComplete) router.replace("/onboarding");
   }, [isLoggedIn, user, isAuth, pathname, router]);
@@ -49,7 +49,7 @@ export default function LayoutShell({
   if (BARE_PATHS.includes(pathname)) return <>{children}</>;
 
   // Everything else (role dashboards, any stray route) just needs session
-  // plumbing — the dashboard <Shell> renders its own sidebar/topbar.
+  // plumbing - the dashboard <Shell> renders its own sidebar/topbar.
   return (
     <>
       <OnboardingGuard />

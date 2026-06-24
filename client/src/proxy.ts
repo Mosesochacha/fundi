@@ -13,8 +13,8 @@ const AUTH_ONLY = [
 ];
 
 /**
- * Role areas blanket-gated by exact role. `/worker` can't go here —
- * `/worker/[id]` is a public profile — so worker routes use WORKER_PROTECTED below.
+ * Role areas blanket-gated by exact role. `/worker` can't go here -
+ * `/worker/[id]` is a public profile - so worker routes use WORKER_PROTECTED below.
  */
 const ROLE_GATED: Record<string, AppRole> = {
   "/employer": "employer",
@@ -51,7 +51,7 @@ export default auth((req) => {
   const path = nextUrl.pathname;
   const session = req.auth;
   const role = session?.user?.role;
-  // OAuth users sign in before choosing worker/employer — they must finish
+  // OAuth users sign in before choosing worker/employer - they must finish
   // /onboarding before reaching any role area.
   const complete = !!session?.backendUser?.isProfileComplete;
 
@@ -74,7 +74,7 @@ export default auth((req) => {
     return NextResponse.redirect(url);
   };
 
-  // The onboarding completion flow — logged in, but no role check.
+  // The onboarding completion flow - logged in, but no role check.
   if (matches(path, "/onboarding")) {
     if (!session) return toLogin();
     if (complete) return toDashboard();

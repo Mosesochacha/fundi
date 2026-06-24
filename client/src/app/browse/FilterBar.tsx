@@ -87,7 +87,7 @@ export default function FilterBar({ onAskAi }: Props) {
       ref={barRef}
     >
       <div className="flex flex-wrap items-start justify-between gap-3.5 md:items-center">
-        {/* LEFT — filter dropdowns */}
+        {/* LEFT - filter dropdowns */}
         <div className="flex flex-wrap items-center gap-2.5">
           {/* TRADE */}
           <div className="relative">
@@ -260,7 +260,7 @@ export default function FilterBar({ onAskAi }: Props) {
           </button>
         </div>
 
-        {/* RIGHT — Ask AI + sort */}
+        {/* RIGHT - Ask AI + sort */}
         <div className="flex w-full flex-wrap items-center justify-between gap-2.5 md:w-auto md:justify-start">
           <button
             type="button"

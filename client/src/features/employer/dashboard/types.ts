@@ -10,14 +10,14 @@ export interface ActiveJob {
   jobType: string;
   location: string;
   state: ActiveJobState;
-  /** ISO date — scheduled date, or created date for pending. */
+  /** ISO date - scheduled date, or created date for pending. */
   date: string;
   /** "9:00 AM" style label when scheduled, else null. */
   time: string | null;
   /** Multi-day progress (in_progress only). */
   dayX: number | null;
   dayY: number | null;
-  /** True once the scheduled end has passed — gates "Leave review". */
+  /** True once the scheduled end has passed - gates "Leave review". */
   endPassed: boolean;
   agreedRate: number | null;
 }

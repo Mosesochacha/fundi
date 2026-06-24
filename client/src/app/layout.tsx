@@ -21,7 +21,7 @@ const fraunces = Fraunces({
 
 export const metadata: Metadata = {
   title: {
-    default: "Tesilix — Hire Skilled Workers",
+    default: "Tesilix - Hire Skilled Workers",
     template: "%s | Tesilix",
   },
   description:

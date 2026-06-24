@@ -182,7 +182,7 @@ export default function DangerPanel() {
         </Modal>
       )}
 
-      {/* Delete modal — two-step */}
+      {/* Delete modal - two-step */}
       {dialog === "delete" && (
         <Modal
           title="Delete your account?"

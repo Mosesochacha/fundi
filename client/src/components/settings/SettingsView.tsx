@@ -12,7 +12,7 @@ import {
 } from "@/features/worker/settings";
 
 /**
- * Shared account settings, used by both worker and employer. One component —
+ * Shared account settings, used by both worker and employer. One component -
  * the only role difference is that the Availability controls are worker-only
  * (employers see just the privacy controls). Account, notifications and the
  * danger zone are identical for everyone.
@@ -73,7 +73,7 @@ export default function SettingsView({
   );
 }
 
-/* ── Loading skeleton — mirrors a panel's shape ───────────────────────────── */
+/* ── Loading skeleton - mirrors a panel's shape ───────────────────────────── */
 const SKEL = "bg-border rounded-md animate-pulse";
 
 function PanelSkeleton() {

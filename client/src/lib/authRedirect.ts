@@ -20,7 +20,7 @@ export function roleForUser(
 /**
  * Each role's dedicated dashboard landing route.
  *
- * Kept dependency-free on purpose — this module is imported by the edge
+ * Kept dependency-free on purpose - this module is imported by the edge
  * middleware, so it must not pull in `navConfig` (lucide icons, etc.).
  */
 export function dashboardPathForRole(role: AppRole | undefined): string {
@@ -37,7 +37,7 @@ export function dashboardPathForRole(role: AppRole | undefined): string {
 }
 
 /**
- * Where a user should land after authenticating — their role-based dashboard.
+ * Where a user should land after authenticating - their role-based dashboard.
  *
  * Callers should always check `user.isProfileComplete` first and send
  * incomplete users to /onboarding; this helper assumes the account is ready.

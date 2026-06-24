@@ -23,7 +23,7 @@ import {
 } from "../_components/ui";
 
 /* ─────────────────────────────────────────────────────────────────────────
-   Combined "Availability & privacy" panel — when/where you work plus what
+   Combined "Availability & privacy" panel - when/where you work plus what
    employers can see. Two short, related sections that used to be separate
    tabs, now one well-filled page. Each section still saves to its own
    endpoint; the shared save bar persists whichever changed.
@@ -55,7 +55,7 @@ const PRIVACY_ROWS: {
   key: keyof PrivacySettings;
   title: string;
   sub: string;
-  /** Worker-only concept — hidden for employers. */
+  /** Worker-only concept - hidden for employers. */
   workerOnly?: boolean;
 }[] = [
   {

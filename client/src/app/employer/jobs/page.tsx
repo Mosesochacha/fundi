@@ -193,7 +193,7 @@ function JobRow({ job, onReview }: { job: EmployerJob; onReview: () => void }) {
         <div className={EL_ROW_TOP}>
           <span className={EL_ROW_NAME}>
             {job.workerName}
-            {job.trade ? ` — ${job.trade}` : ""}
+            {job.trade ? ` - ${job.trade}` : ""}
           </span>
           <StatusBadge status={job.status} />
         </div>

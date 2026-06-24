@@ -16,7 +16,7 @@ export default function AuthLayout({
         </p>
       </div>
 
-      {/* Page content — each page renders its own white card */}
+      {/* Page content - each page renders its own white card */}
       <div className="w-full max-w-[420px]">{children}</div>
 
       {/* Footer */}

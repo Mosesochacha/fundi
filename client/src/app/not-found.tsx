@@ -3,7 +3,7 @@ import HomeButton from "@/components/landing/HomeButton";
 import LandingNav from "@/components/landing/LandingNav";
 
 export const metadata: Metadata = {
-  title: "404 — Page not found | Tesilix",
+  title: "404 - Page not found | Tesilix",
   description: "The page you are looking for does not exist.",
 };
 

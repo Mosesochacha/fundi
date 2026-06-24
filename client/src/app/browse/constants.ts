@@ -71,7 +71,7 @@ export const BUDGET_PRESETS: {
  * the trade (case-insensitive) wins. `banner`/`avatar` are the soft cover/avatar
  * fills; `accent` is the saturated foreground used for the trade label + dot.
  * The fallback is a distinctly visible warm sand so EVERY card shows a real
- * banner — never something that blends into the page.
+ * banner - never something that blends into the page.
  */
 const TRADE_TINTS: {
   keys: string[];
@@ -159,7 +159,7 @@ export function avatarTint(trade: string): string {
   return tintFor(trade)?.avatar ?? DEFAULT_AVATAR;
 }
 
-/** Saturated foreground per trade — used for the trade label, dot and initials. */
+/** Saturated foreground per trade - used for the trade label, dot and initials. */
 export function tradeAccent(trade: string): string {
   return tintFor(trade)?.accent ?? DEFAULT_ACCENT;
 }

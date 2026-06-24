@@ -18,16 +18,16 @@ export default function PrivacyPage() {
       <h2>1. Information we collect</h2>
       <ul>
         <li>
-          <strong>Account details</strong> — your name, email, phone number and
+          <strong>Account details</strong> - your name, email, phone number and
           password.
         </li>
         <li>
-          <strong>Profile information</strong> — for workers: trade, location,
+          <strong>Profile information</strong> - for workers: trade, location,
           rate, bio, photos, experience and certifications; for employers: the
           trades you hire for and your location.
         </li>
         <li>
-          <strong>Usage data</strong> — basic technical information such as
+          <strong>Usage data</strong> - basic technical information such as
           device, browser and pages viewed, used to keep the service secure and
           working.
         </li>

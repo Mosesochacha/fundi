@@ -46,7 +46,7 @@ export default function WorkerReviewsPage() {
   return (
     // biome-ignore lint/a11y/useValidAriaRole: `role` is a Shell prop, not an ARIA attribute
     <Shell role="worker" user={shellUser} currentPath={pathname}>
-      {/* Local shimmer keyframes — referenced by the SKEL utility above. */}
+      {/* Local shimmer keyframes - referenced by the SKEL utility above. */}
       <style>{`@keyframes rv-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
       <div className="flex flex-col gap-4 text-ink-2">
         <div className="flex flex-col gap-0.5">

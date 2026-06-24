@@ -5,7 +5,7 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
-// Step 1 — account creation. Validated before advancing to role selection.
+// Step 1 - account creation. Validated before advancing to role selection.
 export const accountStepSchema = z
   .object({
     firstName: z

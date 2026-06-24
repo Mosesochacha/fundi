@@ -28,7 +28,7 @@ function onlineOf(c: Conversation | null, presence: Record<string, boolean>) {
 /**
  * Build a placeholder participant for a brand-new conversation opened via
  * `?to={profileId}` before any message exists. `userId` is null (no presence
- * yet); the real participant — with colour, presence and any linked job —
+ * yet); the real participant - with colour, presence and any linked job -
  * replaces this once the first message creates the conversation server-side.
  */
 function draftParticipantOf(

@@ -14,7 +14,7 @@ import {
 import { redirectPathForRole } from "@/lib/authRedirect";
 import { cn } from "@/lib/utils";
 
-const CODE_TTL = 300; // seconds — code expires after 5:00
+const CODE_TTL = 300; // seconds - code expires after 5:00
 const RESEND_COOLDOWN = 30; // seconds before "Resend code" re-enables
 const BOX_IDS = ["d0", "d1", "d2", "d3", "d4", "d5"];
 
@@ -37,7 +37,7 @@ export default function VerifyEmailPage() {
   const router = useRouter();
   const { success, error: toastError } = useToastContext();
 
-  // The email being verified lives in a server session cookie — this fetch
+  // The email being verified lives in a server session cookie - this fetch
   // returns only a masked version and the account type. A failure means the
   // session expired, so we bounce back to register.
   const {

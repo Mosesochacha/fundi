@@ -10,7 +10,7 @@ interface Props {
 }
 
 /**
- * "Ask Tesilix AI" modal — the customer describes a job and Groq recommends the
+ * "Ask Tesilix AI" modal - the customer describes a job and Groq recommends the
  * right trade. Backed by the public /ai/find-fundi endpoint (works logged out).
  */
 export default function AskAiModal({ open, onClose }: Props) {

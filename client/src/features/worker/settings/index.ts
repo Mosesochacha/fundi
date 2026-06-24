@@ -76,7 +76,7 @@ export function useVerifyPhone() {
 }
 
 export function useUpdatePassword() {
-  // No cache to invalidate — password isn't part of the settings document.
+  // No cache to invalidate - password isn't part of the settings document.
   return useMutation({
     mutationFn: (data: UpdatePasswordInput) =>
       workerSettingsService.updatePassword(data),

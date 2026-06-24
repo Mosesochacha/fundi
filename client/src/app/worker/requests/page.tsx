@@ -49,7 +49,7 @@ const scheduledLabel = (iso: string) =>
     hour12: true,
   });
 
-/** Just the time, e.g. "9:00 AM" — used in the "Today · …" badge. */
+/** Just the time, e.g. "9:00 AM" - used in the "Today · …" badge. */
 const timeLabel = (iso: string) =>
   new Date(iso).toLocaleTimeString("en-GB", {
     hour: "numeric",
@@ -73,7 +73,7 @@ function timeAgo(iso: string): string {
   });
 }
 
-/** Locale-grouped number for the rate pill — no hardcoded currency symbol. */
+/** Locale-grouped number for the rate pill - no hardcoded currency symbol. */
 const formatRate = (n: number) => new Intl.NumberFormat().format(n);
 
 const SORTS: { value: SortOption; label: string }[] = [
@@ -356,7 +356,7 @@ function RequestCard({ req }: { req: JobRequest }) {
 
   const onAccept = () =>
     accept.mutate(req.id, {
-      onSuccess: () => success("Job accepted — it's now an active job."),
+      onSuccess: () => success("Job accepted - it's now an active job."),
       onError: () => toastError("Couldn't accept the job. Please try again."),
     });
 
@@ -812,7 +812,7 @@ function EmptyState({
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   Loading skeleton — three cards mirroring the real layout
+   Loading skeleton - three cards mirroring the real layout
    ───────────────────────────────────────────────────────────────────────── */
 const SKEL = "bg-cream-2 rounded-md animate-pulse";
 

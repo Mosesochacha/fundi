@@ -39,7 +39,7 @@ type SearchFilters = Pick<
   | "viewMode"
 >;
 
-/** Single source of truth for filter defaults — also used by the browse UI
+/** Single source of truth for filter defaults - also used by the browse UI
  * to detect "active" filters and to reset individual filter tags. */
 export const SEARCH_DEFAULTS: SearchFilters = {
   selectedTrades: [],
