@@ -3,7 +3,12 @@
 import { MapPin } from "lucide-react";
 import type { CSSProperties } from "react";
 import type { BrowseWorker } from "@/features/browse";
-import { avatarTint, bannerGradient, tradeAccent } from "./constants";
+import {
+  avatarTint,
+  bannerGradient,
+  formatRate,
+  tradeAccent,
+} from "./constants";
 
 interface Props {
   worker: BrowseWorker;
@@ -105,6 +110,10 @@ export function WorkerCardGrid({ worker, onView }: Props) {
         <div className="mb-[13px] mt-auto h-px bg-border" />
 
         <div className="flex items-center gap-2 whitespace-nowrap text-sm text-ink-3">
+          <span className="font-bold text-gold-dark">
+            {formatRate(worker.currency, worker.dailyRate)}
+          </span>
+          <span className="text-ink-4">·</span>
           {worker.reviewCount > 0 && (
             <>
               <span>
