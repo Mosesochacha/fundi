@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 const LINK_CLASS =
-  "block text-[13px] text-white/40 mb-2.5 transition-colors hover:text-white";
+  "block text-[15px] font-semibold tracking-[-0.01em] text-white/40 mb-2.5 transition-colors hover:text-white";
 const BTN_CLASS = `${LINK_CLASS} no-underline bg-transparent border-none p-0 text-left cursor-pointer`;
 
 /** A footer entry navigates (href) or is a not-yet-built placeholder (no href). */
@@ -68,8 +68,8 @@ export default function LandingFooter() {
                 className="h-12 w-auto"
               />
             </div>
-            <p className="text-[13px] text-white/40 leading-[1.7] md:max-w-[240px]">
-              The home for blue-collar workers in Kenya - built for the people
+            <p className="text-sm text-white/40 leading-[1.7] md:max-w-[240px]">
+              The home for blue-collar workers everywhere - built for the people
               who build the world.
             </p>
           </div>
@@ -84,24 +84,24 @@ export default function LandingFooter() {
             </div>
           ))}
         </div>
-        <div className="flex flex-col min-[480px]:flex-row min-[480px]:justify-between min-[480px]:items-center items-start pt-8 text-xs text-white/25 gap-3 flex-wrap">
+        <div className="flex flex-col min-[480px]:flex-row min-[480px]:justify-between min-[480px]:items-center items-start pt-8 text-sm text-white/25 gap-3 flex-wrap">
           <div>© 2026 Tesilix Technologies Ltd. All rights reserved.</div>
           <div className="flex gap-5">
             <Link
               href="/privacy"
-              className="text-[13px] text-white/40 no-underline transition-colors hover:text-white"
+              className="text-[15px] font-semibold tracking-[-0.01em] text-white/40 no-underline transition-colors hover:text-white"
             >
               Privacy
             </Link>
             <Link
               href="/terms"
-              className="text-[13px] text-white/40 no-underline transition-colors hover:text-white"
+              className="text-[15px] font-semibold tracking-[-0.01em] text-white/40 no-underline transition-colors hover:text-white"
             >
               Terms
             </Link>
             <button
               type="button"
-              className="text-[13px] text-white/40 transition-colors hover:text-white bg-transparent border-none p-0 cursor-pointer"
+              className="text-[15px] font-semibold tracking-[-0.01em] text-white/40 transition-colors hover:text-white bg-transparent border-none p-0 cursor-pointer"
             >
               Safety
             </button>

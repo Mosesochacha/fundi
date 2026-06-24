@@ -90,21 +90,21 @@ export function WorkerCardGrid({ worker, onView }: Props) {
         </div>
 
         {worker.location && (
-          <p className="mt-[7px] flex items-center gap-[5px] text-[12.5px] text-ink-3">
+          <p className="mt-[7px] flex items-center gap-[5px] text-sm text-ink-3">
             <MapPin size={13} aria-hidden className="text-ink-4" />
             {worker.location}
           </p>
         )}
 
         {worker.bio && (
-          <p className="mt-[11px] line-clamp-2 text-[13px] leading-[1.45] text-ink-2">
+          <p className="mt-[11px] line-clamp-2 text-sm leading-[1.45] text-ink-2">
             {worker.bio}
           </p>
         )}
 
         <div className="mb-[13px] mt-auto h-px bg-border" />
 
-        <div className="flex items-center gap-2 whitespace-nowrap text-[12.5px] text-ink-3">
+        <div className="flex items-center gap-2 whitespace-nowrap text-sm text-ink-3">
           {worker.reviewCount > 0 && (
             <>
               <span>
@@ -127,7 +127,7 @@ export function WorkerCardGrid({ worker, onView }: Props) {
 
         <button
           type="button"
-          className="mt-3.5 inline-flex w-fit items-center gap-[7px] self-start whitespace-nowrap rounded-full border border-border bg-white px-[18px] py-[9px] text-[13.5px] font-semibold text-ink-2 transition-all duration-[180ms] hover:border-navy hover:bg-navy hover:text-white"
+          className="mt-3.5 inline-flex w-fit items-center gap-[7px] self-start whitespace-nowrap rounded-full border border-border bg-white px-[18px] py-[9px] text-sm font-semibold text-ink-2 transition-all duration-[180ms] hover:border-navy hover:bg-navy hover:text-white"
           onClick={() => onView(worker)}
         >
           View profile <span aria-hidden>→</span>

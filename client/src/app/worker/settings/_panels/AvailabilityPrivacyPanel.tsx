@@ -169,7 +169,7 @@ export default function AvailabilityPrivacyPanel({
               onChange={(next) => setA("available", next)}
             />
             {!avail.available && (
-              <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg py-2.5 px-3 text-xs leading-[1.45] mt-3.5 [&>svg]:shrink-0 [&>svg]:mt-px">
+              <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg py-2.5 px-3 text-sm leading-[1.45] mt-3.5 [&>svg]:shrink-0 [&>svg]:mt-px">
                 <AlertTriangle size={15} />
                 <span>Your profile is paused. Employers cannot see you.</span>
               </div>

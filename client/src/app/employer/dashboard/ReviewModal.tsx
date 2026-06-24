@@ -89,7 +89,7 @@ export default function ReviewModal({ target, onClose }: Props) {
             <h2 className="font-serif text-lg font-normal text-ink">
               Review {target.workerName}
             </h2>
-            <p className="text-xs text-ink-3 mt-0.5">{target.jobType}</p>
+            <p className="text-sm text-ink-3 mt-0.5">{target.jobType}</p>
           </div>
           <button
             type="button"
@@ -103,7 +103,7 @@ export default function ReviewModal({ target, onClose }: Props) {
 
         <div className="px-[18px] pt-4 pb-5 flex flex-col gap-3">
           <div className="flex flex-col gap-[5px]">
-            <span className="text-xs font-medium text-ink-2">Rating</span>
+            <span className="text-sm font-medium text-ink-2">Rating</span>
             <div className="flex gap-1.5">
               {Array.from({ length: 5 }, (_, i) => i + 1).map((n) => (
                 <button
@@ -125,14 +125,14 @@ export default function ReviewModal({ target, onClose }: Props) {
 
           <div className="flex flex-col gap-[5px]">
             <label
-              className="text-xs font-medium text-ink-2"
+              className="text-sm font-medium text-ink-2"
               htmlFor="review-text"
             >
               Your review
             </label>
             <textarea
               id="review-text"
-              className="font-sans text-[13px] text-ink bg-white border border-border rounded-lg px-[11px] py-[9px] w-full outline-none focus:border-gold resize-y min-h-[76px]"
+              className="font-sans text-sm text-ink bg-white border border-border rounded-lg px-[11px] py-[9px] w-full outline-none focus:border-gold resize-y min-h-[76px]"
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="How was the work? (optional)"

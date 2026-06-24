@@ -335,7 +335,7 @@ export default function MessagesView({
             <h3 className="text-sm font-medium text-ink-2 mt-1 mb-0">
               No messages yet
             </h3>
-            <p className="text-xs text-ink-3 max-w-[280px] leading-normal m-0">
+            <p className="text-sm text-ink-3 max-w-[280px] leading-normal m-0">
               {role === "worker"
                 ? "When employers contact you about a job, the conversation will appear here."
                 : "Start a conversation by viewing a worker's profile and clicking Message."}

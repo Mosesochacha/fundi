@@ -23,11 +23,11 @@ export default function LegalLayout({
         <h1 className="font-serif text-4xl font-normal text-ink leading-[1.15]">
           {title}
         </h1>
-        <p className="mt-2 text-[13px] text-ink-3">Last updated {updated}</p>
+        <p className="mt-2 text-sm text-ink-3">Last updated {updated}</p>
 
         <div className="legal-body mt-7">{children}</div>
 
-        <p className="mt-10 text-[13px] text-ink-3">
+        <p className="mt-10 text-sm text-ink-3">
           Questions? Email{" "}
           <a
             href="mailto:support@tesilix.mosesochacha.online"
@@ -39,7 +39,7 @@ export default function LegalLayout({
         </p>
       </main>
 
-      <footer className="border-t-[0.5px] border-border px-6 py-5 flex gap-4 justify-center text-[13px] text-ink-3">
+      <footer className="border-t-[0.5px] border-border px-6 py-5 flex gap-4 justify-center text-sm text-ink-3">
         <span>© 2026 Tesilix</span>
         <Link href="/privacy" className="text-ink-3">
           Privacy

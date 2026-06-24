@@ -61,7 +61,7 @@ export default function LandingNav() {
   const fullName = user ? `${user.firstName} ${user.lastName}`.trim() : "";
 
   const btnBase =
-    "inline-flex items-center gap-1.5 px-5 py-2.5 text-[13px] font-medium tracking-[0.01em] no-underline cursor-pointer border transition-all";
+    "inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium tracking-[0.01em] no-underline cursor-pointer border transition-all";
   const btnOutline = isBrowse
     ? "rounded-full border-border text-ink-2 font-semibold hover:border-gold-dark hover:text-ink"
     : "rounded border-border bg-transparent text-ink hover:border-ink-2";
@@ -140,7 +140,7 @@ export default function LandingNav() {
                     {initials}
                   </span>
                   <span className="hidden md:flex flex-col leading-[1.15]">
-                    <span className="text-[12.5px] font-medium text-ink">
+                    <span className="text-sm font-medium text-ink">
                       {fullName}
                     </span>
                     <span className="text-[10px] text-ink-3 uppercase tracking-[0.04em]">
@@ -157,7 +157,7 @@ export default function LandingNav() {
                   className={cn(
                     btnBase,
                     btnOutline,
-                    "max-md:px-3 max-md:py-[7px] max-md:text-xs",
+                    "max-md:px-3 max-md:py-[7px] max-md:text-sm",
                   )}
                 >
                   Sign in
@@ -167,7 +167,7 @@ export default function LandingNav() {
                   className={cn(
                     btnBase,
                     btnGold,
-                    "max-md:px-3 max-md:py-[7px] max-md:text-xs",
+                    "max-md:px-3 max-md:py-[7px] max-md:text-sm",
                   )}
                 >
                   Sign up

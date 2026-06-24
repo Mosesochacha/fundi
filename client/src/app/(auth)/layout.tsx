@@ -20,7 +20,7 @@ export default function AuthLayout({
       <div className="w-full max-w-[420px]">{children}</div>
 
       {/* Footer */}
-      <div className="mt-8 flex items-center justify-center gap-3 text-xs text-ink-3">
+      <div className="mt-8 flex items-center justify-center gap-3 text-sm text-ink-3">
         <span>© 2026 Tesilix</span>
         <Link href="/privacy" className="hover:text-ink-2 transition-colors">
           Privacy

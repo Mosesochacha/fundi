@@ -30,7 +30,7 @@ export function StatCard({
       <div
         className={cn("absolute top-0 left-0 right-0 h-0.5", accents[accent])}
       />
-      <p className="text-xs text-ink-3 uppercase tracking-wider mb-1.5">
+      <p className="text-sm text-ink-3 uppercase tracking-wider mb-1.5">
         {label}
       </p>
       <p
@@ -41,9 +41,9 @@ export function StatCard({
       >
         {number}
       </p>
-      {sub && <p className="text-xs text-ink-3">{sub}</p>}
+      {sub && <p className="text-sm text-ink-3">{sub}</p>}
       {trend && (
-        <span className="inline-flex items-center gap-1 mt-2 text-xs text-green-700 bg-green-50 px-2 py-0.5 rounded-full">
+        <span className="inline-flex items-center gap-1 mt-2 text-sm text-green-700 bg-green-50 px-2 py-0.5 rounded-full">
           {trend}
         </span>
       )}

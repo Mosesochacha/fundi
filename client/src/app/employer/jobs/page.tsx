@@ -82,11 +82,11 @@ export default function EmployerJobsPage() {
     <Shell role="employer" user={shellUser} currentPath={pathname}>
       <div className="flex flex-col gap-4 text-ink-2">
         <div>
-          <div className="text-xs text-ink-3">Your hires</div>
+          <div className="text-sm text-ink-3">Your hires</div>
           <h1 className="font-serif text-[26px] font-normal text-ink mt-0.5 leading-[1.15]">
             My jobs.
           </h1>
-          <p className="text-[13px] text-ink-3 mt-1">
+          <p className="text-sm text-ink-3 mt-1">
             Track every job you’ve sent to a fundi.
           </p>
         </div>
@@ -96,7 +96,7 @@ export default function EmployerJobsPage() {
             <button
               key={t.key}
               type="button"
-              className={`inline-flex items-center gap-1.5 border rounded-full px-[13px] py-1.5 text-xs cursor-pointer ${
+              className={`inline-flex items-center gap-1.5 border rounded-full px-[13px] py-1.5 text-sm cursor-pointer ${
                 tab === t.key
                   ? "bg-gold-light border-gold text-gold-dark font-semibold"
                   : "bg-white border-border text-ink-2 hover:border-gold"
@@ -201,14 +201,14 @@ function JobRow({ job, onReview }: { job: EmployerJob; onReview: () => void }) {
           {job.jobType} · {job.location} · {shortDate(when)}
         </div>
         {job.description && (
-          <p className="text-xs text-ink-2 leading-normal mt-1.5 line-clamp-2">
+          <p className="text-sm text-ink-2 leading-normal mt-1.5 line-clamp-2">
             {job.description}
           </p>
         )}
 
         {confirm ? (
           <div className="mt-2.5 px-3 py-2.5 bg-cream border border-border rounded-lg">
-            <div className="text-xs font-semibold text-ink">
+            <div className="text-sm font-semibold text-ink">
               {confirm === "complete"
                 ? "Mark this job as complete?"
                 : "Cancel this request?"}

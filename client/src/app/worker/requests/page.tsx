@@ -105,7 +105,7 @@ function sortRequests(list: JobRequest[], sort: SortOption): JobRequest[] {
 
 /* ── Shared button class sets ─────────────────────────────────────────────── */
 const BTN_BASE =
-  "inline-flex items-center justify-center gap-1.5 font-sans font-medium text-xs px-[11px] py-1.5 rounded-lg border-[0.5px] cursor-pointer no-underline whitespace-nowrap transition-colors disabled:opacity-55 disabled:cursor-not-allowed max-[640px]:w-full";
+  "inline-flex items-center justify-center gap-1.5 font-sans font-medium text-sm px-[11px] py-1.5 rounded-lg border-[0.5px] cursor-pointer no-underline whitespace-nowrap transition-colors disabled:opacity-55 disabled:cursor-not-allowed max-[640px]:w-full";
 // `enabled:hover:` is used on disable-able <button>s (accept/decline/complete)
 // so their hover styles don't fire while busy; `:enabled` only matches form
 // controls, so the outline/blue variants (used on never-disabled <Link>s and
@@ -184,7 +184,7 @@ export default function WorkerRequestsPage() {
           <h1 className="font-serif text-[26px] font-normal text-ink leading-[1.15]">
             Job requests
           </h1>
-          <p className="text-[13px] text-ink-3">
+          <p className="text-sm text-ink-3">
             Manage all incoming and active job requests
           </p>
         </div>
@@ -229,7 +229,7 @@ export default function WorkerRequestsPage() {
                 <button
                   type="button"
                   className={cn(
-                    "inline-flex items-center gap-1.5 font-sans text-xs font-medium px-3 py-1.5 rounded-full border cursor-pointer whitespace-nowrap transition-colors hover:border-gold",
+                    "inline-flex items-center gap-1.5 font-sans text-sm font-medium px-3 py-1.5 rounded-full border cursor-pointer whitespace-nowrap transition-colors hover:border-gold",
                     filter === t.value
                       ? "border-gold bg-gold-light text-gold-dark"
                       : "border-border bg-cream text-ink-2",
@@ -251,10 +251,10 @@ export default function WorkerRequestsPage() {
               </Fragment>
             ))}
           </div>
-          <label className="ml-auto inline-flex items-center gap-1.5 text-ink-3 text-xs max-[640px]:ml-0">
+          <label className="ml-auto inline-flex items-center gap-1.5 text-ink-3 text-sm max-[640px]:ml-0">
             Sort
             <select
-              className="font-sans text-xs font-medium text-ink-2 bg-cream border border-border rounded-lg px-2.5 py-1.5 cursor-pointer hover:border-gold"
+              className="font-sans text-sm font-medium text-ink-2 bg-cream border border-border rounded-lg px-2.5 py-1.5 cursor-pointer hover:border-gold"
               value={sort}
               onChange={(e) => setSort(e.target.value as SortOption)}
             >
@@ -271,7 +271,7 @@ export default function WorkerRequestsPage() {
         {isError && (
           <button
             type="button"
-            className="block w-full text-center bg-red-50 text-red-600 border border-red-200 rounded-lg p-3 text-xs font-medium font-sans cursor-pointer"
+            className="block w-full text-center bg-red-50 text-red-600 border border-red-200 rounded-lg p-3 text-sm font-medium font-sans cursor-pointer"
             onClick={() => refetch()}
           >
             Could not load your requests. Tap to retry.
@@ -330,7 +330,7 @@ function StatCard({
         >
           {value}
         </div>
-        <div className="text-xs font-medium text-ink-2 mt-2">{label}</div>
+        <div className="text-sm font-medium text-ink-2 mt-2">{label}</div>
         <div className="text-[11px] text-ink-3 mt-0.5">{sub}</div>
       </div>
     </div>
@@ -401,7 +401,7 @@ function RequestCard({ req }: { req: JobRequest }) {
       {/* Header */}
       <div className="flex gap-3 px-4 py-3.5 border-b-[0.5px] border-border">
         <div
-          className="w-[42px] h-[42px] rounded-full text-white text-[13px] font-semibold flex items-center justify-center shrink-0"
+          className="w-[42px] h-[42px] rounded-full text-white text-sm font-semibold flex items-center justify-center shrink-0"
           style={{ background: req.employer.avatarColor }}
         >
           {req.employer.initials}
@@ -427,7 +427,7 @@ function RequestCard({ req }: { req: JobRequest }) {
           <span className="text-[11px] text-ink-3 whitespace-nowrap">
             {timeAgo(req.createdAt)}
           </span>
-          <span className="bg-gold-light border border-gold/40 text-gold-dark text-xs font-semibold rounded-full px-2.5 py-[3px] whitespace-nowrap">
+          <span className="bg-gold-light border border-gold/40 text-gold-dark text-sm font-semibold rounded-full px-2.5 py-[3px] whitespace-nowrap">
             {formatRate(req.agreedRate)}
           </span>
         </div>
@@ -435,7 +435,7 @@ function RequestCard({ req }: { req: JobRequest }) {
 
       {/* Body */}
       <div className="px-4 py-3 border-b-[0.5px] border-border">
-        <p className="text-xs text-ink-2 leading-relaxed line-clamp-3">
+        <p className="text-sm text-ink-2 leading-relaxed line-clamp-3">
           {req.description}
         </p>
         {req.tags.length > 0 && (
@@ -455,7 +455,7 @@ function RequestCard({ req }: { req: JobRequest }) {
       {/* Inline confirmation */}
       {confirm === "decline" && (
         <div className="flex items-center justify-between gap-3 flex-wrap mx-4 mb-3 px-3 py-2.5 rounded-[10px] bg-red-50 border border-red-200">
-          <span className="text-xs text-ink-2 leading-snug">
+          <span className="text-sm text-ink-2 leading-snug">
             <strong className="text-ink font-semibold">Are you sure?</strong>{" "}
             You can&apos;t undo this.
           </span>
@@ -479,7 +479,7 @@ function RequestCard({ req }: { req: JobRequest }) {
       )}
       {confirm === "complete" && (
         <div className="flex items-center justify-between gap-3 flex-wrap mx-4 mb-3 px-3 py-2.5 rounded-[10px] bg-cream border-[0.5px] border-border">
-          <span className="text-xs text-ink-2 leading-snug">
+          <span className="text-sm text-ink-2 leading-snug">
             <strong className="text-ink font-semibold">
               Mark this job as complete?
             </strong>{" "}
@@ -514,7 +514,7 @@ function RequestCard({ req }: { req: JobRequest }) {
             {req.employer.initials}
           </div>
           <div className="min-w-0">
-            <div className="text-xs font-medium text-ink">
+            <div className="text-sm font-medium text-ink">
               {req.employer.name}
             </div>
             <EmployerSub employer={req.employer} />
@@ -665,7 +665,7 @@ function CardActions({
     return (
       <>
         {req.review && (
-          <span className="inline-flex items-center gap-1.5 text-xs text-ink-2">
+          <span className="inline-flex items-center gap-1.5 text-sm text-ink-2">
             <Stars value={req.review.rating} />
           </span>
         )}
@@ -763,7 +763,7 @@ function EmptyState({
         <div className="text-[15px] font-medium text-ink-2 mt-3.5">
           No job requests yet
         </div>
-        <p className="text-[13px] text-ink-3 leading-relaxed max-w-[280px] mt-1">
+        <p className="text-sm text-ink-3 leading-relaxed max-w-[280px] mt-1">
           Complete your profile and share it to start receiving requests from
           employers.
         </p>
@@ -804,7 +804,7 @@ function EmptyState({
         <FileText size={44} />
       </span>
       <div className="text-[15px] font-medium text-ink-2 mt-3.5">{title}</div>
-      <p className="text-[13px] text-ink-3 leading-relaxed max-w-[280px] mt-1">
+      <p className="text-sm text-ink-3 leading-relaxed max-w-[280px] mt-1">
         {sub}
       </p>
     </div>

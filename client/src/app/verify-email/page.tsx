@@ -181,7 +181,7 @@ export default function VerifyEmailPage() {
     <div className="min-h-screen bg-cream text-ink font-sans flex flex-col items-center justify-center px-4 pt-10 pb-14">
       <div className="text-center mb-8">
         <Logo href="/" size="lg" />
-        <div className="text-[13px] text-ink-3 mt-1.5">
+        <div className="text-sm text-ink-3 mt-1.5">
           Hire skilled workers. Anywhere. Instantly.
         </div>
       </div>
@@ -199,7 +199,7 @@ export default function VerifyEmailPage() {
             <div className="font-serif text-[22px] font-normal text-navy text-center mb-2">
               Email verified!
             </div>
-            <p className="text-[13px] text-ink-3 text-center mb-6 leading-relaxed">
+            <p className="text-sm text-ink-3 text-center mb-6 leading-relaxed">
               Your account is ready. Taking you to your dashboard…
             </p>
             <div className="flex justify-center">
@@ -208,7 +208,7 @@ export default function VerifyEmailPage() {
           </>
         ) : checking || !pending ? (
           /* ── Checking session ──────────────────────────────────────────── */
-          <p className="text-[13px] text-ink-3 text-center py-6">Loading…</p>
+          <p className="text-sm text-ink-3 text-center py-6">Loading…</p>
         ) : (
           /* ── Verification form ─────────────────────────────────────────── */
           <>
@@ -221,7 +221,7 @@ export default function VerifyEmailPage() {
             <div className="font-serif text-[22px] font-normal text-navy text-center mb-2">
               Verify your email
             </div>
-            <p className="text-[13px] text-ink-3 text-center mb-6 leading-relaxed">
+            <p className="text-sm text-ink-3 text-center mb-6 leading-relaxed">
               We sent a 6-digit code to{" "}
               <strong className="text-ink-2 font-semibold">
                 {pending.emailMasked}
@@ -261,12 +261,12 @@ export default function VerifyEmailPage() {
             </div>
 
             {errorMsg && (
-              <div className="text-xs text-red-600 mt-2.5 text-center">
+              <div className="text-sm text-red-600 mt-2.5 text-center">
                 {errorMsg}
               </div>
             )}
 
-            <div className="text-xs text-ink-3 text-center mt-4">
+            <div className="text-sm text-ink-3 text-center mt-4">
               {expired ? (
                 <>
                   Code expired.{" "}
@@ -305,7 +305,7 @@ export default function VerifyEmailPage() {
               )}
             </button>
 
-            <div className="text-xs text-ink-3 text-center mt-[18px]">
+            <div className="text-sm text-ink-3 text-center mt-[18px]">
               {resendIn > 0 ? (
                 <>Didn’t get the code? Resend in {resendIn}s</>
               ) : (
@@ -330,7 +330,7 @@ export default function VerifyEmailPage() {
             <div className="text-center mt-5">
               <Link
                 href="/register"
-                className="text-xs text-ink-3 no-underline hover:text-ink-2"
+                className="text-sm text-ink-3 no-underline hover:text-ink-2"
               >
                 ← Wrong email? Go back
               </Link>

@@ -35,7 +35,7 @@ export default function LandingCta() {
             Join as a worker →
           </Link>
         </div>
-        <div className="reveal text-xs text-ink-3 mt-5 tracking-[0.03em]">
+        <div className="reveal text-sm text-ink-3 mt-5 tracking-[0.03em]">
           Free forever for workers · No hidden fees · Cancel anytime
         </div>
         <div className="reveal flex items-center justify-center mt-11">
@@ -50,7 +50,7 @@ export default function LandingCta() {
             ))}
           </div>
           <div className="ml-3.5 text-left">
-            <div className="text-xs text-ink-2">
+            <div className="text-sm text-ink-2">
               Founding workers are joining now - add your trade today.
             </div>
           </div>

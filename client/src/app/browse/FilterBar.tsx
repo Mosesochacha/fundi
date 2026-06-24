@@ -27,7 +27,7 @@ const FB_OPT =
 const FB_OPT_ROW = "justify-between";
 const FB_TICK = "font-bold text-gold-dark";
 const FB_CHIP =
-  "flex items-center gap-[7px] rounded-full border border-border bg-white px-3 py-1.5 pl-[13px] text-[13px] font-semibold text-ink-2";
+  "flex items-center gap-[7px] rounded-full border border-border bg-white px-3 py-1.5 pl-[13px] text-sm font-semibold text-ink-2";
 const FB_CHIP_BTN =
   "flex h-[18px] w-[18px] items-center justify-center rounded-full border-none bg-gold-light text-ink-3 cursor-pointer transition-all duration-150 hover:bg-navy hover:text-white";
 
@@ -362,7 +362,7 @@ export default function FilterBar({ onAskAi }: Props) {
           )}
           <button
             type="button"
-            className="border-none bg-transparent px-2 py-1.5 text-[13px] font-semibold text-gold-dark cursor-pointer"
+            className="border-none bg-transparent px-2 py-1.5 text-sm font-semibold text-gold-dark cursor-pointer"
             onClick={() => resetFilters()}
           >
             Clear all

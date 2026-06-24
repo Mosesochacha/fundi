@@ -47,7 +47,7 @@ export default function SettingsView({
         <h1 className="font-serif text-[26px] font-normal text-ink m-0">
           Settings
         </h1>
-        <p className="text-[13px] text-ink-3 m-0">
+        <p className="text-sm text-ink-3 m-0">
           Manage your account, notifications
           {isWorker ? ", availability" : ""} and privacy.
         </p>

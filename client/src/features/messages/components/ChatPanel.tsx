@@ -121,7 +121,7 @@ export default function ChatPanel({
           </button>
           <span className="relative shrink-0 inline-flex">
             <span
-              className="w-[34px] h-[34px] rounded-full flex items-center justify-center text-xs font-semibold text-white"
+              className="w-[34px] h-[34px] rounded-full flex items-center justify-center text-sm font-semibold text-white"
               style={{ background: participant.avatarColor }}
             >
               {participant.initials}
@@ -131,7 +131,7 @@ export default function ChatPanel({
             )}
           </span>
           <div>
-            <div className="text-[13px] font-medium text-ink leading-[1.2]">
+            <div className="text-sm font-medium text-ink leading-[1.2]">
               {participant.name}
             </div>
             <div className="flex items-center text-[11px] text-ink-3 mt-px">
@@ -173,7 +173,7 @@ export default function ChatPanel({
               <Briefcase size={14} />
             </span>
             <div>
-              <div className="text-xs font-medium text-gold-dark">
+              <div className="text-sm font-medium text-gold-dark">
                 {linkedJob.title} · {linkedJob.location}
               </div>
               <div className="text-[10px] text-gold mt-px">
@@ -195,11 +195,11 @@ export default function ChatPanel({
       {/* ── Messages ── */}
       <div className="flex-1 overflow-y-auto px-[18px] py-4 flex flex-col gap-2">
         {loadingMessages ? (
-          <div className="text-center text-xs text-ink-3 p-5">Loading…</div>
+          <div className="text-center text-sm text-ink-3 p-5">Loading…</div>
         ) : messages.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center gap-2 px-6 py-10">
             <MessageSquare size={40} className="text-ink-4" />
-            <p className="text-xs text-ink-3 max-w-[280px] leading-normal m-0">
+            <p className="text-sm text-ink-3 max-w-[280px] leading-normal m-0">
               Send a message to start the conversation.
             </p>
           </div>
@@ -252,7 +252,7 @@ export default function ChatPanel({
                     >
                       <div
                         className={cn(
-                          "text-xs leading-[1.55] px-[13px] py-[9px] break-words whitespace-pre-wrap",
+                          "text-sm leading-[1.55] px-[13px] py-[9px] break-words whitespace-pre-wrap",
                           mine
                             ? "bg-navy text-white border-[0.5px] border-navy rounded-[12px_12px_3px_12px]"
                             : "bg-white text-ink border-[0.5px] border-border rounded-[12px_12px_12px_3px]",
@@ -314,7 +314,7 @@ export default function ChatPanel({
           </button>
           <textarea
             ref={textRef}
-            className="flex-1 border-none bg-transparent outline-none resize-none text-xs leading-normal text-ink max-h-[70px] px-0.5 py-1 placeholder:text-ink-3"
+            className="flex-1 border-none bg-transparent outline-none resize-none text-sm leading-normal text-ink max-h-[70px] px-0.5 py-1 placeholder:text-ink-3"
             rows={1}
             placeholder="Type a message..."
             value={text}

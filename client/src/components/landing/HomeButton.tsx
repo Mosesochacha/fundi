@@ -15,7 +15,7 @@ export default function HomeButton() {
     <button
       type="button"
       onClick={() => router.push("/")}
-      className="inline-flex items-center gap-2 bg-gold hover:bg-gold-dark text-navy px-5 py-2 rounded-md text-[13px] font-medium border-none cursor-pointer transition-colors"
+      className="inline-flex items-center gap-2 bg-gold hover:bg-gold-dark text-navy px-5 py-2 rounded-md text-sm font-medium border-none cursor-pointer transition-colors"
     >
       <Home size={15} strokeWidth={1.75} />
       Back to home

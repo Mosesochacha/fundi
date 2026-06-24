@@ -158,11 +158,11 @@ export default function EmployerSearchPage() {
       <div className="flex flex-col gap-4 text-ink-2">
         {/* ── Header ──────────────────────────────────────────────────── */}
         <div>
-          <div className="text-xs text-ink-3">Hire a fundi</div>
+          <div className="text-sm text-ink-3">Hire a fundi</div>
           <h1 className="font-serif text-[26px] font-normal text-ink mt-0.5 leading-[1.15]">
             Find a fundi.
           </h1>
-          <p className="text-[13px] text-ink-3 mt-1">
+          <p className="text-sm text-ink-3 mt-1">
             Browse verified tradespeople near you and send a hire request.
           </p>
         </div>
@@ -195,7 +195,7 @@ export default function EmployerSearchPage() {
           </div>
           <button
             type="button"
-            className="inline-flex items-center gap-1.5 bg-gold text-navy border border-gold rounded-[10px] px-[18px] py-2.5 text-[13px] font-medium cursor-pointer hover:bg-gold-dark hover:border-gold-dark"
+            className="inline-flex items-center gap-1.5 bg-gold text-navy border border-gold rounded-[10px] px-[18px] py-2.5 text-sm font-medium cursor-pointer hover:bg-gold-dark hover:border-gold-dark"
             onClick={handleSearch}
           >
             <Search size={15} /> Search
@@ -211,7 +211,7 @@ export default function EmployerSearchPage() {
                 <button
                   key={t.name}
                   type="button"
-                  className={`inline-flex items-center gap-[5px] whitespace-nowrap border rounded-full px-3 py-1.5 text-xs cursor-pointer transition-colors ${
+                  className={`inline-flex items-center gap-[5px] whitespace-nowrap border rounded-full px-3 py-1.5 text-sm cursor-pointer transition-colors ${
                     active
                       ? "bg-gold-light border-gold text-gold-dark font-semibold"
                       : "bg-white border-border text-ink-2 hover:border-gold"
@@ -225,7 +225,7 @@ export default function EmployerSearchPage() {
           </div>
           <button
             type="button"
-            className={`inline-flex items-center gap-1.5 whitespace-nowrap border rounded-full px-3 py-1.5 text-xs cursor-pointer ${
+            className={`inline-flex items-center gap-1.5 whitespace-nowrap border rounded-full px-3 py-1.5 text-sm cursor-pointer ${
               availableNow
                 ? "bg-gold-light border-gold text-gold-dark font-semibold"
                 : "bg-white border-border text-ink-2"
@@ -235,7 +235,7 @@ export default function EmployerSearchPage() {
             Available now
           </button>
           <select
-            className="text-xs text-ink-2 bg-white border border-border rounded-full px-3 py-1.5 cursor-pointer"
+            className="text-sm text-ink-2 bg-white border border-border rounded-full px-3 py-1.5 cursor-pointer"
             value={sortBy}
             onChange={(e) => setFilter("sortBy", e.target.value)}
             aria-label="Sort by"
@@ -269,7 +269,7 @@ export default function EmployerSearchPage() {
             <div className="text-sm font-medium text-ink-2">
               No fundis match those filters
             </div>
-            <p className="text-[13px] text-ink-3 mt-1 max-w-[280px] leading-relaxed">
+            <p className="text-sm text-ink-3 mt-1 max-w-[280px] leading-relaxed">
               Try widening your trade, location or availability filters.
             </p>
             {hasActiveFilters && (
@@ -415,7 +415,7 @@ function WorkerCard({
         </div>
 
         <div
-          className="flex items-center gap-[5px] text-xs font-medium mt-[3px]"
+          className="flex items-center gap-[5px] text-sm font-medium mt-[3px]"
           style={{ color: accent }}
         >
           <span
@@ -431,7 +431,7 @@ function WorkerCard({
           </p>
         )}
 
-        <p className="text-xs text-ink-2 leading-normal mt-2 line-clamp-2 min-h-9">
+        <p className="text-sm text-ink-2 leading-normal mt-2 line-clamp-2 min-h-9">
           {worker.bio || "No bio yet."}
         </p>
 
@@ -482,13 +482,13 @@ const GRID =
 const SEARCH_FIELD =
   "flex items-center gap-2 flex-1 min-w-[180px] bg-white border border-border rounded-[10px] px-3 py-2.5 text-ink-3 focus-within:border-gold";
 const SEARCH_INPUT =
-  "border-0 outline-none bg-transparent text-[13px] text-ink w-full";
+  "border-0 outline-none bg-transparent text-sm text-ink w-full";
 const CLEAR_BTN =
-  "text-xs text-gold-dark bg-none border-0 cursor-pointer underline whitespace-nowrap";
+  "text-sm text-gold-dark bg-none border-0 cursor-pointer underline whitespace-nowrap";
 const PAGER_BTN =
-  "text-xs text-ink-2 bg-white border border-border rounded-lg px-[11px] py-1.5 cursor-pointer enabled:hover:border-gold disabled:opacity-50 disabled:cursor-not-allowed";
+  "text-sm text-ink-2 bg-white border border-border rounded-lg px-[11px] py-1.5 cursor-pointer enabled:hover:border-gold disabled:opacity-50 disabled:cursor-not-allowed";
 const ES_BTN =
-  "flex-1 inline-flex items-center justify-center gap-1.5 font-medium text-xs px-3 py-2 rounded-lg border border-transparent cursor-pointer no-underline";
+  "flex-1 inline-flex items-center justify-center gap-1.5 font-medium text-sm px-3 py-2 rounded-lg border border-transparent cursor-pointer no-underline";
 const ES_BTN_OUTLINE =
   "bg-white text-ink-2 border-border hover:border-gold hover:bg-gold-light hover:text-ink";
 const ES_BTN_GOLD =

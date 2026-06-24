@@ -20,7 +20,7 @@ export function Input({
       {label && (
         <label
           htmlFor={id}
-          className="text-xs font-medium text-ink-2 tracking-wide"
+          className="text-sm font-medium text-ink-2 tracking-wide"
         >
           {label}
         </label>
@@ -38,8 +38,8 @@ export function Input({
         )}
         {...props}
       />
-      {hint && !error && <p className="text-xs text-ink-3">{hint}</p>}
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {hint && !error && <p className="text-sm text-ink-3">{hint}</p>}
+      {error && <p className="text-sm text-red-600">{error}</p>}
     </div>
   );
 }

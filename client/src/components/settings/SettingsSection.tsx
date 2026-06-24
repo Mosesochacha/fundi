@@ -26,7 +26,7 @@ export default function SettingsSection({
           {title && (
             <p
               className={cn(
-                "text-xs font-semibold uppercase tracking-widest",
+                "text-sm font-semibold uppercase tracking-widest",
                 danger ? "text-red-500" : "text-ink-3",
               )}
             >
@@ -34,7 +34,7 @@ export default function SettingsSection({
             </p>
           )}
           {description && (
-            <p className="text-xs text-ink-3 mt-0.5">{description}</p>
+            <p className="text-sm text-ink-3 mt-0.5">{description}</p>
           )}
         </div>
       )}

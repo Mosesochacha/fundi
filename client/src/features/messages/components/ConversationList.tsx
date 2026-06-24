@@ -40,7 +40,7 @@ export default function ConversationList({
             className="absolute left-[9px] text-ink-3 pointer-events-none"
           />
           <input
-            className="w-full border-[0.5px] border-border rounded-lg bg-cream py-[7px] pl-[30px] pr-2.5 text-xs text-ink outline-none placeholder:text-ink-3 focus:border-gold"
+            className="w-full border-[0.5px] border-border rounded-lg bg-cream py-[7px] pl-[30px] pr-2.5 text-sm text-ink outline-none placeholder:text-ink-3 focus:border-gold"
             placeholder="Search conversations..."
             value={search}
             onChange={(e) => onSearch(e.target.value)}
@@ -50,11 +50,11 @@ export default function ConversationList({
 
       <div className="flex-1 overflow-y-auto">
         {loading ? (
-          <div className="px-4 py-6 text-xs text-ink-3 text-center">
+          <div className="px-4 py-6 text-sm text-ink-3 text-center">
             Loading…
           </div>
         ) : conversations.length === 0 ? (
-          <div className="px-4 py-6 text-xs text-ink-3 text-center">
+          <div className="px-4 py-6 text-sm text-ink-3 text-center">
             No conversations
           </div>
         ) : (
@@ -75,7 +75,7 @@ export default function ConversationList({
               >
                 <span className="relative shrink-0 inline-flex">
                   <span
-                    className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold text-white"
+                    className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold text-white"
                     style={{ background: c.participant.avatarColor }}
                   >
                     {c.participant.initials}
@@ -88,7 +88,7 @@ export default function ConversationList({
                   <span className="flex items-baseline justify-between gap-2">
                     <span
                       className={cn(
-                        "text-xs whitespace-nowrap overflow-hidden text-ellipsis",
+                        "text-sm whitespace-nowrap overflow-hidden text-ellipsis",
                         unread ? "font-medium text-ink" : "text-ink-2",
                       )}
                     >

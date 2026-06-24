@@ -92,7 +92,7 @@ export default function BannerUpload({
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
-            className="flex items-center gap-1.5 bg-black/50 hover:bg-black/70 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors backdrop-blur-sm"
+            className="flex items-center gap-1.5 bg-black/50 hover:bg-black/70 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-colors backdrop-blur-sm"
           >
             <Camera size={14} />
             {bannerUrl ? "Change banner" : "Add banner"}
@@ -101,7 +101,7 @@ export default function BannerUpload({
             <button
               type="button"
               onClick={handleRemove}
-              className="flex items-center gap-1 bg-black/50 hover:bg-red-600/80 text-white text-xs font-medium px-2 py-1.5 rounded-lg transition-colors backdrop-blur-sm"
+              className="flex items-center gap-1 bg-black/50 hover:bg-red-600/80 text-white text-sm font-medium px-2 py-1.5 rounded-lg transition-colors backdrop-blur-sm"
               aria-label="Remove banner"
             >
               <X size={14} />

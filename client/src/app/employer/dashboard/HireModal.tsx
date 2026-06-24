@@ -119,7 +119,7 @@ export default function HireModal({ worker, defaultLocation, onClose }: Props) {
             <h2 className="font-serif text-lg font-normal text-ink">
               Hire {worker.name}
             </h2>
-            <p className="text-xs text-ink-3 mt-0.5">
+            <p className="text-sm text-ink-3 mt-0.5">
               {worker.trade || "Tesilix"}
             </p>
           </div>
@@ -233,7 +233,7 @@ export default function HireModal({ worker, defaultLocation, onClose }: Props) {
 }
 
 const FIELD = "flex flex-col gap-[5px]";
-const LABEL = "text-xs font-medium text-ink-2";
+const LABEL = "text-sm font-medium text-ink-2";
 const INPUT =
-  "font-sans text-[13px] text-ink bg-white border border-border rounded-lg px-[11px] py-[9px] w-full outline-none focus:border-gold";
+  "font-sans text-sm text-ink bg-white border border-border rounded-lg px-[11px] py-[9px] w-full outline-none focus:border-gold";
 const TEXTAREA = `${INPUT} resize-y min-h-[76px]`;

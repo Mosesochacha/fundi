@@ -161,7 +161,7 @@ export default function BrowseClient({ initialData, fontClass }: Props) {
       <main className="pb-[90px]">
         {/* HERO */}
         <header className="mx-auto max-w-[1240px] px-5 pt-[82px] md:px-10 md:pt-[116px]">
-          <p className="m-0 text-xs font-semibold uppercase tracking-[0.18em] text-ink-3">
+          <p className="m-0 text-sm font-semibold uppercase tracking-[0.18em] text-ink-3">
             Discover skilled professionals
           </p>
           <h1 className="mt-3.5 font-serif text-[34px] font-medium leading-[1.06] tracking-[-0.02em] text-ink md:text-[clamp(40px,7vw,66px)] md:leading-[0.98]">
@@ -169,7 +169,7 @@ export default function BrowseClient({ initialData, fontClass }: Props) {
             <em className="font-serif italic text-gold-dark">fundi.</em>
           </h1>
           <p className="mt-3 max-w-[560px] text-[15px] leading-[1.55] text-ink-2 md:mt-[18px] md:text-[17px]">
-            Browse vetted tradespeople across Kenya - every profile ID-verified,
+            Browse vetted tradespeople worldwide - every profile ID-verified,
             skill-assessed, and reviewed by real customers.
           </p>
 

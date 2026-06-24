@@ -4,7 +4,7 @@ type AvatarSize = "sm" | "md" | "lg" | "xl";
 type AvatarColor = "gold" | "blue" | "green" | "purple" | "pink" | "teal";
 
 const sizes: Record<AvatarSize, string> = {
-  sm: "w-7 h-7 text-xs",
+  sm: "w-7 h-7 text-sm",
   md: "w-9 h-9 text-sm",
   lg: "w-11 h-11 text-base",
   xl: "w-16 h-16 text-xl",

@@ -61,18 +61,18 @@ const TITLE = "font-serif text-base font-medium text-ink";
 const BTN_BASE =
   "font-sans cursor-pointer rounded-lg font-medium transition-all duration-150 inline-flex items-center justify-center gap-1.5";
 const BTN =
-  "bg-gold text-navy border border-gold py-[9px] px-4 text-[13px] hover:bg-gold-dark hover:border-gold-dark disabled:opacity-60 disabled:cursor-not-allowed";
+  "bg-gold text-navy border border-gold py-[9px] px-4 text-sm hover:bg-gold-dark hover:border-gold-dark disabled:opacity-60 disabled:cursor-not-allowed";
 const BTN_OUTLINE =
-  "bg-white text-ink-2 border border-border py-[9px] px-4 text-[13px] hover:border-gold hover:text-ink disabled:opacity-60 disabled:cursor-not-allowed";
-const BTN_SM = "py-[7px] px-3.5 text-xs rounded-[7px]";
+  "bg-white text-ink-2 border border-border py-[9px] px-4 text-sm hover:border-gold hover:text-ink disabled:opacity-60 disabled:cursor-not-allowed";
+const BTN_SM = "py-[7px] px-3.5 text-sm rounded-[7px]";
 const ACT =
   "bg-cream text-ink-2 border-[0.5px] border-border py-[5px] px-2.5 text-[11px] rounded-[7px] hover:border-gold hover:text-gold-dark";
 const LINK =
-  "bg-transparent border-none text-gold-dark text-xs cursor-pointer font-sans no-underline hover:text-navy";
+  "bg-transparent border-none text-gold-dark text-sm cursor-pointer font-sans no-underline hover:text-navy";
 const INPUT =
-  "w-full border border-border rounded-lg py-2 px-3 text-[13px] font-sans text-ink bg-cream outline-none focus:border-gold focus:bg-white";
+  "w-full border border-border rounded-lg py-2 px-3 text-sm font-sans text-ink bg-cream outline-none focus:border-gold focus:bg-white";
 const TEXTAREA =
-  "w-full min-h-[110px] border border-border rounded-lg py-2.5 px-3 text-[13px] font-sans text-ink bg-cream outline-none leading-[1.6] resize-y focus:border-gold focus:bg-white";
+  "w-full min-h-[110px] border border-border rounded-lg py-2.5 px-3 text-sm font-sans text-ink bg-cream outline-none leading-[1.6] resize-y focus:border-gold focus:bg-white";
 const EDITROW = "flex gap-2 mt-3 items-center";
 const FORM =
   "flex flex-col gap-2 mt-3 p-3 bg-cream border border-border rounded-[10px]";
@@ -87,7 +87,7 @@ const uid = () =>
 function Stars({ value }: { value: number }) {
   return (
     <span
-      className="text-gold text-[13px] tracking-[1px]"
+      className="text-gold text-sm tracking-[1px]"
       role="img"
       aria-label={`${value} out of 5`}
     >
@@ -319,13 +319,13 @@ export default function WorkerProfile({
           <div className="font-serif text-[22px] font-normal text-ink mt-2.5">
             {data.name}
           </div>
-          <div className="text-[13px] text-ink-2 mt-0.5">
+          <div className="text-sm text-ink-2 mt-0.5">
             {data.trade}
             {data.yearsExperience > 0
               ? ` · ${data.yearsExperience} yrs experience`
               : ""}
           </div>
-          <div className="inline-flex items-center gap-1 text-xs text-ink-3 mt-1">
+          <div className="inline-flex items-center gap-1 text-sm text-ink-3 mt-1">
             <MapPin size={12} className="text-ink-3" />
             {data.location}
           </div>
@@ -520,7 +520,7 @@ export default function WorkerProfile({
                   </div>
                 </>
               ) : (
-                <p className="text-[13px] text-ink-2 leading-[1.7]">
+                <p className="text-sm text-ink-2 leading-[1.7]">
                   {data.about || "No description yet."}
                 </p>
               )}
@@ -546,7 +546,7 @@ export default function WorkerProfile({
                 {editServices
                   ? data.services.map((s) => (
                       <span
-                        className="inline-flex items-center gap-1.5 py-[5px] pl-3 pr-2 rounded-[20px] bg-gold-light border-[0.5px] border-gold/30 text-gold-dark text-xs"
+                        className="inline-flex items-center gap-1.5 py-[5px] pl-3 pr-2 rounded-[20px] bg-gold-light border-[0.5px] border-gold/30 text-gold-dark text-sm"
                         key={s}
                       >
                         {s}
@@ -562,7 +562,7 @@ export default function WorkerProfile({
                     ))
                   : data.services.map((s) => (
                       <span
-                        className="inline-flex items-center gap-[5px] py-[5px] px-3 rounded-[20px] bg-cream-2 border-[0.5px] border-border text-ink-2 text-xs"
+                        className="inline-flex items-center gap-[5px] py-[5px] px-3 rounded-[20px] bg-cream-2 border-[0.5px] border-border text-ink-2 text-sm"
                         key={s}
                       >
                         {s}
@@ -639,7 +639,7 @@ export default function WorkerProfile({
                       </div>
                     </div>
                     <div className="py-2 px-2.5">
-                      <div className="text-[13px] font-medium text-ink">
+                      <div className="text-sm font-medium text-ink">
                         {p.caption}
                       </div>
                       <div className="text-[11px] text-ink-3">{p.jobType}</div>
@@ -650,7 +650,7 @@ export default function WorkerProfile({
 
               {beforePhotos.length > 0 && (
                 <>
-                  <div className="text-xs font-medium text-ink mt-[18px] mb-2.5">
+                  <div className="text-sm font-medium text-ink mt-[18px] mb-2.5">
                     Before &amp; after
                   </div>
                   {beforePhotos.map((b) => {
@@ -691,7 +691,7 @@ export default function WorkerProfile({
                             </div>
                           </div>
                         </div>
-                        <div className="text-xs text-ink-2 mt-2">
+                        <div className="text-sm text-ink-2 mt-2">
                           {b.caption}
                         </div>
                       </div>
@@ -747,14 +747,14 @@ export default function WorkerProfile({
                         <Trash2 size={12} />
                       </button>
                     )}
-                    <div className="text-[13px] font-medium text-ink">
+                    <div className="text-sm font-medium text-ink">
                       {e.title}
                     </div>
-                    <div className="text-xs text-ink-2">{e.company}</div>
+                    <div className="text-sm text-ink-2">{e.company}</div>
                     <div className="text-[11px] text-ink-3 my-0.5 mb-1.5">
                       {e.startYear} – {e.endYear ?? "Present"}
                     </div>
-                    <div className="text-xs text-ink-3 leading-[1.6]">
+                    <div className="text-sm text-ink-3 leading-[1.6]">
                       {e.description}
                     </div>
                   </div>
@@ -782,7 +782,7 @@ export default function WorkerProfile({
                 {editAreas
                   ? data.serviceAreas.map((a) => (
                       <span
-                        className="inline-flex items-center gap-1.5 py-[5px] pl-3 pr-2 rounded-[20px] bg-gold-light border-[0.5px] border-gold/30 text-gold-dark text-xs"
+                        className="inline-flex items-center gap-1.5 py-[5px] pl-3 pr-2 rounded-[20px] bg-gold-light border-[0.5px] border-gold/30 text-gold-dark text-sm"
                         key={a}
                       >
                         <MapPin size={11} /> {a}
@@ -798,7 +798,7 @@ export default function WorkerProfile({
                     ))
                   : data.serviceAreas.map((a) => (
                       <span
-                        className="inline-flex items-center gap-[5px] py-[5px] px-3 rounded-[20px] bg-cream-2 border-[0.5px] border-border text-ink-2 text-xs [&>svg]:text-gold"
+                        className="inline-flex items-center gap-[5px] py-[5px] px-3 rounded-[20px] bg-cream-2 border-[0.5px] border-border text-ink-2 text-sm [&>svg]:text-gold"
                         key={a}
                       >
                         <MapPin size={12} /> {a}
@@ -881,12 +881,12 @@ export default function WorkerProfile({
                   <span className="w-7 h-7 rounded-full bg-gold-light text-gold-dark text-[10px] font-semibold flex items-center justify-center shrink-0">
                     {r.initials}
                   </span>
-                  <span className="text-xs font-medium text-ink flex-1">
+                  <span className="text-sm font-medium text-ink flex-1">
                     {r.author}
                   </span>
                   <Stars value={r.rating} />
                 </div>
-                <p className="text-xs text-ink-2 leading-[1.6] my-2">
+                <p className="text-sm text-ink-2 leading-[1.6] my-2">
                   {r.text}
                 </p>
                 <div className="flex items-center gap-2.5">
@@ -898,7 +898,7 @@ export default function WorkerProfile({
               </div>
             ))}
             {data.reviewCount === 0 && (
-              <p className="text-[13px] text-ink-3 px-0.5 pt-0.5 pb-1">
+              <p className="text-sm text-ink-3 px-0.5 pt-0.5 pb-1">
                 No reviews yet.
               </p>
             )}
@@ -913,7 +913,7 @@ export default function WorkerProfile({
               <section className={cn(CARD, "max-[899px]:order-3")}>
                 <div className={CARDHEAD}>
                   <span className={TITLE}>Profile strength</span>
-                  <span className="text-[13px] font-semibold text-gold-dark">
+                  <span className="text-sm font-semibold text-gold-dark">
                     {strengthPct}%
                   </span>
                 </div>
@@ -926,7 +926,7 @@ export default function WorkerProfile({
                 {checklist.map((c) => (
                   <div
                     className={cn(
-                      "flex items-center gap-[9px] py-1.5 text-xs",
+                      "flex items-center gap-[9px] py-1.5 text-sm",
                       c.done
                         ? "text-ink-2 [&>svg]:text-green-600"
                         : "text-ink-3 [&>svg]:text-ink-3",
@@ -988,10 +988,10 @@ export default function WorkerProfile({
                       <Award size={20} />
                     </div>
                     <div>
-                      <div className="text-[13px] font-medium text-ink">
+                      <div className="text-sm font-medium text-ink">
                         {c.name}
                       </div>
-                      <div className="text-xs text-ink-3 mt-px">
+                      <div className="text-sm text-ink-3 mt-px">
                         {c.issuingBody}
                       </div>
                       <div className="text-[11px] text-gold-dark mt-[3px]">
@@ -1049,10 +1049,10 @@ export default function WorkerProfile({
                       {eduIcon(e.type)}
                     </div>
                     <div>
-                      <div className="text-[13px] font-medium text-ink">
+                      <div className="text-sm font-medium text-ink">
                         {e.name}
                       </div>
-                      <div className="text-xs text-ink-3 mt-px">
+                      <div className="text-sm text-ink-3 mt-px">
                         {e.institution} · {e.startYear}–{e.endYear}
                       </div>
                     </div>
@@ -1167,7 +1167,7 @@ function PhotoForm({
       ) : (
         <button
           type="button"
-          className="flex items-center justify-center gap-2 w-full py-[22px] px-3 border-[1.5px] border-dashed border-border rounded-[10px] bg-white text-ink-2 font-sans text-[13px] cursor-pointer transition-[border-color,color] duration-150 hover:not-disabled:border-gold hover:not-disabled:text-gold-dark disabled:cursor-default disabled:opacity-70"
+          className="flex items-center justify-center gap-2 w-full py-[22px] px-3 border-[1.5px] border-dashed border-border rounded-[10px] bg-white text-ink-2 font-sans text-sm cursor-pointer transition-[border-color,color] duration-150 hover:not-disabled:border-gold hover:not-disabled:text-gold-dark disabled:cursor-default disabled:opacity-70"
           onClick={() => fileRef.current?.click()}
           disabled={upload.isPending}
         >
@@ -1197,7 +1197,7 @@ function PhotoForm({
           onChange={(e) => setJobType(e.target.value)}
         />
       </div>
-      <label className="flex items-center gap-[9px] py-1.5 text-xs text-ink-3 cursor-pointer">
+      <label className="flex items-center gap-[9px] py-1.5 text-sm text-ink-3 cursor-pointer">
         <input
           type="checkbox"
           checked={isBefore}
@@ -1270,7 +1270,7 @@ function ExperienceForm({
           onChange={(e) => setEndYear(e.target.value)}
         />
       </div>
-      <label className="flex items-center gap-[9px] py-1.5 text-xs text-ink-3 cursor-pointer">
+      <label className="flex items-center gap-[9px] py-1.5 text-sm text-ink-3 cursor-pointer">
         <input
           type="checkbox"
           checked={current}

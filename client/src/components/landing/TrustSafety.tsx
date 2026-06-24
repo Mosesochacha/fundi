@@ -63,7 +63,7 @@ export default function TrustSafety() {
               <div className="text-sm font-medium text-ink mb-1.5">
                 {t.title}
               </div>
-              <div className="text-[13px] text-ink-2 leading-[1.6] font-light">
+              <div className="text-sm text-ink-2 leading-[1.6] font-light">
                 {t.desc}
               </div>
             </div>

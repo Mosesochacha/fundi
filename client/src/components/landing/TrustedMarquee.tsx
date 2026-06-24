@@ -36,7 +36,7 @@ export default function TrustedMarquee() {
             {marqueeItems.map((item) => (
               <span
                 key={`a-${item.key}`}
-                className="text-[15px] font-medium text-ink-4 flex-shrink-0 mx-4 inline-flex items-center"
+                className="text-[15px] font-medium text-ink-2 flex-shrink-0 mx-4 inline-flex items-center"
               >
                 {item.name}
                 <span className="text-gold ml-4">·</span>
@@ -50,7 +50,7 @@ export default function TrustedMarquee() {
             {[...marqueeItems].reverse().map((item) => (
               <span
                 key={`b-${item.key}`}
-                className="text-[15px] font-medium text-ink-4 flex-shrink-0 mx-4 inline-flex items-center"
+                className="text-[15px] font-medium text-ink-2 flex-shrink-0 mx-4 inline-flex items-center"
               >
                 {item.name}
                 <span className="text-gold ml-4">·</span>

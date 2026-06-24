@@ -26,13 +26,13 @@ export const EL_ROW =
   "flex gap-3 px-4 py-3.5 border-b border-border last:border-b-0";
 export const EL_ROW_BODY = "flex-1 min-w-0";
 export const EL_ROW_TOP = "flex items-center justify-between gap-2";
-export const EL_ROW_NAME = "text-[13px] font-semibold text-ink";
-export const EL_ROW_META = "text-xs text-ink-3 mt-1";
+export const EL_ROW_NAME = "text-sm font-semibold text-ink";
+export const EL_ROW_META = "text-sm text-ink-3 mt-1";
 export const EL_ROW_ACTIONS = "flex flex-wrap gap-2 mt-2.5";
-export const EL_RATE = "text-xs font-medium text-gold-dark";
+export const EL_RATE = "text-sm font-medium text-gold-dark";
 
 export const EL_BTN =
-  "inline-flex items-center justify-center gap-1.5 font-medium text-xs px-3 py-1.5 rounded-lg border border-transparent cursor-pointer no-underline disabled:opacity-60 disabled:cursor-not-allowed";
+  "inline-flex items-center justify-center gap-1.5 font-medium text-sm px-3 py-1.5 rounded-lg border border-transparent cursor-pointer no-underline disabled:opacity-60 disabled:cursor-not-allowed";
 export const EL_BTN_OUTLINE =
   "bg-white text-ink-2 border-border hover:border-gold hover:bg-gold-light hover:text-ink";
 export const EL_BTN_GOLD =
@@ -42,7 +42,7 @@ export const EL_BTN_DANGER =
 
 export function Avatar({ name, url }: { name: string; url?: string | null }) {
   return (
-    <span className="w-10 h-10 rounded-full bg-gold-light border-[1.5px] border-gold/30 text-gold-dark text-[13px] font-semibold flex items-center justify-center shrink-0 overflow-hidden">
+    <span className="w-10 h-10 rounded-full bg-gold-light border-[1.5px] border-gold/30 text-gold-dark text-sm font-semibold flex items-center justify-center shrink-0 overflow-hidden">
       {url ? (
         // eslint-disable-next-line @next/next/no-img-element
         // biome-ignore lint/performance/noImgElement: avatar URLs are arbitrary external hosts
@@ -115,7 +115,7 @@ export function EmptyCard({
     <div className="flex flex-col items-center text-center px-6 py-12 bg-white border border-border rounded-xl">
       <span className="text-ink-4 leading-none">{icon}</span>
       <div className="text-sm font-medium text-ink-2 mt-3">{title}</div>
-      <p className="text-[13px] text-ink-3 mt-1 max-w-[280px] leading-relaxed">
+      <p className="text-sm text-ink-3 mt-1 max-w-[280px] leading-relaxed">
         {sub}
       </p>
       {cta && <div className="mt-3.5">{cta}</div>}

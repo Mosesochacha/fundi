@@ -20,7 +20,7 @@ const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
       <div className="space-y-1">
         <label
           htmlFor={inputId}
-          className="block text-[13px] font-medium text-ink-2"
+          className="block text-sm font-medium text-ink-2"
         >
           {label}
         </label>

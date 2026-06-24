@@ -59,7 +59,7 @@ export default function WelcomeToast({
         <span className="text-sm font-semibold">
           Welcome to Tesilix, {firstName}! 🎉
         </span>
-        <span className="text-xs text-white/70">{sub}</span>
+        <span className="text-sm text-white/70">{sub}</span>
       </span>
     </button>
   );

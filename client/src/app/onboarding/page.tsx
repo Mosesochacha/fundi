@@ -52,11 +52,11 @@ const initialsOf = (n: string) =>
     .join("") || "U";
 
 const FIELD_LABEL =
-  "block text-xs font-semibold text-ink-2 tracking-[0.02em] mb-2";
+  "block text-sm font-semibold text-ink-2 tracking-[0.02em] mb-2";
 const FIELD_INPUT =
   "w-full px-3.5 py-[11px] border border-border rounded-lg text-sm bg-cream text-ink font-sans outline-none transition-all placeholder:text-ink-3 focus:border-gold focus:bg-white";
 const TRADE_PILL_BASE =
-  "appearance-none px-[15px] py-2 border rounded-full text-[13px] cursor-pointer font-sans select-none transition-all hover:border-gold";
+  "appearance-none px-[15px] py-2 border rounded-full text-sm cursor-pointer font-sans select-none transition-all hover:border-gold";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -152,14 +152,14 @@ export default function OnboardingPage() {
 
         {/* Prefilled identity from the OAuth session */}
         <div className="flex items-center gap-[11px] bg-cream border border-border rounded-[10px] px-[13px] py-[11px] mb-6">
-          <span className="w-[38px] h-[38px] rounded-full bg-gold-light border border-gold/30 text-gold-dark grid place-items-center text-xs font-semibold shrink-0">
+          <span className="w-[38px] h-[38px] rounded-full bg-gold-light border border-gold/30 text-gold-dark grid place-items-center text-sm font-semibold shrink-0">
             {initialsOf(name)}
           </span>
           <div className="flex flex-col min-w-0">
-            <span className="text-[13px] font-semibold text-ink truncate">
+            <span className="text-sm font-semibold text-ink truncate">
               {name}
             </span>
-            <span className="text-xs text-ink-3 truncate">{email}</span>
+            <span className="text-sm text-ink-3 truncate">{email}</span>
           </div>
           <span className="ml-auto inline-flex items-center gap-1 bg-green-50 border border-green-600/25 rounded-full px-[9px] py-[3px] text-[10px] font-semibold text-green-600 whitespace-nowrap shrink-0">
             <CircleCheck size={11} /> Verified
@@ -171,7 +171,7 @@ export default function OnboardingPage() {
             <h1 className="font-serif text-[25px] font-normal text-navy mb-1.5 leading-[1.15]">
               How will you use Tesilix?
             </h1>
-            <p className="text-[13px] text-ink-3 leading-normal mb-[22px]">
+            <p className="text-sm text-ink-3 leading-normal mb-[22px]">
               Choose your role - this can&apos;t be changed later.
             </p>
 
@@ -204,7 +204,7 @@ export default function OnboardingPage() {
                 >
                   I am a fundi
                 </div>
-                <div className="text-xs text-ink-3 leading-normal">
+                <div className="text-sm text-ink-3 leading-normal">
                   Offer your skills and find work
                 </div>
               </button>
@@ -236,7 +236,7 @@ export default function OnboardingPage() {
                 >
                   I need a fundi
                 </div>
-                <div className="text-xs text-ink-3 leading-normal">
+                <div className="text-sm text-ink-3 leading-normal">
                   Hire skilled workers for jobs
                 </div>
               </button>
@@ -258,7 +258,7 @@ export default function OnboardingPage() {
             <h1 className="font-serif text-[25px] font-normal text-navy mb-1.5 leading-[1.15]">
               Set up your profile
             </h1>
-            <p className="text-[13px] text-ink-3 leading-normal mb-[22px]">
+            <p className="text-sm text-ink-3 leading-normal mb-[22px]">
               This is what employers see when they search for you.
             </p>
 
@@ -290,7 +290,7 @@ export default function OnboardingPage() {
               <input
                 id="w-location"
                 className={FIELD_INPUT}
-                placeholder="e.g. Westlands, Nairobi"
+                placeholder="e.g. your city or area"
                 value={wLocation}
                 onChange={(e) => setWLocation(e.target.value)}
               />
@@ -314,7 +314,7 @@ export default function OnboardingPage() {
               </div>
             </div>
 
-            <label className="flex items-start gap-2.5 text-[13px] text-ink-2 leading-normal mt-5 mb-1 cursor-pointer">
+            <label className="flex items-start gap-2.5 text-sm text-ink-2 leading-normal mt-5 mb-1 cursor-pointer">
               <input
                 type="checkbox"
                 checked={terms}
@@ -365,7 +365,7 @@ export default function OnboardingPage() {
             <h1 className="font-serif text-[25px] font-normal text-navy mb-1.5 leading-[1.15]">
               Tell us what you need
             </h1>
-            <p className="text-[13px] text-ink-3 leading-normal mb-[22px]">
+            <p className="text-sm text-ink-3 leading-normal mb-[22px]">
               We&apos;ll show you the right fundis for the job.
             </p>
 
@@ -376,7 +376,7 @@ export default function OnboardingPage() {
               <input
                 id="e-location"
                 className={FIELD_INPUT}
-                placeholder="e.g. Kilimani, Nairobi"
+                placeholder="e.g. your city or area"
                 value={eLocation}
                 onChange={(e) => setELocation(e.target.value)}
               />
@@ -406,7 +406,7 @@ export default function OnboardingPage() {
               </div>
             </div>
 
-            <label className="flex items-start gap-2.5 text-[13px] text-ink-2 leading-normal mt-5 mb-1 cursor-pointer">
+            <label className="flex items-start gap-2.5 text-sm text-ink-2 leading-normal mt-5 mb-1 cursor-pointer">
               <input
                 type="checkbox"
                 checked={terms}

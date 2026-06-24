@@ -135,7 +135,7 @@ export default function Shell({
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-[9px] w-[calc(100%-16px)] text-xs px-3 py-[9px] rounded-md mx-2 my-px no-underline transition-colors",
+                  "flex items-center gap-[9px] w-[calc(100%-16px)] text-sm px-3 py-[9px] rounded-md mx-2 my-px no-underline transition-colors",
                   isActive(item.href)
                     ? "bg-gold/[0.14] text-gold"
                     : "text-white/60 hover:bg-white/[0.06] hover:text-white/90",
@@ -162,7 +162,7 @@ export default function Shell({
       <div className="border-t border-white/[0.07] p-3">
         <button
           type="button"
-          className="w-full flex items-center gap-[9px] text-xs px-3 py-[9px] rounded-md bg-white/[0.04] text-white/70 cursor-pointer transition-colors hover:bg-white/[0.08] disabled:opacity-60 disabled:cursor-default"
+          className="w-full flex items-center gap-[9px] text-sm px-3 py-[9px] rounded-md bg-white/[0.04] text-white/70 cursor-pointer transition-colors hover:bg-white/[0.08] disabled:opacity-60 disabled:cursor-default"
           onClick={toggleAvailability}
           disabled={savingAvail}
         >
@@ -202,7 +202,7 @@ export default function Shell({
             <LogoMark size={34} variant="navy" />
           </Link>
           <div className="flex items-center gap-2.5">
-            <span className="w-8 h-8 rounded-full bg-gold-light text-gold-dark text-xs font-semibold flex items-center justify-center">
+            <span className="w-8 h-8 rounded-full bg-gold-light text-gold-dark text-sm font-semibold flex items-center justify-center">
               {user.initials}
             </span>
             <button
@@ -253,9 +253,7 @@ export default function Shell({
       {/* ── Main column ── */}
       <div className="min-h-screen flex flex-col lg:ml-[220px]">
         <header className="hidden lg:flex lg:items-center lg:justify-between lg:h-[60px] lg:bg-white lg:border-b lg:border-border lg:px-6 lg:sticky lg:top-0 lg:z-20">
-          <span className="text-[13px] text-ink-2 font-medium">
-            {pageTitle}
-          </span>
+          <span className="text-sm text-ink-2 font-medium">{pageTitle}</span>
           <div className="flex items-center gap-3">
             <NotificationBell variant="dash" />
             <div className="relative" ref={menuRef}>
@@ -268,7 +266,7 @@ export default function Shell({
                   {user.initials}
                 </span>
                 <span className="flex flex-col leading-tight text-left">
-                  <span className="text-[13px] font-medium text-ink">
+                  <span className="text-sm font-medium text-ink">
                     {user.name}
                   </span>
                   <span className="text-[11px] text-ink-3">
@@ -283,7 +281,7 @@ export default function Shell({
                   {role === "worker" && (
                     <Link
                       href={`/${role}/profile`}
-                      className="flex items-center gap-2 w-full text-[13px] text-ink-2 no-underline px-2.5 py-2 rounded-md hover:bg-cream-2 hover:text-ink"
+                      className="flex items-center gap-2 w-full text-sm text-ink-2 no-underline px-2.5 py-2 rounded-md hover:bg-cream-2 hover:text-ink"
                       onClick={() => setMenuOpen(false)}
                     >
                       <User size={15} /> Profile
@@ -291,14 +289,14 @@ export default function Shell({
                   )}
                   <Link
                     href={`/${role}/settings`}
-                    className="flex items-center gap-2 w-full text-[13px] text-ink-2 no-underline px-2.5 py-2 rounded-md hover:bg-cream-2 hover:text-ink"
+                    className="flex items-center gap-2 w-full text-sm text-ink-2 no-underline px-2.5 py-2 rounded-md hover:bg-cream-2 hover:text-ink"
                     onClick={() => setMenuOpen(false)}
                   >
                     <Settings size={15} /> Settings
                   </Link>
                   <Link
                     href="/logout"
-                    className="flex items-center gap-2 w-full text-[13px] text-ink-2 no-underline px-2.5 py-2 rounded-md hover:bg-cream-2 hover:text-ink"
+                    className="flex items-center gap-2 w-full text-sm text-ink-2 no-underline px-2.5 py-2 rounded-md hover:bg-cream-2 hover:text-ink"
                     onClick={() => setMenuOpen(false)}
                   >
                     <LogOut size={15} /> Logout

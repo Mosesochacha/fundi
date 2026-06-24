@@ -11,7 +11,7 @@ export default function FieldError({ error }: { error?: string }) {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -4 }}
           transition={{ duration: 0.15 }}
-          className="flex items-center gap-1 text-[12px] text-error font-dm-sans"
+          className="flex items-center gap-1 text-sm text-error font-dm-sans"
         >
           <span aria-hidden="true">⚠</span> {error}
         </motion.span>

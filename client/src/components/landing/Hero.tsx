@@ -19,8 +19,9 @@ export default function Hero() {
         Instantly.
       </h1>
       <p className="reveal text-[clamp(15px,2vw,18px)] text-ink-2 max-w-[480px] leading-[1.7] mt-6 font-light">
-        The new home for Kenya’s skilled tradespeople - plumbers, electricians,
-        carpenters and more. Browse profiles and connect directly. No brokers.
+        The new home for the world’s skilled tradespeople - plumbers,
+        electricians, carpenters and more. Browse profiles and connect directly.
+        No brokers.
       </p>
       <div className="reveal flex flex-col sm:flex-row gap-3 mt-10 flex-wrap justify-center w-full max-w-[340px] sm:max-w-none">
         <Link href="/browse" className={`${btnGold} max-sm:w-full`}>

@@ -366,7 +366,7 @@ export default function AccountPanel({
           <div className="flex items-center justify-between gap-3">
             {account.googleConnected ? (
               <>
-                <span className="text-[13px] text-ink-2">
+                <span className="text-sm text-ink-2">
                   Connected as{" "}
                   <strong className="text-ink font-medium">
                     {account.googleEmail ?? account.email}
@@ -383,7 +383,7 @@ export default function AccountPanel({
               </>
             ) : (
               <>
-                <span className="text-[13px] text-ink-2">
+                <span className="text-sm text-ink-2">
                   Connect your Google account for faster sign-in.
                 </span>
                 <a

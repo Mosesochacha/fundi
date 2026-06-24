@@ -62,7 +62,7 @@ export default function AskAiModal({ open, onClose }: Props) {
               <h2 className="m-0 font-serif text-xl font-medium text-ink">
                 Ask Tesilix AI
               </h2>
-              <p className="mt-0.5 text-[13px] text-ink-3">
+              <p className="mt-0.5 text-sm text-ink-3">
                 Describe your job and we&rsquo;ll point you to the right fundi.
               </p>
             </div>

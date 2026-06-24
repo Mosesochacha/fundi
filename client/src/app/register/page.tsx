@@ -78,7 +78,7 @@ const EMPTY_FORM = {
 };
 
 const LABEL_CLASS =
-  "block text-xs font-medium text-ink-2 mb-1.5 tracking-[0.02em]";
+  "block text-sm font-medium text-ink-2 mb-1.5 tracking-[0.02em]";
 const HINT_CLASS = "text-[11px] text-ink-3 mt-1";
 const ERR_CLASS = "text-[11px] text-red-600 mt-1";
 const TERMS_LINK_CLASS = "text-gold-dark no-underline hover:text-navy";
@@ -86,7 +86,7 @@ const TERMS_LINK_CLASS = "text-gold-dark no-underline hover:text-navy";
 const BTN_NEXT_CLASS =
   "flex-1 py-3 rounded-md text-sm font-medium bg-gold text-navy transition-all hover:bg-gold-dark disabled:opacity-60 disabled:cursor-not-allowed";
 const BTN_BACK_CLASS =
-  "flex-none px-5 py-[11px] rounded-md text-[13px] font-medium border border-border bg-transparent text-ink-2 transition-all hover:border-ink-3";
+  "flex-none px-5 py-[11px] rounded-md text-sm font-medium border border-border bg-transparent text-ink-2 transition-all hover:border-ink-3";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -210,7 +210,7 @@ export default function RegisterPage() {
     <div className="min-h-screen bg-cream text-ink font-sans flex flex-col items-center px-4 pt-10 pb-14">
       <div className="text-center mb-6">
         <Logo href="/" size="md" />
-        <div className="text-xs text-ink-3 mt-0.5">
+        <div className="text-sm text-ink-3 mt-0.5">
           The global skilled worker marketplace
         </div>
       </div>
@@ -230,7 +230,7 @@ export default function RegisterPage() {
               Create your{" "}
               <em className="italic font-light text-gold-dark">account</em>
             </div>
-            <p className="text-[13px] text-ink-3 mb-6 leading-normal">
+            <p className="text-sm text-ink-3 mb-6 leading-normal">
               Already have an account?{" "}
               <Link
                 href="/login"
@@ -242,7 +242,7 @@ export default function RegisterPage() {
 
             <button
               type="button"
-              className="w-full py-[11px] rounded-md text-[13px] font-medium border border-border bg-white text-ink flex items-center justify-center gap-2 transition-all hover:border-ink-3 disabled:opacity-60"
+              className="w-full py-[11px] rounded-md text-sm font-medium border border-border bg-white text-ink flex items-center justify-center gap-2 transition-all hover:border-ink-3 disabled:opacity-60"
               onClick={onGoogle}
               disabled={googleLoading}
             >
@@ -272,7 +272,7 @@ export default function RegisterPage() {
               Continue with Google
             </button>
 
-            <div className="flex items-center gap-3 my-4 text-xs text-ink-3 before:content-[''] before:flex-1 before:h-px before:bg-border after:content-[''] after:flex-1 after:h-px after:bg-border">
+            <div className="flex items-center gap-3 my-4 text-sm text-ink-3 before:content-[''] before:flex-1 before:h-px before:bg-border after:content-[''] after:flex-1 after:h-px after:bg-border">
               or sign up with email
             </div>
 
@@ -436,7 +436,7 @@ export default function RegisterPage() {
             <div className="font-serif text-[24px] font-normal text-ink mb-1">
               You are a<em className="italic font-light text-gold-dark">…</em>
             </div>
-            <p className="text-[13px] text-ink-3 mb-6 leading-normal">
+            <p className="text-sm text-ink-3 mb-6 leading-normal">
               This helps us personalise your experience
             </p>
             <div className="grid grid-cols-2 gap-2.5 mb-2">
@@ -489,14 +489,14 @@ export default function RegisterPage() {
               Where are{" "}
               <em className="italic font-light text-gold-dark">you based?</em>
             </div>
-            <p className="text-[13px] text-ink-3 mb-6 leading-normal">
+            <p className="text-sm text-ink-3 mb-6 leading-normal">
               We’ll show you fundis near you first
             </p>
             <div className="mb-4">
               <span className={LABEL_CLASS}>Your location</span>
               <input
                 className={inputClass("location")}
-                placeholder="e.g. Westlands, Nairobi"
+                placeholder="e.g. your city or area"
                 value={form.location}
                 onChange={set("location")}
               />
@@ -557,14 +557,14 @@ export default function RegisterPage() {
                 trade &amp; location
               </em>
             </div>
-            <p className="text-[13px] text-ink-3 mb-6 leading-normal">
+            <p className="text-sm text-ink-3 mb-6 leading-normal">
               Help employers find you faster
             </p>
             <div className="mb-4">
               <span className={LABEL_CLASS}>Your location</span>
               <input
                 className={inputClass("location")}
-                placeholder="e.g. Westlands, Nairobi"
+                placeholder="e.g. your city or area"
                 value={form.location}
                 onChange={set("location")}
               />
@@ -649,7 +649,7 @@ export default function RegisterPage() {
                 ? "Your account is ready. Let’s find you a great fundi."
                 : "Your profile is live. Employers can now find you."}
               <br />
-              <span className="text-ink-3 text-[13px]">
+              <span className="text-ink-3 text-sm">
                 First, verify your email to secure your account.
               </span>
             </p>
@@ -742,7 +742,7 @@ function TradePill({
     <button
       type="button"
       className={cn(
-        "px-3.5 py-[7px] border rounded-[20px] text-[13px] transition-all select-none",
+        "px-3.5 py-[7px] border rounded-[20px] text-sm transition-all select-none",
         selected
           ? "border-gold bg-gold-light text-gold-dark font-medium"
           : "border-border bg-cream text-ink-2 hover:border-gold",
@@ -766,7 +766,7 @@ function TermsCheckbox({
 }) {
   return (
     <div className="mb-4">
-      <label className="flex items-start gap-2.5 text-[13px] text-ink-2 mb-1 cursor-pointer leading-normal">
+      <label className="flex items-start gap-2.5 text-sm text-ink-2 mb-1 cursor-pointer leading-normal">
         <input
           type="checkbox"
           checked={checked}

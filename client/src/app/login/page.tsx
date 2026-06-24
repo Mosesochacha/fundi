@@ -182,7 +182,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-cream text-ink font-sans flex flex-col items-center justify-center px-4 pt-10 pb-14">
       <div className="text-center mb-6">
         <Logo href="/" size="md" />
-        <div className="text-xs text-ink-3 mt-0.5">
+        <div className="text-sm text-ink-3 mt-0.5">
           The global skilled worker marketplace
         </div>
       </div>
@@ -191,7 +191,7 @@ export default function LoginPage() {
         <div className="font-serif text-[26px] font-normal text-navy mb-1">
           Welcome <em className="italic font-light text-gold-dark">back</em>
         </div>
-        <p className="text-[13px] text-ink-3 mb-6 leading-normal">
+        <p className="text-sm text-ink-3 mb-6 leading-normal">
           Don’t have an account?{" "}
           <Link
             href="/register"
@@ -202,7 +202,7 @@ export default function LoginPage() {
         </p>
 
         {locked && (
-          <div className="rounded-lg px-3.5 py-3 text-[13px] leading-normal mb-4 bg-red-50 border border-red-600/25 text-red-700">
+          <div className="rounded-lg px-3.5 py-3 text-sm leading-normal mb-4 bg-red-50 border border-red-600/25 text-red-700">
             Account locked. Try again in{" "}
             <strong className="font-semibold">
               {formatLock(lockSecondsLeft)}
@@ -211,7 +211,7 @@ export default function LoginPage() {
         )}
 
         {unverifiedEmail && (
-          <div className="rounded-lg px-3.5 py-3 text-[13px] leading-normal mb-4 bg-gold-light border border-gold/30 text-gold-dark">
+          <div className="rounded-lg px-3.5 py-3 text-sm leading-normal mb-4 bg-gold-light border border-gold/30 text-gold-dark">
             Your email isn’t verified yet.{" "}
             <button
               type="button"
@@ -256,7 +256,7 @@ export default function LoginPage() {
           Continue with Google
         </Button>
 
-        <div className="flex items-center gap-3 my-4 text-xs text-ink-3 before:content-[''] before:flex-1 before:h-px before:bg-border after:content-[''] after:flex-1 after:h-px after:bg-border">
+        <div className="flex items-center gap-3 my-4 text-sm text-ink-3 before:content-[''] before:flex-1 before:h-px before:bg-border after:content-[''] after:flex-1 after:h-px after:bg-border">
           or
         </div>
 
@@ -279,7 +279,7 @@ export default function LoginPage() {
 
           <div className="mb-4">
             <label
-              className="block text-xs font-medium text-ink-2 mb-1.5 tracking-[0.02em]"
+              className="block text-sm font-medium text-ink-2 mb-1.5 tracking-[0.02em]"
               htmlFor="password"
             >
               Password
@@ -313,14 +313,14 @@ export default function LoginPage() {
               </button>
             </div>
             {errors.password && (
-              <div className="text-xs text-red-600 mt-1.5">
+              <div className="text-sm text-red-600 mt-1.5">
                 {errors.password}
               </div>
             )}
             <div className="flex justify-end mt-2">
               <Link
                 href="/forgot-password"
-                className="text-xs text-gold-dark underline underline-offset-2 hover:text-navy"
+                className="text-sm text-gold-dark underline underline-offset-2 hover:text-navy"
               >
                 Forgot password?
               </Link>

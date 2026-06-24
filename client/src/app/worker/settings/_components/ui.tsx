@@ -12,8 +12,8 @@ import { cn } from "@/lib/utils";
 
 /* ── Shared button classes (mirrors the dashboard's button system) ────────── */
 const BTN_BASE =
-  "inline-flex items-center justify-center gap-1.5 font-sans font-medium text-[13px] px-3.5 py-2 rounded-lg border-[0.5px] border-transparent cursor-pointer no-underline whitespace-nowrap transition-[background-color,border-color,color,opacity] duration-150 disabled:opacity-55 disabled:cursor-default";
-const BTN_SM = "text-xs px-[11px] py-1.5";
+  "inline-flex items-center justify-center gap-1.5 font-sans font-medium text-sm px-3.5 py-2 rounded-lg border-[0.5px] border-transparent cursor-pointer no-underline whitespace-nowrap transition-[background-color,border-color,color,opacity] duration-150 disabled:opacity-55 disabled:cursor-default";
+const BTN_SM = "text-sm px-[11px] py-1.5";
 export const BTN_GOLD =
   "bg-gold text-navy border-gold enabled:hover:bg-gold-dark enabled:hover:border-gold-dark";
 export const BTN_OUTLINE =
@@ -30,7 +30,7 @@ export function btn(variant: string, sm = false) {
 
 /* ── Shared form-field input class ────────────────────────────────────────── */
 export const FIELD_INPUT =
-  "w-full font-sans text-[13px] text-ink py-[9px] px-3 border-[0.5px] border-border rounded-[7px] bg-cream transition-[border-color,background-color] duration-150 outline-none focus:border-gold focus:bg-white";
+  "w-full font-sans text-sm text-ink py-[9px] px-3 border-[0.5px] border-border rounded-[7px] bg-cream transition-[border-color,background-color] duration-150 outline-none focus:border-gold focus:bg-white";
 
 /* ── Panel shell ──────────────────────────────────────────────────────────── */
 export function Panel({
@@ -66,7 +66,7 @@ export function Panel({
           {action}
         </div>
         {subtitle && (
-          <div className="text-xs text-ink-3 mt-0.5">{subtitle}</div>
+          <div className="text-sm text-ink-3 mt-0.5">{subtitle}</div>
         )}
       </div>
       {children}
@@ -129,7 +129,7 @@ export function Field({
   return (
     <div className="flex flex-col mb-4 last:mb-0">
       <label
-        className="text-xs font-medium text-ink-2 mb-1.5"
+        className="text-sm font-medium text-ink-2 mb-1.5"
         htmlFor={htmlFor}
       >
         {label}
@@ -196,7 +196,7 @@ export function ToggleRow({
   return (
     <div className="flex items-center justify-between gap-4 py-3 border-b-[0.5px] border-cream-2 last:border-b-0">
       <div className="min-w-0">
-        <div className="text-[13px] font-medium text-ink">{title}</div>
+        <div className="text-sm font-medium text-ink">{title}</div>
         {sub && (
           <div className="text-[11px] text-ink-3 mt-0.5 leading-[1.45]">
             {sub}

@@ -39,7 +39,7 @@ const reasons: {
         No brokers. <em className="italic font-light text-gold">No cuts.</em>
       </>
     ),
-    desc: "Agents take 20–40% and give you no guarantee. On Tesilix you talk directly to the worker, agree your own price, and keep every shilling.",
+    desc: "Agents take 20–40% and give you no guarantee. On Tesilix you talk directly to the worker, agree your own price, and keep 100% of what you earn.",
     icon: (
       <>
         <line x1="12" y1="1" x2="12" y2="23" />
@@ -94,7 +94,7 @@ export default function WhyTesilix() {
               key={r.num}
               className="relative bg-navy px-[26px] py-8 md:px-9 md:py-10 transition-colors hover:bg-navy-2"
             >
-              <div className="font-serif text-xs font-light text-gold tracking-[0.08em] mb-5 opacity-70">
+              <div className="font-serif text-sm font-light text-gold tracking-[0.08em] mb-5 opacity-70">
                 {r.num}
               </div>
               <div className="font-serif text-[22px] font-normal text-white leading-tight mb-3">

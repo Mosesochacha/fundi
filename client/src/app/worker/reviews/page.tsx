@@ -53,7 +53,7 @@ export default function WorkerReviewsPage() {
           <h1 className="font-serif text-[26px] font-normal text-ink">
             Reviews
           </h1>
-          <p className="text-[13px] text-ink-3">
+          <p className="text-sm text-ink-3">
             What employers say about your work.
           </p>
         </div>
@@ -92,7 +92,7 @@ export default function WorkerReviewsPage() {
                 {(summary?.rating ?? 0).toFixed(1)}
               </div>
               <Stars value={summary?.rating ?? 0} size={18} />
-              <div className="text-[13px] text-ink-3 mb-2">
+              <div className="text-sm text-ink-3 mb-2">
                 {summary?.reviewCount}{" "}
                 {summary?.reviewCount === 1 ? "review" : "reviews"}
               </div>
@@ -104,7 +104,7 @@ export default function WorkerReviewsPage() {
                   return (
                     <div
                       key={row.stars}
-                      className="grid grid-cols-[28px_1fr_20px] items-center gap-2 text-xs text-ink-3"
+                      className="grid grid-cols-[28px_1fr_20px] items-center gap-2 text-sm text-ink-3"
                     >
                       <span>{row.stars}★</span>
                       <span className="h-1.5 rounded-[3px] bg-border overflow-hidden">
@@ -137,14 +137,14 @@ function ReviewItem({ rev }: { rev: WorkerReview }) {
   return (
     <div className={`${CARD} flex flex-col gap-2`}>
       <div className="flex items-center gap-2.5">
-        <span className="flex-none w-9 h-9 rounded-full grid place-items-center bg-gold-light text-gold-dark text-[13px] font-semibold">
+        <span className="flex-none w-9 h-9 rounded-full grid place-items-center bg-gold-light text-gold-dark text-sm font-semibold">
           {initialsOf(rev.authorName)}
         </span>
         <div className="flex flex-col min-w-0">
           <span className="font-semibold text-ink text-sm">
             {rev.authorName}
           </span>
-          <span className="text-xs text-ink-3">{rev.jobTitle}</span>
+          <span className="text-sm text-ink-3">{rev.jobTitle}</span>
         </div>
         <div className="ml-auto flex flex-col items-end gap-0.5">
           <Stars value={rev.rating} size={13} />

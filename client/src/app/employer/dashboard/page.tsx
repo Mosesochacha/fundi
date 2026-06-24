@@ -81,7 +81,7 @@ const mapsHref = (location: string) =>
 /* Shared button class strings (ported from dashboard.css .ed-btn*). */
 const BTN_BASE =
   "inline-flex items-center justify-center gap-1.5 font-medium rounded-lg border whitespace-nowrap cursor-pointer transition-colors disabled:opacity-60 disabled:cursor-not-allowed no-underline";
-const BTN_SM = "text-xs px-[11px] py-1.5";
+const BTN_SM = "text-sm px-[11px] py-1.5";
 const BTN_GOLD =
   "bg-gold text-navy border-gold hover:bg-gold-dark hover:border-gold-dark";
 const BTN_OUTLINE =
@@ -141,11 +141,11 @@ export default function EmployerDashboardPage() {
         {/* ── Welcome row ─────────────────────────────────────────────── */}
         <div className="flex items-end justify-between gap-4 flex-wrap">
           <div>
-            <div className="text-xs text-ink-3">{longDate(now)}</div>
+            <div className="text-sm text-ink-3">{longDate(now)}</div>
             <h1 className="font-serif text-[26px] font-normal text-ink mt-0.5 leading-[1.15]">
               {greeting(now)}, {firstName}.
             </h1>
-            <p className="text-[13px] text-ink-3 mt-1">
+            <p className="text-sm text-ink-3 mt-1">
               {summary(stats?.activeJobs ?? 0, stats?.pendingResponses ?? 0)}
             </p>
           </div>
@@ -168,7 +168,7 @@ export default function EmployerDashboardPage() {
         {isError && (
           <button
             type="button"
-            className="block w-full text-center bg-red-50 text-red-600 border border-red-200 rounded-lg p-3 text-xs font-medium cursor-pointer"
+            className="block w-full text-center bg-red-50 text-red-600 border border-red-200 rounded-lg p-3 text-sm font-medium cursor-pointer"
             onClick={() => refetch()}
           >
             Could not load your dashboard. Tap to retry.
@@ -289,10 +289,10 @@ function Avatar({
 }) {
   const dims =
     size === "sm"
-      ? "w-9 h-9 text-xs"
+      ? "w-9 h-9 text-sm"
       : size === "xs"
         ? "w-8 h-8 text-[11px]"
-        : "w-10 h-10 text-[13px]";
+        : "w-10 h-10 text-sm";
   return (
     <span
       className={`${dims} rounded-full bg-gold-light border-[1.5px] border-gold/30 text-gold-dark font-semibold flex items-center justify-center overflow-hidden`}
@@ -329,7 +329,7 @@ function CardHead({ children }: { children: React.ReactNode }) {
 
 function CardTitle({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-2 text-[13px] font-semibold text-ink">
+    <div className="flex items-center gap-2 text-sm font-semibold text-ink">
       {children}
     </div>
   );
@@ -345,7 +345,7 @@ function CardLink({
   return (
     <Link
       href={href}
-      className="text-xs text-gold-dark underline whitespace-nowrap"
+      className="text-sm text-gold-dark underline whitespace-nowrap"
     >
       {children}
     </Link>
@@ -465,19 +465,19 @@ function ActiveJobItem({
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-[13px] font-medium text-ink">
+          <span className="text-sm font-medium text-ink">
             {job.workerName}
             {job.trade ? ` - ${job.trade}` : ""}
           </span>
           <JobBadge job={job} />
         </div>
-        <div className="text-xs text-ink-3 mt-1">
+        <div className="text-sm text-ink-3 mt-1">
           {job.jobType} · {job.location}
         </div>
 
         {confirm === "complete" ? (
           <div className="mt-2.5 px-3 py-2.5 bg-cream border border-border rounded-lg">
-            <div className="text-xs font-semibold text-ink">
+            <div className="text-sm font-semibold text-ink">
               Mark this job as complete?
             </div>
             <div className="text-[11px] text-ink-3 mt-0.5 leading-normal">
@@ -503,7 +503,7 @@ function ActiveJobItem({
           </div>
         ) : confirm === "cancel" ? (
           <div className="mt-2.5 px-3 py-2.5 bg-cream border border-border rounded-lg">
-            <div className="text-xs font-semibold text-ink">
+            <div className="text-sm font-semibold text-ink">
               Cancel this request?
             </div>
             <div className="text-[11px] text-ink-3 mt-0.5 leading-normal">
@@ -621,7 +621,7 @@ function SuggestedFundisCard({
               <Avatar name={w.name} url={w.avatarUrl} size="sm" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-[13px] font-medium text-ink">{w.name}</div>
+              <div className="text-sm font-medium text-ink">{w.name}</div>
               <div className="text-[11px] text-ink-2 mt-px">
                 {w.trade}
                 {w.location ? ` · ${w.location}` : ""}
@@ -719,7 +719,7 @@ function QuickAction({
       <span className="w-7 h-7 rounded-lg bg-gold-light text-gold-dark flex items-center justify-center">
         {icon}
       </span>
-      <span className="text-xs font-medium text-ink">{label}</span>
+      <span className="text-sm font-medium text-ink">{label}</span>
       <span className="text-[10px] text-ink-3">{sub}</span>
     </Link>
   );
@@ -749,14 +749,14 @@ function SpendingCard({ items, total }: { items: SpendItem[]; total: number }) {
             <div key={it.category} className="px-4 py-3 border-b border-border">
               <div className="flex items-baseline justify-between gap-2">
                 <span>
-                  <span className="text-xs font-medium text-ink">
+                  <span className="text-sm font-medium text-ink">
                     {it.category}
                   </span>{" "}
                   <span className="text-[11px] text-ink-3">
                     · {it.jobCount} job{it.jobCount === 1 ? "" : "s"}
                   </span>
                 </span>
-                <span className="text-xs font-medium text-ink-2">
+                <span className="text-sm font-medium text-ink-2">
                   KSh {fmtMoney(it.amount)}
                 </span>
               </div>
@@ -769,7 +769,7 @@ function SpendingCard({ items, total }: { items: SpendItem[]; total: number }) {
             </div>
           ))}
           <div className="flex items-center justify-between px-4 py-3">
-            <span className="text-xs font-medium text-ink-2">
+            <span className="text-sm font-medium text-ink-2">
               Total this month
             </span>
             <span className="font-serif text-base text-gold-dark">
@@ -818,7 +818,7 @@ function RecentHiresCard({
               <Avatar name={h.workerName} url={h.avatarUrl} size="xs" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-xs font-medium text-ink">
+              <div className="text-sm font-medium text-ink">
                 {h.workerName} · {h.jobType}
               </div>
               <div className="text-[11px] text-ink-3 mt-0.5">
@@ -890,7 +890,7 @@ function EmptyState({
     >
       <span className="text-ink-4 leading-none">{icon}</span>
       <div className="text-sm font-medium text-ink-2 mt-3">{title}</div>
-      <p className="text-[13px] text-ink-3 leading-relaxed max-w-[260px] mt-1">
+      <p className="text-sm text-ink-3 leading-relaxed max-w-[260px] mt-1">
         {sub}
       </p>
       {cta && (
@@ -915,12 +915,12 @@ function FirstRunHero() {
       <div className="text-sm font-medium text-ink-2 mt-3">
         Find your first fundi
       </div>
-      <p className="text-[13px] text-ink-3 leading-relaxed max-w-[260px] mt-1">
+      <p className="text-sm text-ink-3 leading-relaxed max-w-[260px] mt-1">
         Browse verified plumbers, electricians, carpenters and more near you.
       </p>
       <Link
         href="/employer/search"
-        className={`${BTN_BASE} text-[13px] px-3.5 py-2 ${BTN_GOLD} mt-3.5`}
+        className={`${BTN_BASE} text-sm px-3.5 py-2 ${BTN_GOLD} mt-3.5`}
       >
         Browse workers
       </Link>

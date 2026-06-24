@@ -53,11 +53,11 @@ export default function EmployerReviewsPage() {
     <Shell role="employer" user={shellUser} currentPath={pathname}>
       <div className="flex flex-col gap-4 text-ink-2">
         <div>
-          <div className="text-xs text-ink-3">Feedback</div>
+          <div className="text-sm text-ink-3">Feedback</div>
           <h1 className="font-serif text-[26px] font-normal text-ink mt-0.5 leading-[1.15]">
             My reviews.
           </h1>
-          <p className="text-[13px] text-ink-3 mt-1">
+          <p className="text-sm text-ink-3 mt-1">
             Ratings you’ve left for the fundis you’ve hired.
           </p>
         </div>
@@ -95,7 +95,7 @@ export default function EmployerReviewsPage() {
                     {r.jobType} · {r.location}
                   </div>
                   {r.reviewText && (
-                    <p className="text-xs text-ink-2 leading-relaxed mt-2 italic">
+                    <p className="text-sm text-ink-2 leading-relaxed mt-2 italic">
                       “{r.reviewText}”
                     </p>
                   )}

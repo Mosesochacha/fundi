@@ -71,9 +71,9 @@ const shortDate = (iso: string) =>
 const CARD = "bg-white border-[0.5px] border-border rounded-xl overflow-hidden";
 const CARD_HEAD =
   "flex items-center justify-between gap-2 px-4 py-3.5 border-b-[0.5px] border-border";
-const CARD_TITLE = "flex items-center gap-2 text-[13px] font-semibold text-ink";
+const CARD_TITLE = "flex items-center gap-2 text-sm font-semibold text-ink";
 const CARD_LINK =
-  "text-xs text-gold-dark no-underline whitespace-nowrap hover:underline";
+  "text-sm text-gold-dark no-underline whitespace-nowrap hover:underline";
 
 export default function WorkerDashboardPage() {
   const pathname = usePathname();
@@ -111,7 +111,7 @@ export default function WorkerDashboardPage() {
         {/* ── Welcome row ─────────────────────────────────────────────── */}
         <div className="flex items-end justify-between gap-4 flex-wrap">
           <div>
-            <div className="text-[13px] text-ink-3">{longDate(now)}</div>
+            <div className="text-sm text-ink-3">{longDate(now)}</div>
             <h1 className="font-serif text-[26px] font-normal text-ink mt-0.5 leading-[1.15]">
               {greeting(now)}, {firstName}.
             </h1>
@@ -138,7 +138,7 @@ export default function WorkerDashboardPage() {
         {isError && (
           <button
             type="button"
-            className="block w-full text-center bg-red-50 text-red-600 border border-red-200 rounded-lg p-3 text-xs font-medium font-sans cursor-pointer"
+            className="block w-full text-center bg-red-50 text-red-600 border border-red-200 rounded-lg p-3 text-sm font-medium font-sans cursor-pointer"
             onClick={() => refetch()}
           >
             Could not load your dashboard. Tap to retry.
@@ -250,7 +250,7 @@ function StatCard({
         >
           {value}
         </div>
-        <div className="text-xs font-medium text-ink-2 mt-2">{label}</div>
+        <div className="text-sm font-medium text-ink-2 mt-2">{label}</div>
         {trend ? (
           <div className="inline-flex items-center gap-[3px] bg-green-100 text-green-700 text-[10px] font-semibold rounded-full px-[7px] py-0.5 mt-2">
             <TrendingUp size={11} /> {trend}
@@ -318,12 +318,12 @@ function JobRequestItem({ req }: { req: JobRequest }) {
         isNew && "border-l-[3px] border-l-gold pl-[13px]",
       )}
     >
-      <div className="w-9 h-9 rounded-full bg-gold-light border-[1.5px] border-gold/30 text-gold-dark text-xs font-semibold flex items-center justify-center shrink-0">
+      <div className="w-9 h-9 rounded-full bg-gold-light border-[1.5px] border-gold/30 text-gold-dark text-sm font-semibold flex items-center justify-center shrink-0">
         {initialsOf(req.clientName)}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-[13px] font-medium text-ink">
+          <span className="text-sm font-medium text-ink">
             {req.jobType} · {req.location}
           </span>
           <span
@@ -343,7 +343,7 @@ function JobRequestItem({ req }: { req: JobRequest }) {
             <MapPin size={12} /> {req.location}
           </span>
         </div>
-        <p className="text-xs text-ink-2 mt-1.5 leading-normal line-clamp-2">
+        <p className="text-sm text-ink-2 mt-1.5 leading-normal line-clamp-2">
           {req.description}
         </p>
         <div className="flex gap-2 mt-2.5">
@@ -420,7 +420,7 @@ function UpcomingJobsCard({ jobs }: { jobs: UpcomingJob[] }) {
                 </span>
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-[13px] font-medium text-ink">
+                <div className="text-sm font-medium text-ink">
                   {j.title} · {j.clientName}
                 </div>
                 <div className="text-[11px] text-ink-3 mt-0.5">
@@ -476,7 +476,7 @@ function ProfileStrengthCard({
         {completed.map((item) => (
           <div
             key={item.key}
-            className="flex items-center gap-2 text-xs text-ink-2 mb-2 last:mb-0"
+            className="flex items-center gap-2 text-sm text-ink-2 mb-2 last:mb-0"
           >
             <span className="shrink-0 inline-flex text-green-600">
               <CheckCircle2 size={15} />
@@ -487,7 +487,7 @@ function ProfileStrengthCard({
         {todo.map((item) => (
           <div
             key={item.key}
-            className="flex items-center gap-2 text-xs text-ink-3 mb-2 last:mb-0"
+            className="flex items-center gap-2 text-sm text-ink-3 mb-2 last:mb-0"
           >
             <span className="shrink-0 inline-flex text-ink-3">
               <CircleDashed size={15} />
@@ -566,7 +566,7 @@ function QuickAction({
       <span className="w-7 h-7 rounded-lg bg-gold-light text-gold-dark flex items-center justify-center">
         {icon}
       </span>
-      <span className="text-xs font-medium text-ink">{label}</span>
+      <span className="text-sm font-medium text-ink">{label}</span>
       <span className="text-[10px] text-ink-3">{sub}</span>
     </>
   );
@@ -616,7 +616,7 @@ function ReviewsCard({ reviews }: { reviews: Review[] }) {
               <span className="w-[26px] h-[26px] rounded-full bg-gold-light border-[1.5px] border-gold/30 text-gold-dark text-[10px] font-semibold flex items-center justify-center shrink-0">
                 {initialsOf(rev.authorName)}
               </span>
-              <span className="flex-1 text-xs font-medium text-ink">
+              <span className="flex-1 text-sm font-medium text-ink">
                 {rev.authorName}
               </span>
               <Stars value={rev.rating} />
@@ -679,7 +679,7 @@ function EmptyState({
     >
       <span className="text-border leading-none">{icon}</span>
       <div className="text-sm font-medium text-ink-2 mt-3">{title}</div>
-      <p className="text-[13px] text-ink-3 leading-relaxed max-w-[240px] mt-1">
+      <p className="text-sm text-ink-3 leading-relaxed max-w-[240px] mt-1">
         {sub}
       </p>
       {cta && (

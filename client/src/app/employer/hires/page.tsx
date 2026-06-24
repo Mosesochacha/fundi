@@ -54,11 +54,11 @@ export default function EmployerHiresPage() {
     <Shell role="employer" user={shellUser} currentPath={pathname}>
       <div className="flex flex-col gap-4 text-ink-2">
         <div>
-          <div className="text-xs text-ink-3">History</div>
+          <div className="text-sm text-ink-3">History</div>
           <h1 className="font-serif text-[26px] font-normal text-ink mt-0.5 leading-[1.15]">
             Past hires.
           </h1>
-          <p className="text-[13px] text-ink-3 mt-1">
+          <p className="text-sm text-ink-3 mt-1">
             Workers you’ve completed jobs with - hire them again in a tap.
           </p>
         </div>

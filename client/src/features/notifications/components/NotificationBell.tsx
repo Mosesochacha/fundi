@@ -206,7 +206,7 @@ export default function NotificationBell({
             {unread > 0 && (
               <button
                 type="button"
-                className="border-none bg-transparent text-gold-dark text-xs font-semibold cursor-pointer p-0 hover:underline"
+                className="border-none bg-transparent text-gold-dark text-sm font-semibold cursor-pointer p-0 hover:underline"
                 onClick={() => markAll.mutate()}
               >
                 Mark all read
@@ -221,11 +221,11 @@ export default function NotificationBell({
             )}
           >
             {isLoading ? (
-              <div className="flex flex-col items-center gap-2.5 px-4 py-10 text-ink-3 text-[13px]">
+              <div className="flex flex-col items-center gap-2.5 px-4 py-10 text-ink-3 text-sm">
                 Loading…
               </div>
             ) : notifications.length === 0 ? (
-              <div className="flex flex-col items-center gap-2.5 px-4 py-10 text-ink-3 text-[13px]">
+              <div className="flex flex-col items-center gap-2.5 px-4 py-10 text-ink-3 text-sm">
                 <Bell size={26} className="text-ink-4" />
                 <span>You're all caught up</span>
               </div>
@@ -248,11 +248,11 @@ export default function NotificationBell({
                       <Icon size={15} />
                     </span>
                     <span className="flex flex-col gap-0.5 min-w-0 flex-1">
-                      <span className="text-[13px] font-semibold text-ink leading-[1.3]">
+                      <span className="text-sm font-semibold text-ink leading-[1.3]">
                         {n.title}
                       </span>
                       {n.body && (
-                        <span className="text-xs text-ink-2 overflow-hidden text-ellipsis whitespace-nowrap">
+                        <span className="text-sm text-ink-2 overflow-hidden text-ellipsis whitespace-nowrap">
                           {n.body}
                         </span>
                       )}

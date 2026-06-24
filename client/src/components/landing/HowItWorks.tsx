@@ -47,7 +47,7 @@ export default function HowItWorks() {
         <div className="reveal grid grid-cols-1 md:grid-cols-3 gap-px mt-14 bg-border border border-border rounded-xl overflow-hidden">
           {STEPS.map((step) => (
             <div key={step.num} className="bg-cream px-6 py-8 md:px-8 md:py-10">
-              <div className="font-serif text-5xl font-light text-cream-2 leading-none mb-5">
+              <div className="font-serif text-5xl font-light text-gold-dark/45 leading-none mb-5">
                 {step.num}
               </div>
               <div className="w-10 h-10 rounded-lg bg-gold-light border border-gold/20 flex items-center justify-center mb-4">

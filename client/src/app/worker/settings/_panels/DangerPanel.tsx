@@ -89,9 +89,7 @@ export default function DangerPanel() {
         {/* Pause */}
         <div className="flex items-center justify-between gap-4 py-4 border-b-[0.5px] border-cream-2 first:pt-0 last:border-b-0 last:pb-0">
           <div>
-            <div className="text-[13px] font-medium text-ink">
-              Pause account
-            </div>
+            <div className="text-sm font-medium text-ink">Pause account</div>
             <div className="text-[11px] text-ink-3 mt-[3px] leading-[1.5] max-w-[420px]">
               Temporarily hide your profile from search and stop receiving
               requests. Reactivate anytime.
@@ -109,9 +107,7 @@ export default function DangerPanel() {
         {/* Export */}
         <div className="flex items-center justify-between gap-4 py-4 border-b-[0.5px] border-cream-2 first:pt-0 last:border-b-0 last:pb-0">
           <div>
-            <div className="text-[13px] font-medium text-ink">
-              Export my data
-            </div>
+            <div className="text-sm font-medium text-ink">Export my data</div>
             <div className="text-[11px] text-ink-3 mt-[3px] leading-[1.5] max-w-[420px]">
               Download all your profile data, job history, messages, and
               reviews.
@@ -131,7 +127,7 @@ export default function DangerPanel() {
         {/* Delete */}
         <div className="flex items-center justify-between gap-4 py-4 border-b-[0.5px] border-cream-2 first:pt-0 last:border-b-0 last:pb-0">
           <div>
-            <div className="text-[13px] font-medium text-red-600">
+            <div className="text-sm font-medium text-red-600">
               Delete account
             </div>
             <div className="text-[11px] text-ink-3 mt-[3px] leading-[1.5] max-w-[420px]">
@@ -175,7 +171,7 @@ export default function DangerPanel() {
             </>
           }
         >
-          <p className="text-[13px] text-ink-2 leading-[1.55] mt-2">
+          <p className="text-sm text-ink-2 leading-[1.55] mt-2">
             You won&apos;t appear in search until you reactivate. You can turn
             your account back on at any time.
           </p>
@@ -229,13 +225,13 @@ export default function DangerPanel() {
           }
         >
           {deleteStep === 1 ? (
-            <p className="text-[13px] text-ink-2 leading-[1.55] mt-2">
+            <p className="text-sm text-ink-2 leading-[1.55] mt-2">
               This permanently deletes your profile, job history, messages, and
               reviews. This action cannot be undone.
             </p>
           ) : (
             <>
-              <p className="text-[13px] text-ink-2 leading-[1.55] mt-2">
+              <p className="text-sm text-ink-2 leading-[1.55] mt-2">
                 Type <strong>DELETE</strong> to confirm.
               </p>
               <input

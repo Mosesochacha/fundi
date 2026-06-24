@@ -18,10 +18,10 @@ const OTP_IDS = ["otp-0", "otp-1", "otp-2", "otp-3"];
 const SEG_IDS = ["seg-1", "seg-2", "seg-3", "seg-4"];
 
 const LABEL_CLASS =
-  "block text-xs font-medium text-ink-2 mb-1.5 tracking-[0.02em]";
-const ERR_CLASS = "text-xs text-red-600 mt-1.5";
+  "block text-sm font-medium text-ink-2 mb-1.5 tracking-[0.02em]";
+const ERR_CLASS = "text-sm text-red-600 mt-1.5";
 const LINK_CLASS =
-  "text-xs text-gold-dark underline underline-offset-2 hover:text-navy disabled:opacity-45 disabled:cursor-default disabled:pointer-events-none";
+  "text-sm text-gold-dark underline underline-offset-2 hover:text-navy disabled:opacity-45 disabled:cursor-default disabled:pointer-events-none";
 const BTN_CLASS =
   "w-full mt-5 py-3 rounded-md text-sm font-medium bg-gold text-navy transition-all hover:bg-gold-dark disabled:opacity-60 disabled:cursor-not-allowed";
 const ICON_WRAP =
@@ -208,7 +208,7 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen bg-cream text-ink font-sans flex flex-col items-center justify-center px-4 pt-10 pb-14">
       <div className="text-center mb-6">
         <Logo href="/" size="md" />
-        <div className="text-xs text-ink-3 mt-0.5">
+        <div className="text-sm text-ink-3 mt-0.5">
           The global skilled worker marketplace
         </div>
       </div>
@@ -227,7 +227,7 @@ export default function ForgotPasswordPage() {
               Forgot your{" "}
               <em className="italic font-light text-gold-dark">password?</em>
             </div>
-            <p className="text-[13px] text-ink-3 text-center mb-6 leading-relaxed">
+            <p className="text-sm text-ink-3 text-center mb-6 leading-relaxed">
               No worries. Enter your email or phone and we’ll send you a reset
               code.
             </p>
@@ -256,7 +256,7 @@ export default function ForgotPasswordPage() {
               {sending ? "Sending…" : "Send reset code"}
             </button>
 
-            <p className="text-center mt-4 text-[13px] text-ink-3">
+            <p className="text-center mt-4 text-sm text-ink-3">
               Remember your password?{" "}
               <Link href="/login" className={LINK_CLASS}>
                 Sign in →
@@ -278,7 +278,7 @@ export default function ForgotPasswordPage() {
               Enter the{" "}
               <em className="italic font-light text-gold-dark">code</em>
             </div>
-            <p className="text-[13px] text-ink-3 text-center mb-6 leading-relaxed">
+            <p className="text-sm text-ink-3 text-center mb-6 leading-relaxed">
               {isEmail
                 ? "We sent a 4-digit code to your email. Enter it below."
                 : "We sent a 4-digit code to your phone number. Enter it below."}
@@ -305,12 +305,12 @@ export default function ForgotPasswordPage() {
               ))}
             </div>
             {otpError && (
-              <div className="text-xs text-red-600 mt-2 text-center">
+              <div className="text-sm text-red-600 mt-2 text-center">
                 {otpError}
               </div>
             )}
 
-            <div className="text-xs text-ink-3 text-center mt-3.5">
+            <div className="text-sm text-ink-3 text-center mt-3.5">
               Didn’t get it?{" "}
               <button
                 type="button"
@@ -331,7 +331,7 @@ export default function ForgotPasswordPage() {
               {verifying ? "Verifying…" : "Verify code"}
             </button>
 
-            <p className="text-center mt-4 text-[13px] text-ink-3">
+            <p className="text-center mt-4 text-sm text-ink-3">
               <button
                 type="button"
                 className={LINK_CLASS}
@@ -356,7 +356,7 @@ export default function ForgotPasswordPage() {
               Set new{" "}
               <em className="italic font-light text-gold-dark">password</em>
             </div>
-            <p className="text-[13px] text-ink-3 text-center mb-6 leading-relaxed">
+            <p className="text-sm text-ink-3 text-center mb-6 leading-relaxed">
               Choose a strong password you haven’t used before.
             </p>
 
@@ -459,7 +459,7 @@ export default function ForgotPasswordPage() {
               Password{" "}
               <em className="italic font-light text-gold-dark">reset!</em>
             </div>
-            <p className="text-[13px] text-ink-3 text-center mb-6 leading-relaxed">
+            <p className="text-sm text-ink-3 text-center mb-6 leading-relaxed">
               Your password has been updated. You can now sign in with your new
               password.
             </p>
