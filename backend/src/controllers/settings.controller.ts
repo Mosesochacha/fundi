@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { AuthenticatedRequest } from '../middleware/verifyJWT';
 import db from '../models';
 import { sendSuccess, sendError, asyncHandler } from '../utils/helpers';
-import { HTTP_STATUS } from '../utils/constants';
+import { HTTP_STATUS, normalizeCurrency } from '../utils/constants';
 
 const NOTIFICATION_FIELDS = [
   'emailProfileViewed', 'emailNewFollower', 'emailPostLiked',
@@ -56,10 +56,15 @@ class SettingsController {
   });
 
   getPreferences = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-    const profile: any = await db.Profile.findOne({ where: { userId: req.user!.id } });
+    const [profile, user]: any = await Promise.all([
+      db.Profile.findOne({ where: { userId: req.user!.id } }),
+      db.User.findByPk(req.user!.id),
+    ]);
     if (!profile) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Profile not found');
     const data: Record<string, any> = {};
     PREFERENCE_FIELDS.forEach(f => { data[f] = profile[f]; });
+    // Currency is a per-user preference (lives on the User model alongside dailyRate).
+    data.currency = user?.currency ?? 'USD';
     return sendSuccess(res, 'Preferences retrieved', data);
   });
 
@@ -71,7 +76,18 @@ class SettingsController {
       if (f in req.body) updates[f] = req.body[f];
     });
     await profile.update(updates);
-    return sendSuccess(res, 'Preferences updated', updates);
+
+    // Currency is stored on the User model, not the Profile.
+    let currency: string | undefined;
+    if ('currency' in req.body) {
+      const normalized = normalizeCurrency(req.body.currency);
+      if (!normalized) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Invalid currency');
+      const user = await db.User.findByPk(req.user!.id);
+      if (user) await user.update({ currency: normalized });
+      currency = normalized;
+    }
+
+    return sendSuccess(res, 'Preferences updated', { ...updates, ...(currency ? { currency } : {}) });
   });
 
   checkUsername = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {

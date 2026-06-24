@@ -14,6 +14,7 @@ export class User extends Model {
   declare isProfileComplete: boolean;
   declare interestedTrades: string[] | null;
   declare dailyRate: number | null;
+  declare currency: string;
   declare status: "active" | "inactive" | "suspended";
   declare emailVerified: boolean;
   declare organizationId: string | null;
@@ -100,6 +101,12 @@ export function initModel(sequelize: Sequelize): typeof User {
         type: DataTypes.INTEGER,
         allowNull: true,
         comment: 'Worker daily rate (optional, in KSh)',
+      },
+      currency: {
+        type: DataTypes.STRING(3),
+        allowNull: false,
+        defaultValue: 'USD',
+        comment: 'User currency preference (3-letter ISO-ish code, e.g. USD/KES/EUR)',
       },
       status: {
         type: DataTypes.ENUM("active", "inactive", "suspended"),

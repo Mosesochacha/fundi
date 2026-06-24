@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import AuthService, { normalizePhone } from '../services/auth.service';
 import OTPService from '../services/otp.service';
 import { sendSuccess, sendError, asyncHandler, formatUserResponse, hashString } from '../utils/helpers';
-import { HTTP_STATUS, RESPONSE_MESSAGES } from '../utils/constants';
+import { HTTP_STATUS, RESPONSE_MESSAGES, normalizeCurrency } from '../utils/constants';
 import { AuthenticatedRequest } from '../middleware/verifyJWT';
 import {
   setAuthCookie,
@@ -38,7 +38,7 @@ class AuthController {
   register = asyncHandler(async (req: Request, res: Response) => {
     const {
       email, password, firstName, lastName, location, accountType,
-      phoneNumber, trade, interestedTrades, dailyRate, agreedToTerms,
+      phoneNumber, trade, interestedTrades, dailyRate, currency, agreedToTerms,
     } = req.body;
 
     if (!email || !password || !firstName || !lastName || !location || !accountType) {
@@ -90,6 +90,15 @@ class AuthController {
       return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Daily rate must be a positive number');
     }
 
+    let currencyCode: string | undefined;
+    if (currency !== undefined && currency !== null && currency !== '') {
+      const normalized = normalizeCurrency(currency);
+      if (!normalized) {
+        return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Invalid currency');
+      }
+      currencyCode = normalized;
+    }
+
     try {
       const result = await AuthService.register({
         email: email.toLowerCase().trim(),
@@ -102,6 +111,7 @@ class AuthController {
         trade: trade ? String(trade).trim() : undefined,
         interestedTrades: Array.isArray(interestedTrades) ? interestedTrades : [],
         dailyRate: parsedRate,
+        currency: currencyCode,
         agreedToTerms: !!agreedToTerms,
       });
 

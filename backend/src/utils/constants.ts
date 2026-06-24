@@ -256,6 +256,28 @@ export const CUSTOM_STATUS_MESSAGES: Record<number, string> = {
   [CUSTOM_STATUS_CODES.SYSTEM_FEATURE_DISABLED]: "This feature is currently disabled",
 };
 
+/**
+ * Per-user currency preference. Stored as a 3-letter ISO-ish code on the user
+ * record. Keep this in sync with the client's currency picker.
+ */
+export const ALLOWED_CURRENCIES = [
+  "USD", "EUR", "GBP", "KES", "NGN", "GHS",
+  "ZAR", "UGX", "TZS", "INR", "AED", "CAD",
+] as const;
+
+export type CurrencyCode = (typeof ALLOWED_CURRENCIES)[number];
+
+export const DEFAULT_CURRENCY: CurrencyCode = "USD";
+
+/** Normalise + validate a currency code; returns null when not allowed. */
+export const normalizeCurrency = (value: unknown): CurrencyCode | null => {
+  if (typeof value !== "string") return null;
+  const code = value.trim().toUpperCase();
+  return (ALLOWED_CURRENCIES as readonly string[]).includes(code)
+    ? (code as CurrencyCode)
+    : null;
+};
+
 export const RESPONSE_MESSAGES = {
   SUCCESS: "Operation successful",
   USER_CREATED: "User registered successfully",

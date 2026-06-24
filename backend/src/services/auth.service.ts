@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
 import { Op } from "sequelize";
 import db from "../models";
-import { JWT_CONFIG, USERNAME_CONFIG, REFRESH_GRACE_MS } from "../utils/constants";
+import { JWT_CONFIG, USERNAME_CONFIG, REFRESH_GRACE_MS, normalizeCurrency, DEFAULT_CURRENCY } from "../utils/constants";
 import {
   hashString,
   safeCompare,
@@ -23,6 +23,7 @@ export interface RegisterData {
   trade?: string;             // workers: their main trade
   interestedTrades?: string[]; // employers: trades they want to hire
   dailyRate?: number;         // workers: optional daily rate
+  currency?: string;          // per-user currency preference (defaults to USD)
   agreedToTerms?: boolean;
   username?: string;          // optional override; auto-generated when absent
   role?: "user" | "admin" | "moderator";
@@ -83,9 +84,19 @@ class AuthService {
   async register(userData: RegisterData) {
     const {
       email, password, firstName, lastName, location, accountType,
-      phoneNumber, trade, interestedTrades, dailyRate, agreedToTerms, role,
+      phoneNumber, trade, interestedTrades, dailyRate, currency, agreedToTerms, role,
     } = userData;
     const isWorker = accountType === "worker";
+    // Validate currency against the allowed set; reject an explicit bad value,
+    // fall back to the default when omitted.
+    let currencyCode = DEFAULT_CURRENCY;
+    if (currency !== undefined && currency !== null && currency !== "") {
+      const normalized = normalizeCurrency(currency);
+      if (!normalized) {
+        throw new Error("Invalid currency");
+      }
+      currencyCode = normalized;
+    }
     const t = await db.sequelize.transaction();
     try {
       const existingUser = await db.User.findOne({ where: { email }, transaction: t });
@@ -112,6 +123,7 @@ class AuthService {
           onboardingCompletedAt: new Date(),
           interestedTrades: isWorker ? [] : (interestedTrades || []),
           dailyRate: isWorker ? (dailyRate ?? null) : null,
+          currency: currencyCode,
           emailVerified: false,
           status: 'active',
           termsAccepted: !!agreedToTerms,

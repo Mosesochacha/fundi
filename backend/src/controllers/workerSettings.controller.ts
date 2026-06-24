@@ -6,7 +6,7 @@ import AuthService from '../services/auth.service';
 import OTPService from '../services/otp.service';
 import { getFileUrl } from '../middleware/upload';
 import { sendSuccess, sendError, asyncHandler, isValidEmail } from '../utils/helpers';
-import { HTTP_STATUS } from '../utils/constants';
+import { HTTP_STATUS, normalizeCurrency } from '../utils/constants';
 
 /* ─────────────────────────────────────────────────────────────────────────
    Worker settings (/worker/settings). Maps the page's WorkerSettings shape onto
@@ -73,6 +73,7 @@ function shapeSettings(user: any, profile: any) {
       location: profile.location ?? '',
       about: profile.bio ?? '',
       dailyRate: user.dailyRate ?? null,
+      currency: user.currency ?? 'USD',
       avatarUrl: profile.avatarUrl ?? null,
     },
     account: {
@@ -113,7 +114,7 @@ class WorkerSettingsController {
     const { user, profile } = await loadUserAndProfile(req);
     if (!user || !profile) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Profile not found');
 
-    const { firstName, lastName, username, profession, location, about, dailyRate } = req.body;
+    const { firstName, lastName, username, profession, location, about, dailyRate, currency } = req.body;
 
     const userUpdates: Record<string, any> = {};
     const profileUpdates: Record<string, any> = {};
@@ -164,6 +165,14 @@ class WorkerSettingsController {
         }
         userUpdates.dailyRate = Math.round(rate);
       }
+    }
+
+    if (currency !== undefined) {
+      const normalized = normalizeCurrency(currency);
+      if (!normalized) {
+        return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Invalid currency');
+      }
+      userUpdates.currency = normalized;
     }
 
     // Keep the profile's display name in sync with first/last name.

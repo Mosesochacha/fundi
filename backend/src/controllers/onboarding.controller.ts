@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { AuthenticatedRequest } from '../middleware/verifyJWT';
 import db from '../models';
 import { sendSuccess, sendError, asyncHandler } from '../utils/helpers';
-import { HTTP_STATUS } from '../utils/constants';
+import { HTTP_STATUS, normalizeCurrency } from '../utils/constants';
 
 /* ─────────────────────────────────────────────────────────────────────────
    First-time onboarding completion for OAuth (Google) users.
@@ -39,9 +39,18 @@ class OnboardingController {
         ? user.dailyRate
         : Number(String(rawRate).replace(/[^0-9.]/g, '')) || null;
 
+    const rawCurrency = req.body.currency;
+    let currency = user.currency;
+    if (rawCurrency !== undefined && rawCurrency !== null && rawCurrency !== '') {
+      const normalized = normalizeCurrency(rawCurrency);
+      if (!normalized) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Invalid currency');
+      currency = normalized;
+    }
+
     await user.update({
       accountType: 'worker',
       dailyRate,
+      currency,
       isProfileComplete: true,
       isOnboarded: true,
     });
@@ -67,9 +76,18 @@ class OnboardingController {
     const { user, profile } = await loadUserAndProfile(userId);
     if (!user || !profile) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Account not found');
 
+    const rawCurrency = req.body.currency;
+    let currency = user.currency;
+    if (rawCurrency !== undefined && rawCurrency !== null && rawCurrency !== '') {
+      const normalized = normalizeCurrency(rawCurrency);
+      if (!normalized) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Invalid currency');
+      currency = normalized;
+    }
+
     await user.update({
       accountType: 'employer',
       interestedTrades,
+      currency,
       isProfileComplete: true,
       isOnboarded: true,
     });
