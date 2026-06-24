@@ -1,10 +1,10 @@
 "use client";
 
 import { ChevronDown, Menu, X } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { LogoMark } from "@/components/Logo";
 import { useAuth } from "@/features/auth";
 import { NotificationBell } from "@/features/notifications";
 import { dashboardPathForRole } from "@/lib/authRedirect";
@@ -84,26 +84,15 @@ export default function LandingNav() {
         )}
       >
         <div className="mx-auto flex h-full w-full max-w-[1080px] items-center justify-between px-4 md:px-8">
-          <Link
-            href="/"
-            className={cn(
-              "inline-flex items-center gap-2 font-serif text-[22px] font-medium no-underline tracking-[-0.5px]",
-              isBrowse ? "text-ink" : "text-navy",
-            )}
-          >
-            <LogoMark size={26} variant="navy" />
-            <span>
-              Tesilix
-              <span
-                className={cn(
-                  isBrowse
-                    ? "text-gold-dark font-medium"
-                    : "italic font-light text-gold",
-                )}
-              >
-                .
-              </span>
-            </span>
+          <Link href="/" className="inline-flex items-center no-underline">
+            <Image
+              src="/brand/lightlogo.png"
+              alt="Tesilix"
+              width={1027}
+              height={219}
+              priority
+              className="h-9 w-auto"
+            />
           </Link>
 
           <div className="hidden md:flex items-center gap-8">
@@ -206,13 +195,16 @@ export default function LandingNav() {
           <div className="flex items-center justify-between">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 font-serif text-[22px] font-medium text-navy no-underline tracking-[-0.5px]"
+              className="inline-flex items-center no-underline"
               onClick={() => setMenuOpen(false)}
             >
-              <LogoMark size={26} variant="navy" />
-              <span>
-                Tesilix<span className="italic font-light text-gold">.</span>
-              </span>
+              <Image
+                src="/brand/lightlogo.png"
+                alt="Tesilix"
+                width={1027}
+                height={219}
+                className="h-9 w-auto"
+              />
             </Link>
             <button
               type="button"

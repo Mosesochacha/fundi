@@ -1,5 +1,5 @@
+import Image from "next/image";
 import Link from "next/link";
-import { Logo } from "@/components/Logo";
 
 const LINK_CLASS =
   "block text-[13px] text-white/40 mb-2.5 transition-colors hover:text-white";
@@ -60,7 +60,13 @@ export default function LandingFooter() {
         <div className="grid grid-cols-2 min-[480px]:grid-cols-2 md:grid-cols-[2fr_1fr_1fr_1fr] gap-7 md:gap-12 pb-12 border-b border-white/[0.07]">
           <div className="col-span-2 md:col-span-1">
             <div className="mb-3">
-              <Logo tone="light" size="md" />
+              <Image
+                src="/brand/darklogo.png"
+                alt="Tesilix"
+                width={1027}
+                height={219}
+                className="h-12 w-auto"
+              />
             </div>
             <p className="text-[13px] text-white/40 leading-[1.7] md:max-w-[240px]">
               The home for blue-collar workers in Kenya - built for the people
