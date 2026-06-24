@@ -1,10 +1,11 @@
 "use client";
 
-import { Bell, ChevronDown, Menu, X } from "lucide-react";
+import { ChevronDown, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/features/auth";
+import { NotificationBell } from "@/features/notifications";
 import { dashboardPathForRole } from "@/lib/authRedirect";
 
 const NAV_LINKS = [
@@ -80,14 +81,7 @@ export default function LandingNav() {
         <div className="nav-right">
           {isLoggedIn ? (
             <div className="nav-auth">
-              <button
-                type="button"
-                className="nav-bell"
-                aria-label="Notifications"
-              >
-                <Bell size={18} strokeWidth={1.75} />
-                <span className="nav-bell-dot" />
-              </button>
+              <NotificationBell variant="nav" />
               <Link
                 href={dashboardPathForRole(role)}
                 className="nav-avatar-pill"

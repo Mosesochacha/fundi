@@ -4,6 +4,7 @@ import db from '../models';
 import { sendSuccess, sendError, asyncHandler } from '../utils/helpers';
 import { HTTP_STATUS } from '../utils/constants';
 import { getIo } from '../middleware/websocket';
+import { createNotification, userIdForProfile } from '../services/notification.service';
 
 const JOB_ATTRS = ['id', 'employerId', 'workerId', 'title', 'location', 'description', 'scheduledAt', 'status'];
 
@@ -98,13 +99,22 @@ class JobsController {
     await createSystemMessage(conv, profileId, `Job request sent by ${(employer as any)?.fullName ?? 'employer'}`);
 
     // Real-time nudge so the worker's /requests page surfaces it immediately.
+    const employerName = (employer as any)?.fullName ?? 'An employer';
     const io = getIo();
     if (io) {
       io.to(String((worker as any).userId)).emit('new_request', {
         jobId: job.id,
-        employerName: (employer as any)?.fullName ?? 'An employer',
+        employerName,
       });
     }
+
+    await createNotification({
+      userId: String((worker as any).userId),
+      type: 'new_request',
+      title: `New job request from ${employerName}`,
+      body: title.trim(),
+      data: { conversationId: conv.id, jobId: job.id, actorName: employerName },
+    });
 
     return sendSuccess(res, 'Job request sent', {
       job: job.get({ plain: true }),
@@ -146,7 +156,21 @@ class JobsController {
       const conv = await (db as any).Conversation.findOne({ where: { linkedJobId: job.id } });
       if (conv) {
         const actor = await db.Profile.findByPk(profileId, { attributes: ['fullName'] });
-        await createSystemMessage(conv, profileId, message((actor as any)?.fullName ?? 'someone'));
+        const summary = message((actor as any)?.fullName ?? 'someone');
+        await createSystemMessage(conv, profileId, summary);
+
+        // Notify the other party (the one who didn't perform the transition).
+        const otherProfileId = profileId === job.workerId ? job.employerId : job.workerId;
+        const otherUserId = await userIdForProfile(otherProfileId);
+        if (otherUserId) {
+          await createNotification({
+            userId: otherUserId,
+            type: `job_${nextStatus}`,
+            title: summary,
+            body: job.title,
+            data: { conversationId: conv.id, jobId: job.id },
+          });
+        }
       }
 
       return sendSuccess(res, `Job ${nextStatus}`, { job: job.get({ plain: true }) });
@@ -182,7 +206,19 @@ class JobsController {
     const conv = await (db as any).Conversation.findOne({ where: { linkedJobId: job.id } });
     if (conv) {
       const actor = await db.Profile.findByPk(profileId, { attributes: ['fullName'] });
-      await createSystemMessage(conv, profileId, `${(actor as any)?.fullName ?? 'The employer'} left a ${rating}★ review`);
+      const summary = `${(actor as any)?.fullName ?? 'The employer'} left a ${rating}★ review`;
+      await createSystemMessage(conv, profileId, summary);
+
+      const workerUserId = await userIdForProfile(job.workerId);
+      if (workerUserId) {
+        await createNotification({
+          userId: workerUserId,
+          type: 'new_review',
+          title: summary,
+          body: text || null,
+          data: { conversationId: conv.id, jobId: job.id },
+        });
+      }
     }
 
     return sendSuccess(res, 'Review submitted', { job: job.get({ plain: true }) });

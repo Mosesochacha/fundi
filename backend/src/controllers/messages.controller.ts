@@ -5,6 +5,7 @@ import db from '../models';
 import { sendSuccess, sendError, asyncHandler } from '../utils/helpers';
 import { HTTP_STATUS } from '../utils/constants';
 import { getIo, isUserOnline } from '../middleware/websocket';
+import { createNotification } from '../services/notification.service';
 
 const SENDER_ATTRS = ['id', 'fullName', 'avatarUrl', 'username'];
 
@@ -172,17 +173,22 @@ class MessagesController {
 
     const plain = fullMessage.get({ plain: true });
 
-    // Emit to other participant's room via Socket.IO
-    const io = getIo();
-    if (io) {
-      const otherProfileId = conv.participant1Id === profileId ? conv.participant2Id : conv.participant1Id;
-      const otherProfile = await db.Profile.findByPk(otherProfileId, { attributes: ['userId'] });
-      if (otherProfile) {
-        io.to(String((otherProfile as any).userId)).emit('new_message', {
-          conversationId: conv.id,
-          message: plain,
-        });
-      }
+    // Notify + emit to the other participant's room via Socket.IO.
+    const otherProfileId = conv.participant1Id === profileId ? conv.participant2Id : conv.participant1Id;
+    const otherProfile = await db.Profile.findByPk(otherProfileId, { attributes: ['userId'] });
+    if (otherProfile) {
+      const recipientUserId = String((otherProfile as any).userId);
+      const io = getIo();
+      if (io) io.to(recipientUserId).emit('new_message', { conversationId: conv.id, message: plain });
+
+      const senderName = (plain as any).sender?.fullName ?? 'Someone';
+      await createNotification({
+        userId: recipientUserId,
+        type: 'new_message',
+        title: `${senderName} sent you a message`,
+        body: content.trim().slice(0, 120),
+        data: { conversationId: conv.id, actorName: senderName },
+      });
     }
 
     return sendSuccess(res, 'Message sent', { conversationId: conv.id, message: plain });

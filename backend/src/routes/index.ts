@@ -14,6 +14,7 @@ import sessionsRoutes from './sessions.routes';
 import photosRoutes from './photos.routes';
 import messagesRoutes from './messages.routes';
 import jobsRoutes from './jobs.routes';
+import notificationsRoutes from './notifications.routes';
 import searchRoutes from './search.routes';
 import workerRoutes from './worker.routes';
 import employerRoutes from './employer.routes';
@@ -52,5 +53,6 @@ router.use(sessionsRoutes);
 router.use(photosRoutes);
 router.use(messagesRoutes);
 router.use(jobsRoutes);
+router.use(notificationsRoutes);
 
 export default router;

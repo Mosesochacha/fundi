@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Bell,
   ChevronDown,
   LogOut,
   Menu,
@@ -13,6 +12,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { NotificationBell } from "@/features/notifications";
 import { useSetAvailability } from "@/features/worker/availability";
 import {
   type BadgeKey,
@@ -39,7 +39,6 @@ export interface ShellProps {
   unreadRequests?: number;
   openReports?: number;
   flaggedCount?: number;
-  hasNotifications?: boolean;
 }
 
 function VerifiedBadge() {
@@ -60,7 +59,6 @@ export default function Shell({
   unreadRequests,
   openReports,
   flaggedCount,
-  hasNotifications,
 }: ShellProps) {
   const pathname = usePathname();
   const activePath = currentPath ?? pathname ?? "";
@@ -232,14 +230,7 @@ export default function Shell({
         <header className="dash-topbar">
           <span className="dash-title">{pageTitle}</span>
           <div className="dash-topright">
-            <button
-              type="button"
-              className="dash-bell"
-              aria-label="Notifications"
-            >
-              <Bell size={16} />
-              {hasNotifications && <span className="dash-dot" />}
-            </button>
+            <NotificationBell variant="dash" />
             <div className="dash-userwrap" ref={menuRef}>
               <button
                 type="button"
@@ -309,17 +300,7 @@ export default function Shell({
             </Link>
           );
         })}
-        <button
-          type="button"
-          className="dash-bottomitem"
-          aria-label="Notifications"
-        >
-          <span className="dash-bottomicon">
-            <Bell size={19} />
-            {hasNotifications && <span className="dash-bottombadge" />}
-          </span>
-          Alerts
-        </button>
+        <NotificationBell variant="bottom" />
       </nav>
     </div>
   );
