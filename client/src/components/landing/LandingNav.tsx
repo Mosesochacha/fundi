@@ -4,6 +4,7 @@ import { ChevronDown, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { LogoMark } from "@/components/Logo";
 import { useAuth } from "@/features/auth";
 import { NotificationBell } from "@/features/notifications";
 import { dashboardPathForRole } from "@/lib/authRedirect";
@@ -85,19 +86,22 @@ export default function LandingNav() {
         <Link
           href="/"
           className={cn(
-            "font-serif text-[22px] font-medium no-underline tracking-[-0.5px]",
+            "inline-flex items-center gap-2 font-serif text-[22px] font-medium no-underline tracking-[-0.5px]",
             isBrowse ? "text-ink" : "text-navy",
           )}
         >
-          Tesilix
-          <span
-            className={cn(
-              isBrowse
-                ? "text-gold-dark font-medium"
-                : "italic font-light text-gold",
-            )}
-          >
-            .
+          <LogoMark size={26} variant="navy" />
+          <span>
+            Tesilix
+            <span
+              className={cn(
+                isBrowse
+                  ? "text-gold-dark font-medium"
+                  : "italic font-light text-gold",
+              )}
+            >
+              .
+            </span>
           </span>
         </Link>
 
@@ -200,10 +204,13 @@ export default function LandingNav() {
           <div className="flex items-center justify-between">
             <Link
               href="/"
-              className="font-serif text-[22px] font-medium text-navy no-underline tracking-[-0.5px]"
+              className="inline-flex items-center gap-2 font-serif text-[22px] font-medium text-navy no-underline tracking-[-0.5px]"
               onClick={() => setMenuOpen(false)}
             >
-              Tesilix<span className="italic font-light text-gold">.</span>
+              <LogoMark size={26} variant="navy" />
+              <span>
+                Tesilix<span className="italic font-light text-gold">.</span>
+              </span>
             </Link>
             <button
               type="button"

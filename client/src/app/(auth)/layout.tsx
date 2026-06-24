@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "@/components/Logo";
 
 export default function AuthLayout({
   children,
@@ -9,12 +10,7 @@ export default function AuthLayout({
     <div className="min-h-screen bg-cream flex flex-col items-center justify-center px-4 py-12">
       {/* Logo */}
       <div className="mb-8 text-center">
-        <Link
-          href="/"
-          className="font-serif text-2xl font-medium text-navy hover:opacity-80 transition-opacity"
-        >
-          Tesilix<span className="italic text-gold font-light">.</span>
-        </Link>
+        <Logo href="/" size="md" />
         <p className="text-sm text-ink-3 mt-1">
           The global skilled worker marketplace
         </p>

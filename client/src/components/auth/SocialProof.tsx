@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { Logo } from "@/components/Logo";
 
 const testimonials = [
   {
@@ -43,9 +44,9 @@ export default function SocialProof() {
   return (
     <div className="relative w-full h-full flex flex-col justify-between p-10 overflow-hidden">
       {/* Tesilix logo */}
-      <p className="relative z-10 text-white text-2xl font-medium font-serif">
-        Tesilix<span className="italic text-gold font-light">.</span>
-      </p>
+      <div className="relative z-10">
+        <Logo tone="light" size="md" />
+      </div>
 
       {/* Main content */}
       <div className="relative z-10 space-y-8">

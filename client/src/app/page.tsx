@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { CSSProperties, ReactNode } from "react";
+import { Logo } from "@/components/Logo";
 import LandingNav from "@/components/landing/LandingNav";
 import { auth } from "@/lib/auth";
 import { dashboardPathForRole } from "@/lib/authRedirect";
@@ -623,8 +624,8 @@ export default async function LandingPage() {
         <div className="max-w-[1080px] mx-auto">
           <div className="grid grid-cols-2 min-[480px]:grid-cols-2 md:grid-cols-[2fr_1fr_1fr_1fr] gap-7 md:gap-12 pb-12 border-b border-white/[0.07]">
             <div className="col-span-2 md:col-span-1">
-              <div className="font-serif text-xl font-medium text-white mb-3">
-                Tesilix<span className="italic font-light text-gold">.</span>
+              <div className="mb-3">
+                <Logo tone="light" size="md" />
               </div>
               <p className="text-[13px] text-white/40 leading-[1.7] md:max-w-[240px]">
                 The home for blue-collar workers in Kenya — built for the people

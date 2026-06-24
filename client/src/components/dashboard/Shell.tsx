@@ -12,6 +12,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { Logo, LogoMark } from "@/components/Logo";
 import { NotificationBell } from "@/features/notifications";
 import { useSetAvailability } from "@/features/worker/availability";
 import { cn } from "@/lib/utils";
@@ -117,17 +118,6 @@ export default function Shell({
     }
   }
 
-  const Logo = ({ className }: { className?: string }) => (
-    <span
-      className={cn(
-        "block font-serif text-xl font-medium text-white no-underline",
-        className,
-      )}
-    >
-      Tesilix<span className="italic font-light text-gold">.</span>
-    </span>
-  );
-
   const renderNav = (onNavigate?: () => void) => (
     <nav className="flex-1 overflow-y-auto pt-1.5 pb-3">
       {config.sections.map((section) => (
@@ -195,7 +185,7 @@ export default function Shell({
           href={config.sections[0].items[0].href}
           className="no-underline px-5 pt-[18px] pb-2.5"
         >
-          <Logo />
+          <Logo tone="light" size="md" />
         </Link>
         {renderNav()}
         {availabilityFooter}
@@ -206,10 +196,10 @@ export default function Shell({
         <div className="h-[52px] flex items-center justify-between px-3">
           <Link
             href={`/${role}/dashboard`}
-            className="w-[34px] h-[34px] rounded-[9px] bg-gold text-navy font-serif text-[19px] font-semibold flex items-center justify-center no-underline shrink-0"
+            className="flex items-center no-underline shrink-0"
             aria-label="Tesilix home"
           >
-            T
+            <LogoMark size={34} variant="navy" />
           </Link>
           <div className="flex items-center gap-2.5">
             <span className="w-8 h-8 rounded-full bg-gold-light text-gold-dark text-xs font-semibold flex items-center justify-center">
@@ -246,7 +236,7 @@ export default function Shell({
         )}
       >
         <div className="flex items-center justify-between pt-3.5 px-4 pb-1.5">
-          <Logo className="px-1 pt-1" />
+          <Logo tone="light" size="md" />
           <button
             type="button"
             className="bg-white/[0.08] border border-white/15 text-white w-[38px] h-[38px] rounded-[9px] flex items-center justify-center cursor-pointer"

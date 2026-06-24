@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { Logo } from "@/components/Logo";
 import { useToastContext } from "@/context/ToastContext";
 import {
   useForgotPassword,
@@ -206,12 +207,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen bg-cream text-ink font-sans flex flex-col items-center justify-center px-4 pt-10 pb-14">
       <div className="text-center mb-6">
-        <Link
-          href="/"
-          className="font-serif text-[22px] font-medium text-navy no-underline"
-        >
-          Tesilix<span className="italic text-gold font-light">.</span>
-        </Link>
+        <Logo href="/" size="md" />
         <div className="text-xs text-ink-3 mt-0.5">
           The global skilled worker marketplace
         </div>

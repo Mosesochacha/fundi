@@ -4,6 +4,7 @@ import { CircleCheck, Home, Wrench } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import { Logo } from "@/components/Logo";
 import { useToastContext } from "@/context/ToastContext";
 import { useAuth } from "@/features/auth";
 import {
@@ -130,9 +131,7 @@ export default function OnboardingPage() {
   return (
     <div className="min-h-screen bg-cream text-ink font-sans flex flex-col items-center px-4 pt-[clamp(32px,7vh,72px)] pb-14">
       <div className="text-center mb-[22px]">
-        <span className="font-serif text-2xl font-medium text-navy">
-          Tesilix<span className="italic text-gold font-light">.</span>
-        </span>
+        <Logo size="md" />
       </div>
 
       <div className="w-full max-w-[440px] h-[3px] bg-border rounded-[2px] mb-[18px] overflow-hidden">
