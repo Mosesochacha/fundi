@@ -123,7 +123,6 @@ export default function OnboardingPage() {
         <span className="ob-logo">
           Fundi<span>.</span>
         </span>
-        <p className="ob-tagline">Hire skilled workers. Anywhere. Instantly.</p>
       </div>
 
       <div className="ob-progress-track">

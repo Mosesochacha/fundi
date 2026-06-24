@@ -48,11 +48,6 @@
   color: var(--gold);
   font-weight: 300;
 }
-.ob-tagline {
-  font-size: 12px;
-  color: var(--ink3);
-  margin-top: 4px;
-}
 
 /* ── Progress ── */
 .ob-progress-track {

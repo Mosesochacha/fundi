@@ -29,6 +29,9 @@ function firebaseAuth(): Auth {
 }
 
 const googleProvider = new GoogleAuthProvider();
+// Always show the Google account chooser instead of silently reusing the last
+// signed-in account, so people can pick which account to continue with.
+googleProvider.setCustomParameters({ prompt: "select_account" });
 
 // Maps Firebase auth error codes to clear, actionable messages.
 function googleErrorMessage(code: string | undefined): string | null {
