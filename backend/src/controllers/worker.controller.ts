@@ -6,6 +6,7 @@ import { AuthenticatedRequest } from '../middleware/verifyJWT';
 import { sendSuccess, sendError, asyncHandler } from '../utils/helpers';
 import { HTTP_STATUS } from '../utils/constants';
 import { getFileUrl } from '../middleware/upload';
+import { recordProfileView } from '../services/profileView.service';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -173,6 +174,8 @@ class WorkerController {
     const profile = await db.Profile.findOne({ where });
     if (!profile) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Worker not found');
     const user = await db.User.findByPk(profile.userId);
+    // Count the view (deduped per IP/hour); powers the dashboard stat + weekly digest.
+    void recordProfileView(req, profile.id);
     return sendSuccess(res, 'Worker profile', shapeProfile(profile, user));
   });
 

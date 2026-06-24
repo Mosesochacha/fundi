@@ -5,6 +5,8 @@ import {
   Bell,
   Briefcase,
   CheckCheck,
+  Clock,
+  Eye,
   MessageSquare,
   Star,
   XCircle,
@@ -33,7 +35,9 @@ const ICONS: Record<
   job_declined: XCircle,
   job_completed: CheckCheck,
   job_cancelled: XCircle,
+  job_reminder: Clock,
   new_review: Star,
+  profile_views: Eye,
 };
 
 function iconFor(type: string) {
