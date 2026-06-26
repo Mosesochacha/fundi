@@ -2,17 +2,21 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import client from "@/lib/axios";
 
 export interface WorkerOnboardingInput {
-  trade: string;
+  /** One or more selected trades; the first is the primary profession. */
+  trades: string[];
   location: string;
   dailyRate?: number;
-  /** Preferred display currency (ISO 4217 code, e.g. "USD"). */
+  /** Preferred display currency (ISO 4217 code, e.g. "KES"). */
   currency?: string;
+  /** Display symbol for that currency (e.g. "KSh"). */
+  currencySymbol?: string;
 }
 export interface EmployerOnboardingInput {
   location: string;
   interestedTrades?: string[];
-  /** Preferred display currency (ISO 4217 code, e.g. "USD"). */
+  /** Preferred display currency (ISO 4217 code, e.g. "KES"). */
   currency?: string;
+  currencySymbol?: string;
 }
 
 export const onboardingService = {

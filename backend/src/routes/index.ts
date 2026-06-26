@@ -20,6 +20,8 @@ import workerRoutes from './worker.routes';
 import employerRoutes from './employer.routes';
 import onboardingRoutes from './onboarding.routes';
 import adminRoutes from './admin.routes';
+import geoRoutes from './geo.routes';
+import seoRoutes from './seo.routes';
 import verifyJWT from '../middleware/verifyJWT';
 import { csrfProtection } from '../middleware/csrfProtection';
 
@@ -42,6 +44,10 @@ router.use(employerRoutes);
 router.use(onboardingRoutes);
 // Public "Ask AI" helper for /browse (rate-limited inside the router).
 router.use(aiPublicRoutes);
+// Public IP → currency detection for onboarding / profile rate fields.
+router.use(geoRoutes);
+// Public SEO support (sitemap worker slugs).
+router.use(seoRoutes);
 
 // Routes below require JWT (verifyJWT is not duplicated on individual sub-routers).
 router.use(verifyJWT);

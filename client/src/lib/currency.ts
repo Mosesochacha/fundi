@@ -45,3 +45,103 @@ export function formatMoney(
 ): string {
   return `${symbolOf(code)}${amount.toLocaleString("en-US")}`;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Country → currency mapping for IP / location auto-detection.
+   No FX conversion: the worker's chosen currency is shown verbatim.
+   ───────────────────────────────────────────────────────────────────────── */
+
+export interface CountryCurrency {
+  code: string;
+  symbol: string;
+}
+
+export const currencyByCountry: Record<string, CountryCurrency> = {
+  KE: { code: "KES", symbol: "KSh" },
+  UG: { code: "UGX", symbol: "USh" },
+  TZ: { code: "TZS", symbol: "TSh" },
+  NG: { code: "NGN", symbol: "₦" },
+  GH: { code: "GHS", symbol: "GH₵" },
+  ZA: { code: "ZAR", symbol: "R" },
+  ET: { code: "ETB", symbol: "Br" },
+  RW: { code: "RWF", symbol: "Fr" },
+  US: { code: "USD", symbol: "$" },
+  GB: { code: "GBP", symbol: "£" },
+  CA: { code: "CAD", symbol: "CA$" },
+  AU: { code: "AUD", symbol: "A$" },
+};
+
+/** Resolve an ISO country code to its currency, defaulting to USD. */
+export function getCurrencyFromCountry(code?: string | null): CountryCurrency {
+  if (!code) return { code: "USD", symbol: "$" };
+  return currencyByCountry[code.toUpperCase()] ?? { code: "USD", symbol: "$" };
+}
+
+// Country names + well-known cities → ISO country code, for parsing the free-text
+// location field so the currency updates as the worker types.
+const LOCATION_TO_COUNTRY: Record<string, string> = {
+  // countries
+  kenya: "KE",
+  uganda: "UG",
+  tanzania: "TZ",
+  nigeria: "NG",
+  ghana: "GH",
+  "south africa": "ZA",
+  ethiopia: "ET",
+  rwanda: "RW",
+  "united states": "US",
+  usa: "US",
+  america: "US",
+  "united kingdom": "GB",
+  uk: "GB",
+  britain: "GB",
+  england: "GB",
+  scotland: "GB",
+  canada: "CA",
+  australia: "AU",
+  // cities
+  nairobi: "KE",
+  mombasa: "KE",
+  kisumu: "KE",
+  nakuru: "KE",
+  eldoret: "KE",
+  thika: "KE",
+  kampala: "UG",
+  "dar es salaam": "TZ",
+  dodoma: "TZ",
+  arusha: "TZ",
+  lagos: "NG",
+  abuja: "NG",
+  kano: "NG",
+  ibadan: "NG",
+  accra: "GH",
+  kumasi: "GH",
+  johannesburg: "ZA",
+  "cape town": "ZA",
+  durban: "ZA",
+  pretoria: "ZA",
+  "addis ababa": "ET",
+  kigali: "RW",
+  london: "GB",
+  manchester: "GB",
+  birmingham: "GB",
+  "new york": "US",
+  "los angeles": "US",
+  chicago: "US",
+  houston: "US",
+  toronto: "CA",
+  vancouver: "CA",
+  montreal: "CA",
+  sydney: "AU",
+  melbourne: "AU",
+  brisbane: "AU",
+};
+
+/** Best-effort ISO country code from a free-text location, or null. */
+export function detectCountryFromLocation(location: string): string | null {
+  const s = location.toLowerCase();
+  for (const [needle, code] of Object.entries(LOCATION_TO_COUNTRY)) {
+    if (s.includes(needle)) return code;
+  }
+  return null;
+}

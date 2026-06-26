@@ -15,6 +15,7 @@ export class User extends Model {
   declare interestedTrades: string[] | null;
   declare dailyRate: number | null;
   declare currency: string;
+  declare currencySymbol: string;
   declare status: "active" | "inactive" | "suspended";
   declare emailVerified: boolean;
   declare organizationId: string | null;
@@ -110,6 +111,12 @@ export function initModel(sequelize: Sequelize): typeof User {
         allowNull: false,
         defaultValue: 'USD',
         comment: 'User currency preference (3-letter ISO-ish code, e.g. USD/KES/EUR)',
+      },
+      currencySymbol: {
+        type: DataTypes.STRING(8),
+        allowNull: false,
+        defaultValue: 'KSh',
+        comment: 'Display symbol for `currency` (no FX conversion).',
       },
       status: {
         type: DataTypes.ENUM("active", "inactive", "suspended"),

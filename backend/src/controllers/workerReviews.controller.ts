@@ -4,6 +4,7 @@ import { AuthenticatedRequest } from '../middleware/verifyJWT';
 import db from '../models';
 import { sendSuccess, sendError, asyncHandler } from '../utils/helpers';
 import { HTTP_STATUS } from '../utils/constants';
+import { getWorkerReviewStats } from '../services/reviewStats';
 
 /* ─────────────────────────────────────────────────────────────────────────
    Worker reviews page (/worker/reviews).
@@ -34,15 +35,9 @@ class WorkerReviewsController {
       date: (r.reviewedAt as Date).toISOString(),
     }));
 
-    const reviewCount = reviews.length;
-    const ratingSum = reviews.reduce((acc, rev) => acc + rev.rating, 0);
-    const rating = reviewCount > 0 ? Math.round((ratingSum / reviewCount) * 10) / 10 : 0;
-
-    // Per-star breakdown, 5 → 1.
-    const breakdown = [5, 4, 3, 2, 1].map((stars) => ({
-      stars,
-      count: reviews.filter((rev) => Math.round(rev.rating) === stars).length,
-    }));
+    // Summary (average, count, per-star breakdown) from the shared aggregator so
+    // it matches the public profile/browse stats exactly.
+    const { rating, reviewCount, breakdown } = await getWorkerReviewStats(profileId);
 
     return sendSuccess(res, 'Reviews retrieved', {
       summary: { rating, reviewCount, breakdown },

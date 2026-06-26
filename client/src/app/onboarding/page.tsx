@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { Logo } from "@/components/Logo";
-import { CurrencySelect } from "@/components/ui";
+import { RateField } from "@/components/ui";
 import { useToastContext } from "@/context/ToastContext";
 import { useAuth } from "@/features/auth";
 import {
@@ -14,7 +14,11 @@ import {
   useWorkerOnboarding,
 } from "@/features/onboarding";
 import { dashboardPathForRole, roleForUser } from "@/lib/authRedirect";
-import { DEFAULT_CURRENCY, symbolOf } from "@/lib/currency";
+import {
+  detectCountryFromLocation,
+  getCurrencyFromCountry,
+} from "@/lib/currency";
+import { detectCurrency } from "@/lib/geo";
 import { cn } from "@/lib/utils";
 
 const WORKER_TRADES = [
@@ -55,6 +59,8 @@ const initialsOf = (n: string) =>
 
 const FIELD_LABEL =
   "block text-sm font-semibold text-ink-2 tracking-[0.02em] mb-2";
+// Plain label for the trade picker (no accent — avoids the "selected text" look).
+const TRADE_LABEL = "block text-xs font-medium text-ink-2 mb-2 select-none";
 const FIELD_INPUT =
   "w-full px-3.5 py-[11px] border border-border rounded-lg text-sm bg-cream text-ink font-sans outline-none transition-all placeholder:text-ink-3 focus:border-gold focus:bg-white";
 const TRADE_PILL_BASE =
@@ -70,13 +76,50 @@ export default function OnboardingPage() {
 
   const [step, setStep] = useState<1 | 2>(1);
   const [role, setRole] = useState<"worker" | "employer" | null>(null);
-  const [trade, setTrade] = useState("");
+  const [trades, setTrades] = useState<string[]>([]);
   const [wLocation, setWLocation] = useState("");
   const [dailyRate, setDailyRate] = useState("");
-  const [currency, setCurrency] = useState(DEFAULT_CURRENCY);
+  const [currency, setCurrency] = useState("KES");
+  const [symbol, setSymbol] = useState("KSh");
+  // True once the user picks a currency manually or via location, so IP
+  // detection / further location parsing won't override their choice.
+  const [currencyManual, setCurrencyManual] = useState(false);
   const [eLocation, setELocation] = useState("");
   const [interested, setInterested] = useState<string[]>([]);
   const [terms, setTerms] = useState(false);
+
+  // Auto-detect currency from IP on first load (unless already overridden).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount
+  useEffect(() => {
+    let active = true;
+    detectCurrency().then((g) => {
+      if (active && !currencyManual) {
+        setCurrency(g.currency);
+        setSymbol(g.symbol);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Update currency from the location field as the worker types.
+  const onWLocationChange = (value: string) => {
+    setWLocation(value);
+    if (currencyManual) return;
+    const code = detectCountryFromLocation(value);
+    if (code) {
+      const c = getCurrencyFromCountry(code);
+      setCurrency(c.code);
+      setSymbol(c.symbol);
+    }
+  };
+
+  const setCurrencyManually = (code: string, sym: string) => {
+    setCurrency(code);
+    setSymbol(sym);
+    setCurrencyManual(true);
+  };
 
   // Guard: not signed in → login; already complete → dashboard.
   useEffect(() => {
@@ -96,16 +139,21 @@ export default function OnboardingPage() {
     setInterested((prev) =>
       prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t],
     );
+  const toggleTrade = (t: string) =>
+    setTrades((prev) =>
+      prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t],
+    );
 
   async function submitWorker() {
     try {
       await workerOnb.mutateAsync({
-        trade,
+        trades,
         location: wLocation.trim(),
         dailyRate: dailyRate
           ? Number(dailyRate.replace(/[^0-9]/g, ""))
           : undefined,
         currency,
+        currencySymbol: symbol,
       });
       // JWT auto-heals in the auth jwt callback (re-pulls /auth/me while the
       // cached user is incomplete), so middleware lets the dashboard through.
@@ -121,6 +169,7 @@ export default function OnboardingPage() {
         location: eLocation.trim(),
         interestedTrades: interested,
         currency,
+        currencySymbol: symbol,
       });
       router.push("/employer/dashboard?welcome=true");
     } catch {
@@ -128,7 +177,7 @@ export default function OnboardingPage() {
     }
   }
 
-  const workerValid = !!trade && !!wLocation.trim() && terms;
+  const workerValid = trades.length > 0 && !!wLocation.trim() && terms;
   const employerValid = !!eLocation.trim() && terms;
 
   const nextBtn =
@@ -268,23 +317,32 @@ export default function OnboardingPage() {
             </p>
 
             <div className="mb-[18px]">
-              <span className={FIELD_LABEL}>Your trade</span>
+              <span className={TRADE_LABEL}>Your trade</span>
               <div className="flex flex-wrap gap-2">
-                {WORKER_TRADES.map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    className={cn(
-                      TRADE_PILL_BASE,
-                      trade === t
-                        ? "border-gold bg-gold-light text-gold-dark font-medium"
-                        : "border-border bg-cream text-ink-2",
-                    )}
-                    onClick={() => setTrade(t)}
-                  >
-                    {t}
-                  </button>
-                ))}
+                {WORKER_TRADES.map((t) => {
+                  const selected = trades.includes(t);
+                  return (
+                    <button
+                      key={t}
+                      type="button"
+                      aria-pressed={selected}
+                      className={cn(
+                        TRADE_PILL_BASE,
+                        selected
+                          ? "border-gold bg-gold-light text-gold-dark font-medium"
+                          : "border-border bg-cream text-ink-2",
+                      )}
+                      onClick={() => toggleTrade(t)}
+                    >
+                      {t}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="text-[11px] text-ink-3 mt-2">
+                {trades.length === 0
+                  ? "Select at least one trade"
+                  : `${trades.length} trade${trades.length === 1 ? "" : "s"} selected`}
               </div>
             </div>
 
@@ -297,28 +355,19 @@ export default function OnboardingPage() {
                 className={FIELD_INPUT}
                 placeholder="e.g. your city or area"
                 value={wLocation}
-                onChange={(e) => setWLocation(e.target.value)}
+                onChange={(e) => onWLocationChange(e.target.value)}
               />
             </div>
 
             <div className="mb-[18px]">
-              <label className={FIELD_LABEL} htmlFor="w-rate">
-                Daily rate ({symbolOf(currency)}){" "}
-                <span className="font-normal text-ink-3">- optional</span>
-              </label>
-              <div className="flex gap-2">
-                <div className="w-[150px] shrink-0">
-                  <CurrencySelect value={currency} onChange={setCurrency} />
-                </div>
-                <input
-                  id="w-rate"
-                  className={cn(FIELD_INPUT, "flex-1")}
-                  inputMode="numeric"
-                  placeholder="e.g. 2500"
-                  value={dailyRate}
-                  onChange={(e) => setDailyRate(e.target.value)}
-                />
-              </div>
+              <RateField
+                inputId="w-rate"
+                value={dailyRate}
+                onValueChange={setDailyRate}
+                currency={currency}
+                symbol={symbol}
+                onCurrencyChange={setCurrencyManually}
+              />
               <div className="text-[11px] text-ink-3 mt-1.5">
                 You can set this later from your profile.
               </div>

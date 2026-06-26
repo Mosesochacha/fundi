@@ -19,6 +19,10 @@ import { WorkerCardGrid } from "./WorkerCard";
 interface Props {
   initialData?: BrowseWorkersResponse;
   fontClass?: string;
+  /** Pre-seed the trade/location filters when arriving from an SEO route
+   * (/browse/[trade]/[location]). Applied once on mount. */
+  initialTrade?: string;
+  initialLocation?: string;
 }
 
 const PAGE_SIZE = 12;
@@ -39,7 +43,12 @@ function pageList(current: number, total: number): (number | "…")[] {
 const PAGER_EDGE =
   "flex h-[38px] items-center gap-1.5 rounded-[10px] border border-border bg-white px-4 text-sm font-semibold text-ink-2 transition-colors duration-150 enabled:hover:border-gold-dark enabled:hover:text-ink disabled:cursor-not-allowed disabled:text-ink-4";
 
-export default function BrowseClient({ initialData, fontClass }: Props) {
+export default function BrowseClient({
+  initialData,
+  fontClass,
+  initialTrade,
+  initialLocation,
+}: Props) {
   const router = useRouter();
 
   // --- store filter state ---
@@ -62,6 +71,17 @@ export default function BrowseClient({ initialData, fontClass }: Props) {
   const [locInput, setLocInput] = useState("");
   const [nameQuery, setNameQuery] = useState(""); // applied client-side
   const [aiOpen, setAiOpen] = useState(false);
+
+  // Seed filters from an SEO route (/browse/[trade]/[location]) once on mount.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: run-once seed
+  useEffect(() => {
+    if (initialTrade) setFilter("selectedTrades", [initialTrade]);
+    if (initialLocation) {
+      setFilter("location", initialLocation);
+      setLocInput(initialLocation);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Any filter change resets pagination back to the first page.
   // biome-ignore lint/correctness/useExhaustiveDependencies: these filters are intentional reset triggers

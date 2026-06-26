@@ -1,7 +1,9 @@
 "use client";
 
+import { CircleCheck } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import posthog from "posthog-js";
 import { useMemo, useState } from "react";
 import { Logo } from "@/components/Logo";
@@ -45,6 +47,14 @@ const WORKER_TRADES = [
 
 const STRENGTH_COLORS = ["#e5e0d5", "#dc2626", "#f59e0b", "#c9a84c", "#16a34a"];
 const STRENGTH_LABELS = ["", "Weak", "Fair", "Good", "Strong"];
+
+const initialsOf = (n: string) =>
+  n
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("") || "U";
 
 function passwordScore(v: string): number {
   let score = 0;
@@ -96,6 +106,16 @@ export default function RegisterPage() {
   const isLoading = register.isPending;
   const { googleSignIn, isLoading: googleLoading } = useGoogleAuth();
   const { error: toastError } = useToastContext();
+  const { data: session } = useSession();
+  const prefillName =
+    session?.user?.name ||
+    [session?.backendUser?.firstName, session?.backendUser?.lastName]
+      .filter(Boolean)
+      .join(" ")
+      .trim() ||
+    "";
+  const prefillEmail =
+    session?.user?.email || session?.backendUser?.email || "";
 
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [form, setForm] = useState({ ...EMPTY_FORM });
@@ -437,12 +457,30 @@ export default function RegisterPage() {
         {/* STEP 2 - role */}
         {step === 2 && (
           <div>
-            <div className="font-serif text-[24px] font-normal text-ink mb-1">
-              You are a<em className="italic font-light text-gold-dark">…</em>
-            </div>
-            <p className="text-sm text-ink-3 mb-6 leading-normal">
-              This helps us personalise your experience
+            <h1 className="font-serif text-[20px] font-normal text-navy mb-1">
+              How will you use Tesilix?
+            </h1>
+            <p className="text-[12px] text-ink-3 mb-6 leading-normal">
+              Choose your role. You can&apos;t change this later.
             </p>
+            {session && (
+              <div className="flex items-center gap-[11px] bg-cream-2 border border-border rounded-[10px] px-[13px] py-[11px] mb-6">
+                <span className="w-[38px] h-[38px] rounded-full bg-gold-light border border-gold/30 text-gold-dark grid place-items-center text-sm font-semibold shrink-0">
+                  {initialsOf(prefillName)}
+                </span>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-sm font-semibold text-ink truncate">
+                    {prefillName}
+                  </span>
+                  <span className="text-sm text-ink-3 truncate">
+                    {prefillEmail}
+                  </span>
+                </div>
+                <span className="ml-auto inline-flex items-center gap-1 bg-green-50 border border-green-600/25 rounded-full px-[9px] py-[3px] text-[10px] font-semibold text-green-600 whitespace-nowrap shrink-0">
+                  <CircleCheck size={11} /> Google verified
+                </span>
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-2.5 mb-2">
               <RoleCard
                 selected={accountType === "employer"}
@@ -477,7 +515,13 @@ export default function RegisterPage() {
               </button>
               <button
                 type="button"
-                className={BTN_NEXT_CLASS}
+                className={cn(
+                  "flex-1 py-3 rounded-md text-sm font-medium transition-all",
+                  accountType
+                    ? "bg-gold text-navy hover:bg-gold-dark cursor-pointer"
+                    : "bg-border text-ink-3 cursor-not-allowed",
+                )}
+                disabled={!accountType}
                 onClick={goToStep3}
               >
                 Next →
@@ -719,8 +763,10 @@ function RoleCard({
     >
       <span
         className={cn(
-          "w-11 h-11 rounded-[11px] flex items-center justify-center mx-auto mb-3 transition-all border [&_svg]:w-[22px] [&_svg]:h-[22px] [&_svg]:stroke-gold-dark [&_svg]:fill-none [&_svg]:[stroke-width:1.6] [&_svg]:[stroke-linecap:round] [&_svg]:[stroke-linejoin:round]",
-          selected ? "bg-white border-gold" : "bg-gold-light border-gold/25",
+          "w-11 h-11 rounded-[11px] flex items-center justify-center mx-auto mb-3 transition-all border [&_svg]:w-6 [&_svg]:h-6 [&_svg]:fill-none [&_svg]:[stroke-width:1.6] [&_svg]:[stroke-linecap:round] [&_svg]:[stroke-linejoin:round]",
+          selected
+            ? "bg-gold/20 border-gold [&_svg]:stroke-gold-dark"
+            : "bg-gray-100 border-border [&_svg]:stroke-gray-400",
         )}
       >
         {children}

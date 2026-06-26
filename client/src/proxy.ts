@@ -89,13 +89,17 @@ export default auth((req) => {
     return complete ? toDashboard() : toOnboarding();
   }
 
-  // Worker area. All of /worker/* now requires a signed-in, onboarded user.
-  // Worker-only pages (WORKER_PROTECTED) additionally require role==='worker';
-  // /worker/[id] profile pages are open to any signed-in role.
+  // Worker area.
+  //  • /worker/[id] profile pages are fully PUBLIC (logged-out visitors and
+  //    crawlers must reach them for SEO indexing). They self-gate content
+  //    server-side: anonymous viewers get a minimal profile, signed-in get more.
+  //  • Worker-only app pages (WORKER_PROTECTED) require a signed-in, onboarded
+  //    worker.
   if (matches(path, "/worker")) {
+    if (!isProtectedWorkerPath(path)) return NextResponse.next();
     if (!session) return toLogin();
     if (!complete) return toOnboarding();
-    if (isProtectedWorkerPath(path) && role !== "worker") return toDashboard();
+    if (role !== "worker") return toDashboard();
     return NextResponse.next();
   }
 

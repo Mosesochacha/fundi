@@ -4,9 +4,11 @@ import { Op } from 'sequelize';
 import db from '../models';
 import { AuthenticatedRequest } from '../middleware/verifyJWT';
 import { sendSuccess, sendError, asyncHandler } from '../utils/helpers';
-import { HTTP_STATUS } from '../utils/constants';
+import { HTTP_STATUS, normalizeCurrency } from '../utils/constants';
+import { symbolForCurrency } from '../utils/currencyMap';
 import { getFileUrl } from '../middleware/upload';
 import { recordProfileView } from '../services/profileView.service';
+import { getWorkerReviewStats, getBatchWorkerReviewStats, WorkerReviewStats } from '../services/reviewStats';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -17,28 +19,56 @@ function initialsOf(name?: string | null): string {
   );
 }
 
-/** Shape a Profile (+ its User) into the WorkerProfileData the client expects. */
-function shapeProfile(profile: any, user: any) {
-  return {
+const EMPTY_STATS: WorkerReviewStats = {
+  rating: 0,
+  reviewCount: 0,
+  jobsDone: 0,
+  breakdown: [5, 4, 3, 2, 1].map((stars) => ({ stars, count: 0 })),
+};
+
+/**
+ * Shape a Profile (+ its User) into the WorkerProfileData the client expects.
+ *
+ * `full` controls how much is exposed: anonymous/crawler views get a minimal,
+ * SEO-friendly payload (name, trade, location, bio, services, ratings); signed-in
+ * viewers get the rich payload (portfolio, experience, certifications, education,
+ * service areas). Ratings come from real JobRequest review data via `stats`.
+ */
+function shapeProfile(
+  profile: any,
+  user: any,
+  opts: { stats?: WorkerReviewStats; full?: boolean } = {},
+) {
+  const stats = opts.stats ?? EMPTY_STATS;
+  const base = {
     id: profile.id,
+    username: profile.username,
     name: profile.fullName,
     initials: initialsOf(profile.fullName),
     trade: profile.profession,
     yearsExperience: profile.yearsExperience ?? 0,
     location: profile.location,
+    country: profile.country ?? null,
+    avatarUrl: profile.avatarUrl ?? null,
     currency: user?.currency ?? 'USD',
+    currencySymbol: user?.currencySymbol ?? symbolForCurrency(user?.currency),
     isVerified: !!user?.isPhoneVerified,
     isAvailable: profile.isAvailable ?? true,
     phoneVerified: !!user?.isPhoneVerified,
-    // Reviews/ratings/jobs aren't tracked yet — return empty/zero, not fake data.
-    rating: 0,
-    reviewCount: 0,
-    jobsDone: 0,
-    ratingBreakdown: [5, 4, 3, 2, 1].map((stars) => ({ stars, count: 0 })),
-    reviews: [],
+    rating: stats.rating,
+    reviewCount: stats.reviewCount,
+    jobsDone: stats.jobsDone,
     dailyRate: user?.dailyRate ?? 0,
     about: profile.bio ?? '',
     services: profile.services ?? [],
+  };
+
+  if (!opts.full) return base;
+
+  return {
+    ...base,
+    ratingBreakdown: stats.breakdown,
+    reviews: [],
     serviceAreas: profile.serviceAreas ?? [],
     portfolio: profile.portfolio ?? [],
     experience: profile.experience ?? [],
@@ -104,7 +134,7 @@ class WorkerController {
     const userInclude: any = {
       model: db.User,
       as: 'user',
-      attributes: ['dailyRate', 'currency', 'isPhoneVerified', 'accountType'],
+      attributes: ['dailyRate', 'currency', 'currencySymbol', 'isPhoneVerified', 'accountType'],
       required: verified, // only force the join when filtering by verification
     };
     if (Object.keys(userWhere).length) {
@@ -131,10 +161,15 @@ class WorkerController {
       distinct: true,
     });
 
+    const statsByProfile = await getBatchWorkerReviewStats(
+      rows.map((p: any) => p.get('id') as string),
+    );
+
     let workers = rows.map((p: any) => {
       const plain = p.get({ plain: true });
       const user = plain.user || {};
       const certs = Array.isArray(plain.certifications) ? plain.certifications : [];
+      const stats = statsByProfile.get(plain.id) ?? { rating: 0, reviewCount: 0, jobsDone: 0 };
       return {
         id: plain.id,
         username: plain.username,
@@ -146,14 +181,14 @@ class WorkerController {
         avatarUrl: plain.avatarUrl ?? null,
         yearsExperience: plain.yearsExperience ?? 0,
         currency: user.currency ?? 'USD',
+        currencySymbol: user.currencySymbol ?? symbolForCurrency(user.currency),
         dailyRate: user.dailyRate ?? 0,
         isAvailable: plain.isAvailable ?? true,
         isVerified: !!user.isPhoneVerified,
         certified: certs.length > 0,
-        // Not tracked yet — surfaced as 0 so the UI can render placeholders.
-        rating: 0,
-        reviewCount: 0,
-        jobsDone: 0,
+        rating: stats.rating,
+        reviewCount: stats.reviewCount,
+        jobsDone: stats.jobsDone,
       };
     });
 
@@ -167,24 +202,33 @@ class WorkerController {
     });
   });
 
-  // GET /worker/:id/profile — public. `:id` is a profile id (uuid) or username.
-  getProfile = asyncHandler(async (req: Request, res: Response) => {
+  // GET /worker/:id/profile — public (optional auth). `:id` is a profile id
+  // (uuid) or username. Anonymous viewers (incl. crawlers) get a minimal,
+  // SEO-friendly payload; signed-in viewers get the full profile.
+  getProfile = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const { id } = req.params;
     const where = UUID_RE.test(id) ? { id } : { username: id };
     const profile = await db.Profile.findOne({ where });
     if (!profile) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Worker not found');
-    const user = await db.User.findByPk(profile.userId);
+    const [user, stats] = await Promise.all([
+      db.User.findByPk(profile.userId),
+      getWorkerReviewStats(profile.id),
+    ]);
     // Count the view (deduped per IP/hour); powers the dashboard stat + weekly digest.
     void recordProfileView(req, profile.id);
-    return sendSuccess(res, 'Worker profile', shapeProfile(profile, user));
+    const full = !!req.user;
+    return sendSuccess(res, 'Worker profile', shapeProfile(profile, user, { stats, full }));
   });
 
   // GET /worker/me/profile — the signed-in worker's own profile.
   getMyProfile = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const profile = await getOwnProfile(req);
     if (!profile) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Profile not found');
-    const user = await db.User.findByPk(profile.userId);
-    return sendSuccess(res, 'Profile', shapeProfile(profile, user));
+    const [user, stats] = await Promise.all([
+      db.User.findByPk(profile.userId),
+      getWorkerReviewStats(profile.id),
+    ]);
+    return sendSuccess(res, 'Profile', shapeProfile(profile, user, { stats, full: true }));
   });
 
   // ── Simple field updates ────────────────────────────────────────────────────
@@ -217,8 +261,23 @@ class WorkerController {
     if (!userId) return sendError(res, HTTP_STATUS.UNAUTHORIZED, 'Unauthorized');
     const user = await db.User.findByPk(userId);
     if (!user) return sendError(res, HTTP_STATUS.NOT_FOUND, 'User not found');
-    await user.update({ dailyRate: rate });
-    return sendSuccess(res, 'Daily rate updated', { dailyRate: rate });
+
+    const update: any = { dailyRate: rate };
+    // Optional currency change alongside the rate (no FX conversion).
+    const rawCurrency = req.body.currency;
+    if (rawCurrency !== undefined && rawCurrency !== null && rawCurrency !== '') {
+      const normalized = normalizeCurrency(rawCurrency);
+      if (!normalized) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Invalid currency');
+      update.currency = normalized;
+      update.currencySymbol =
+        String(req.body.currencySymbol || '').trim() || symbolForCurrency(normalized);
+    }
+    await user.update(update);
+    return sendSuccess(res, 'Daily rate updated', {
+      dailyRate: rate,
+      currency: user.currency,
+      currencySymbol: user.currencySymbol,
+    });
   });
 
   updateServiceArea = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {

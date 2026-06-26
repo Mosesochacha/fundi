@@ -4,6 +4,7 @@ import LayoutShell from "@/components/LayoutShell";
 import PostHogProvider from "@/components/PostHogProvider";
 import Providers from "@/components/Providers";
 import { ToastProvider } from "@/context/ToastContext";
+import { SITE_URL } from "@/lib/seo";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -20,12 +21,28 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "Tesilix - Hire Skilled Workers",
     template: "%s | Tesilix",
   },
   description:
     "The global marketplace where skilled workers showcase their work and connect with the people who need them.",
+  applicationName: "Tesilix",
+  openGraph: {
+    type: "website",
+    siteName: "Tesilix",
+    url: SITE_URL,
+    title: "Tesilix - Hire Skilled Workers",
+    description:
+      "The global marketplace where skilled workers showcase their work and connect with the people who need them.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Tesilix - Hire Skilled Workers",
+    description:
+      "The global marketplace where skilled workers showcase their work and connect with the people who need them.",
+  },
 };
 
 export default function RootLayout({

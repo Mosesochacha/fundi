@@ -3,6 +3,7 @@ import { AuthenticatedRequest } from '../middleware/verifyJWT';
 import db from '../models';
 import { sendSuccess, sendError, asyncHandler } from '../utils/helpers';
 import { HTTP_STATUS, normalizeCurrency } from '../utils/constants';
+import { symbolForCurrency } from '../utils/currencyMap';
 
 /* ─────────────────────────────────────────────────────────────────────────
    First-time onboarding completion for OAuth (Google) users.
@@ -25,10 +26,18 @@ class OnboardingController {
     const userId = req.user?.id;
     if (!userId) return sendError(res, HTTP_STATUS.UNAUTHORIZED, 'Unauthorized');
 
-    const trade = String(req.body.trade ?? '').trim();
+    // Accept multi-select `trades: string[]` (falls back to legacy `trade`).
+    const tradesInput = Array.isArray(req.body.trades)
+      ? (req.body.trades as unknown[]).map((t) => String(t).trim()).filter(Boolean)
+      : [];
+    const legacyTrade = String(req.body.trade ?? '').trim();
+    const trades = Array.from(
+      new Set(tradesInput.length ? tradesInput : legacyTrade ? [legacyTrade] : []),
+    );
     const location = String(req.body.location ?? '').trim();
     const rawRate = req.body.dailyRate;
-    if (!trade) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'trade is required');
+    if (!trades.length)
+      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'at least one trade is required');
     if (!location) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'location is required');
 
     const { user, profile } = await loadUserAndProfile(userId);
@@ -46,15 +55,19 @@ class OnboardingController {
       if (!normalized) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Invalid currency');
       currency = normalized;
     }
+    const currencySymbol =
+      String(req.body.currencySymbol || '').trim() || symbolForCurrency(currency);
 
     await user.update({
       accountType: 'worker',
       dailyRate,
       currency,
+      currencySymbol,
       isProfileComplete: true,
       isOnboarded: true,
     });
-    await profile.update({ profession: trade, location });
+    // Primary trade drives search/display; all selected trades are saved as services.
+    await profile.update({ profession: trades[0], services: trades, location });
 
     return sendSuccess(res, 'Onboarding complete', {
       user: user.toJSON(),
@@ -83,11 +96,14 @@ class OnboardingController {
       if (!normalized) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Invalid currency');
       currency = normalized;
     }
+    const currencySymbol =
+      String(req.body.currencySymbol || '').trim() || symbolForCurrency(currency);
 
     await user.update({
       accountType: 'employer',
       interestedTrades,
       currency,
+      currencySymbol,
       isProfileComplete: true,
       isOnboarded: true,
     });

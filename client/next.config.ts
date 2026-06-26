@@ -5,6 +5,15 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.resolve(__dirname),
   },
+  // Allow next/image to optimize worker avatars/portfolio photos. The API host
+  // serves uploads; confirm/lock this down to the production media host before
+  // launch (see SEO plan checklist).
+  images: {
+    remotePatterns: [
+      { protocol: "http", hostname: "localhost" },
+      { protocol: "https", hostname: "**" },
+    ],
+  },
   async headers() {
     return [
       {

@@ -112,6 +112,9 @@ export function WorkerCardGrid({ worker, onView }: Props) {
         <div className="flex items-center gap-2 whitespace-nowrap text-sm text-ink-3">
           <span className="font-bold text-gold-dark">
             {formatRate(worker.currency, worker.dailyRate)}
+            {worker.dailyRate > 0 && (
+              <span className="font-normal text-ink-3">/day</span>
+            )}
           </span>
           <span className="text-ink-4">·</span>
           {worker.reviewCount > 0 && (

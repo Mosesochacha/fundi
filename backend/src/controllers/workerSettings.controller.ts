@@ -7,6 +7,7 @@ import OTPService from '../services/otp.service';
 import { getFileUrl } from '../middleware/upload';
 import { sendSuccess, sendError, asyncHandler, isValidEmail } from '../utils/helpers';
 import { HTTP_STATUS, normalizeCurrency } from '../utils/constants';
+import { symbolForCurrency } from '../utils/currencyMap';
 
 /* ─────────────────────────────────────────────────────────────────────────
    Worker settings (/worker/settings). Maps the page's WorkerSettings shape onto
@@ -173,6 +174,9 @@ class WorkerSettingsController {
         return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Invalid currency');
       }
       userUpdates.currency = normalized;
+      // Keep the display symbol in sync with the chosen currency.
+      userUpdates.currencySymbol =
+        String(req.body.currencySymbol || '').trim() || symbolForCurrency(normalized);
     }
 
     // Keep the profile's display name in sync with first/last name.

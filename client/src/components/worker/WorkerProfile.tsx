@@ -43,6 +43,7 @@ import {
   useUpdateServiceArea,
   useUpdateServices,
 } from "@/features/worker/profile";
+import { symbolOf } from "@/lib/currency";
 import { cn } from "@/lib/utils";
 import type {
   Certification,
@@ -282,13 +283,15 @@ export default function WorkerProfile({
   );
   const maxBucket = Math.max(1, ...data.ratingBreakdown.map((b) => b.count));
 
-  const money = (n: number) => `${data.currency} ${n.toLocaleString()}`;
+  // Show the worker's currency symbol verbatim — no FX conversion.
+  const money = (n: number) =>
+    `${symbolOf(data.currency)} ${n.toLocaleString()}`;
 
   // Public-view polish: soften zero-states and hide empty sections so a sparse
   // profile reads as "new" rather than broken. Own view always shows every
   // section (with its add/edit controls) so the worker can fill them in.
   const rateText =
-    data.dailyRate > 0 ? money(data.dailyRate) : "Rate on request";
+    data.dailyRate > 0 ? `${money(data.dailyRate)}/day` : "Rate on request";
   const hasRightCol =
     data.certifications.length > 0 || data.education.length > 0;
   /** When not own view, hide a section that has no content. */

@@ -4,7 +4,7 @@ import WorkerSettingsController from '../controllers/workerSettings.controller';
 import WorkerRequestsController from '../controllers/workerRequests.controller';
 import WorkerDashboardController from '../controllers/workerDashboard.controller';
 import WorkerReviewsController from '../controllers/workerReviews.controller';
-import verifyJWT from '../middleware/verifyJWT';
+import verifyJWT, { optionalVerifyJWT } from '../middleware/verifyJWT';
 import { uploadAvatar, uploadWork } from '../middleware/upload';
 
 const router = Router();
@@ -22,8 +22,10 @@ router.get('/worker/dashboard', verifyJWT, WorkerDashboardController.getDashboar
 // Reviews page aggregate.
 router.get('/worker/reviews', verifyJWT, WorkerReviewsController.getReviews);
 
-// Public worker profile (employer view) — by profile id or username.
-router.get('/worker/:id/profile', WorkerController.getProfile);
+// Public worker profile — by profile id or username. Optional auth: anonymous
+// viewers (incl. crawlers) get a minimal SEO payload, signed-in viewers get the
+// full profile.
+router.get('/worker/:id/profile', optionalVerifyJWT, WorkerController.getProfile);
 
 // Authenticated mutations on the signed-in worker's own profile.
 router.patch('/worker/profile/about', verifyJWT, WorkerController.updateAbout);
