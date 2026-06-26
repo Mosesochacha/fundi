@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import HomeButton from "@/components/landing/HomeButton";
 import LandingNav from "@/components/landing/LandingNav";
 
@@ -42,7 +43,13 @@ export default function NotFound() {
       </main>
 
       <footer className="bg-cream px-12 py-5 border-t-[0.5px] border-border text-center text-[11px] text-ink-3">
-        Privacy · Terms
+        <Link href="/privacy" className="hover:text-ink-2">
+          Privacy
+        </Link>{" "}
+        ·{" "}
+        <Link href="/terms" className="hover:text-ink-2">
+          Terms
+        </Link>
       </footer>
     </div>
   );

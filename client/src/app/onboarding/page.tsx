@@ -335,6 +335,8 @@ export default function OnboardingPage() {
                 I agree to Tesilix&apos;s{" "}
                 <Link
                   href="/terms"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-gold-dark no-underline hover:underline"
                 >
                   Terms of Service
@@ -342,6 +344,8 @@ export default function OnboardingPage() {
                 and{" "}
                 <Link
                   href="/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-gold-dark no-underline hover:underline"
                 >
                   Privacy Policy
@@ -427,6 +431,8 @@ export default function OnboardingPage() {
                 I agree to Tesilix&apos;s{" "}
                 <Link
                   href="/terms"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-gold-dark no-underline hover:underline"
                 >
                   Terms of Service
@@ -434,6 +440,8 @@ export default function OnboardingPage() {
                 and{" "}
                 <Link
                   href="/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-gold-dark no-underline hover:underline"
                 >
                   Privacy Policy
