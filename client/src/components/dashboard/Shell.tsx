@@ -40,6 +40,7 @@ export interface ShellProps {
   unreadRequests?: number;
   openReports?: number;
   flaggedCount?: number;
+  pendingPayouts?: number;
 }
 
 function VerifiedBadge() {
@@ -60,6 +61,7 @@ export default function Shell({
   unreadRequests,
   openReports,
   flaggedCount,
+  pendingPayouts,
 }: ShellProps) {
   const pathname = usePathname();
   const activePath = currentPath ?? pathname ?? "";
@@ -70,6 +72,7 @@ export default function Shell({
     unreadRequests,
     openReports,
     flaggedCount,
+    pendingPayouts,
   };
   const showVerified = role === "worker" && !!user.isVerified;
 
@@ -145,7 +148,14 @@ export default function Shell({
                 <Icon size={15} />
                 <span className="flex-1">{item.label}</span>
                 {badge ? (
-                  <span className="bg-gold text-navy text-[9px] font-semibold rounded-full px-1.5 py-px ml-auto">
+                  <span
+                    className={cn(
+                      "text-[9px] font-semibold rounded-full px-1.5 py-px ml-auto",
+                      item.badgeTone === "red"
+                        ? "bg-red-500 text-white"
+                        : "bg-gold text-navy",
+                    )}
+                  >
                     {badge}
                   </span>
                 ) : null}
@@ -177,18 +187,43 @@ export default function Shell({
       </div>
     ) : null;
 
+  // Admin gets an identity footer (no availability toggle).
+  const sidebarFooter =
+    role === "admin" ? (
+      <div className="border-t border-white/[0.07] p-3">
+        <div className="flex items-center gap-2.5 px-2 py-1.5">
+          <span className="w-8 h-8 rounded-full bg-gold/[0.16] text-gold text-[11px] font-semibold flex items-center justify-center shrink-0">
+            {user.initials}
+          </span>
+          <span className="flex flex-col leading-tight min-w-0">
+            <span className="text-sm font-medium text-white/90 truncate">
+              {user.name}
+            </span>
+            <span className="text-[11px] text-white/40">Super admin</span>
+          </span>
+        </div>
+      </div>
+    ) : (
+      availabilityFooter
+    );
+
   return (
     <div className="min-h-screen bg-cream text-ink-2 font-sans">
       {/* ── Desktop sidebar ── */}
       <aside className="hidden lg:flex lg:flex-col lg:fixed lg:top-0 lg:left-0 lg:w-[220px] lg:h-screen lg:bg-navy lg:z-30">
         <Link
           href={config.sections[0].items[0].href}
-          className="no-underline px-5 pt-[18px] pb-2.5"
+          className="flex items-center gap-2 no-underline px-5 pt-[18px] pb-2.5"
         >
           <Logo tone="light" size="md" />
+          {role === "admin" && (
+            <span className="bg-gold/[0.16] border border-gold/30 text-gold text-[9px] font-semibold uppercase tracking-[0.08em] rounded px-1.5 py-0.5">
+              Admin
+            </span>
+          )}
         </Link>
         {renderNav()}
-        {availabilityFooter}
+        {sidebarFooter}
       </aside>
 
       {/* ── Mobile topbar: logo left, avatar + hamburger right ── */}
@@ -236,7 +271,14 @@ export default function Shell({
         )}
       >
         <div className="flex items-center justify-between pt-3.5 px-4 pb-1.5">
-          <Logo tone="light" size="md" />
+          <div className="flex items-center gap-2">
+            <Logo tone="light" size="md" />
+            {role === "admin" && (
+              <span className="bg-gold/[0.16] border border-gold/30 text-gold text-[9px] font-semibold uppercase tracking-[0.08em] rounded px-1.5 py-0.5">
+                Admin
+              </span>
+            )}
+          </div>
           <button
             type="button"
             className="bg-white/[0.08] border border-white/15 text-white w-[38px] h-[38px] rounded-[9px] flex items-center justify-center cursor-pointer"
@@ -247,7 +289,7 @@ export default function Shell({
           </button>
         </div>
         {renderNav(() => setDrawerOpen(false))}
-        {availabilityFooter}
+        {sidebarFooter}
       </aside>
 
       {/* ── Main column ── */}
@@ -329,7 +371,14 @@ export default function Shell({
               <span className="relative">
                 <Icon size={19} />
                 {badge ? (
-                  <span className="absolute -top-[5px] left-2.5 bg-gold text-navy text-[8px] font-semibold leading-none rounded-full px-1 py-0.5 min-w-[14px] text-center">
+                  <span
+                    className={cn(
+                      "absolute -top-[5px] left-2.5 text-[8px] font-semibold leading-none rounded-full px-1 py-0.5 min-w-[14px] text-center",
+                      item.badgeTone === "red"
+                        ? "bg-red-500 text-white"
+                        : "bg-gold text-navy",
+                    )}
+                  >
                     {badge}
                   </span>
                 ) : null}

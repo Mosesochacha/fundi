@@ -1,11 +1,14 @@
 import {
   AlertTriangle,
+  Banknote,
   Briefcase,
   Building2,
   Clock,
+  CreditCard,
   FileText,
   Flag,
   LayoutDashboard,
+  Mail,
   MessageSquare,
   Search,
   Settings,
@@ -20,7 +23,8 @@ export type BadgeKey =
   | "unreadMessages"
   | "unreadRequests"
   | "openReports"
-  | "flaggedCount";
+  | "flaggedCount"
+  | "pendingPayouts";
 
 type IconType = ComponentType<{
   size?: number | string;
@@ -33,6 +37,8 @@ export interface NavItem {
   href: string;
   icon: IconType;
   badge?: BadgeKey;
+  /** Colour of the count badge. Defaults to gold. */
+  badgeTone?: "gold" | "red";
 }
 export interface NavSection {
   label?: string;
@@ -177,50 +183,78 @@ export const NAV_CONFIG: Record<DashboardRole, RoleNav> = {
   admin: {
     sections: [
       {
-        label: "Main",
+        label: "Overview",
         items: [
           {
             label: "Dashboard",
             href: "/admin/dashboard",
             icon: LayoutDashboard,
           },
-          { label: "Workers", href: "/admin/workers", icon: Users },
-          { label: "Employers", href: "/admin/employers", icon: Building2 },
-          { label: "Jobs", href: "/admin/jobs", icon: Briefcase },
-          { label: "Messages", href: "/admin/messages", icon: MessageSquare },
         ],
       },
       {
-        label: "Moderation",
+        label: "Users",
         items: [
+          { label: "All users", href: "/admin/users", icon: Users },
+          { label: "Workers", href: "/admin/workers", icon: User },
+          { label: "Employers", href: "/admin/employers", icon: Building2 },
+        ],
+      },
+      {
+        label: "Platform",
+        items: [
+          { label: "Jobs", href: "/admin/jobs", icon: Briefcase },
+          { label: "Reviews", href: "/admin/reviews", icon: Star },
           {
             label: "Reports",
             href: "/admin/reports",
             icon: Flag,
             badge: "openReports",
+            badgeTone: "red",
           },
+        ],
+      },
+      {
+        label: "Finance",
+        items: [
+          { label: "Payments", href: "/admin/payments", icon: CreditCard },
           {
-            label: "Flagged users",
-            href: "/admin/flagged",
-            icon: AlertTriangle,
-            badge: "flaggedCount",
+            label: "Payouts",
+            href: "/admin/payouts",
+            icon: Banknote,
+            badge: "pendingPayouts",
+            badgeTone: "gold",
           },
-          { label: "Reviews", href: "/admin/reviews", icon: Star },
         ],
       },
       {
         label: "System",
-        items: [{ label: "Settings", href: "/admin/settings", icon: Settings }],
+        items: [
+          { label: "Settings", href: "/admin/settings", icon: Settings },
+          {
+            label: "Email templates",
+            href: "/admin/settings/email",
+            icon: Mail,
+          },
+        ],
       },
     ],
     bottomNav: [
       { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
-      { label: "Workers", href: "/admin/workers", icon: Users },
+      { label: "Users", href: "/admin/users", icon: Users },
       {
         label: "Reports",
         href: "/admin/reports",
         icon: Flag,
         badge: "openReports",
+        badgeTone: "red",
+      },
+      {
+        label: "Payouts",
+        href: "/admin/payouts",
+        icon: Banknote,
+        badge: "pendingPayouts",
+        badgeTone: "gold",
       },
       { label: "Settings", href: "/admin/settings", icon: Settings },
     ],

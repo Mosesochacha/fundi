@@ -26,6 +26,9 @@ export class User extends Model {
   declare termsAcceptedAt: Date | null;
   declare loginAttempts: number;
   declare lockedUntil: Date | null;
+  declare bannedAt: Date | null;
+  declare suspendedUntil: Date | null;
+  declare suspensionReason: string | null;
 
   static associate(models: any) {
     User.hasOne(models.Profile, { foreignKey: 'userId', as: 'profile', onDelete: 'CASCADE' });
@@ -163,6 +166,20 @@ export function initModel(sequelize: Sequelize): typeof User {
       },
       lockedUntil: {
         type: DataTypes.DATE,
+        allowNull: true,
+      },
+      bannedAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        comment: "Set when permanently banned (cannot re-register).",
+      },
+      suspendedUntil: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        comment: "End of a timed suspension (null = indefinite when status=suspended).",
+      },
+      suspensionReason: {
+        type: DataTypes.TEXT,
         allowNull: true,
       },
     },

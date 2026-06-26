@@ -19,6 +19,11 @@ export class JobRequest extends Model<InferAttributes<JobRequest>, InferCreation
   declare reviewRating: CreationOptional<number | null>;
   declare reviewText: CreationOptional<string | null>;
   declare reviewedAt: CreationOptional<Date | null>;
+  declare reviewHidden: CreationOptional<boolean>;
+  declare reviewRemoved: CreationOptional<boolean>;
+  declare reviewFlagged: CreationOptional<boolean>;
+  declare reviewFlagReason: CreationOptional<string | null>;
+  declare reviewFlaggedBy: CreationOptional<string | null>;
   declare reminderSentAt: CreationOptional<Date | null>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
@@ -63,6 +68,11 @@ export function initModel(sequelize: Sequelize): typeof JobRequest {
       reviewRating: { type: DataTypes.INTEGER, allowNull: true },
       reviewText: { type: DataTypes.TEXT, allowNull: true },
       reviewedAt: { type: DataTypes.DATE, allowNull: true },
+      reviewHidden: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+      reviewRemoved: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+      reviewFlagged: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+      reviewFlagReason: { type: DataTypes.TEXT, allowNull: true },
+      reviewFlaggedBy: { type: DataTypes.STRING, allowNull: true },
       reminderSentAt: { type: DataTypes.DATE, allowNull: true },
       createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
       updatedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },

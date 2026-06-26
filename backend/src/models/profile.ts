@@ -34,6 +34,16 @@ export class Profile extends Model<
   declare certifications: CreationOptional<object[] | null>;
   declare serviceAreas: CreationOptional<string[] | null>;
   declare isAvailable: CreationOptional<boolean>;
+  // ID verification (admin moderation)
+  declare idVerificationStatus: CreationOptional<
+    "unverified" | "pending" | "verified" | "rejected"
+  >;
+  declare idDocUrl: CreationOptional<string | null>;
+  declare selfieUrl: CreationOptional<string | null>;
+  declare idSelfieMatch: CreationOptional<boolean | null>;
+  declare idRejectionReason: CreationOptional<string | null>;
+  declare idSubmittedAt: CreationOptional<Date | null>;
+  declare idVerifiedAt: CreationOptional<Date | null>;
   // Notification preferences
   declare emailProfileViewed: CreationOptional<boolean>;
   declare emailNewFollower: CreationOptional<boolean>;
@@ -116,6 +126,17 @@ export function initModel(sequelize: Sequelize): typeof Profile {
       certifications: { type: DataTypes.JSON, allowNull: true, defaultValue: [] },
       serviceAreas: { type: DataTypes.JSON, allowNull: true, defaultValue: [] },
       isAvailable: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
+      idVerificationStatus: {
+        type: DataTypes.ENUM("unverified", "pending", "verified", "rejected"),
+        allowNull: false,
+        defaultValue: "unverified",
+      },
+      idDocUrl: { type: DataTypes.STRING, allowNull: true },
+      selfieUrl: { type: DataTypes.STRING, allowNull: true },
+      idSelfieMatch: { type: DataTypes.BOOLEAN, allowNull: true },
+      idRejectionReason: { type: DataTypes.TEXT, allowNull: true },
+      idSubmittedAt: { type: DataTypes.DATE, allowNull: true },
+      idVerifiedAt: { type: DataTypes.DATE, allowNull: true },
       // Notification preferences
       emailProfileViewed: { type: DataTypes.BOOLEAN, defaultValue: true },
       emailNewFollower: { type: DataTypes.BOOLEAN, defaultValue: true },

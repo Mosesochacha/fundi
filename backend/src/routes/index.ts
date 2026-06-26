@@ -19,6 +19,7 @@ import searchRoutes from './search.routes';
 import workerRoutes from './worker.routes';
 import employerRoutes from './employer.routes';
 import onboardingRoutes from './onboarding.routes';
+import adminRoutes from './admin.routes';
 import verifyJWT from '../middleware/verifyJWT';
 import { csrfProtection } from '../middleware/csrfProtection';
 
@@ -54,5 +55,7 @@ router.use(photosRoutes);
 router.use(messagesRoutes);
 router.use(jobsRoutes);
 router.use(notificationsRoutes);
+// Admin console — every route additionally gated by requireRole('admin').
+router.use(adminRoutes);
 
 export default router;
