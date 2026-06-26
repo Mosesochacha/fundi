@@ -12,7 +12,7 @@ export interface AuthUserPayload extends JwtPayload {
 }
 
 export interface AuthenticatedRequest extends Request {
-  user?: any; // or your specific user type
+  user?: any;
   file?: Express.Multer.File;
   files?: Express.Multer.File[] | { [fieldname: string]: Express.Multer.File[] };
 }
@@ -29,7 +29,6 @@ const verifyJWT: RequestHandler = async (
       : null;
 
   if (!token) {
-    // Don't expose implementation details - generic error
     logger.warn("Authentication token missing", {
       path: req.path,
       ip: req.ip,
@@ -59,7 +58,6 @@ const verifyJWT: RequestHandler = async (
 
     const { id, role, username } = decoded;
 
-    // Verify user still exists and is active
     const user = await db.User.findByPk(id);
     if (!user) {
       sendError(
@@ -81,7 +79,6 @@ const verifyJWT: RequestHandler = async (
       return;
     }
 
-    // Suspended accounts can't act even with a still-valid token.
     if (user.status === "suspended") {
       sendError(
         res,
@@ -102,7 +99,6 @@ const verifyJWT: RequestHandler = async (
     };
     next();
   } catch (err: any) {
-    // Log specific error types for debugging
     if (err.name === 'TokenExpiredError') {
       logger.warn("Token expired", { 
         expiredAt: err.expiredAt,
@@ -147,7 +143,6 @@ export const optionalVerifyJWT: RequestHandler = async (
       ? authHeader.split(" ")[1]
       : null;
 
-  // If no token, continue without setting req.user
   if (!token) {
     return next();
   }
@@ -156,16 +151,13 @@ export const optionalVerifyJWT: RequestHandler = async (
     const decoded = jwt.verify(token, JWT_CONFIG.SECRET) as AuthUserPayload;
     
     if (!decoded || typeof decoded !== "object") {
-      // Invalid token, but continue without authentication
       return next();
     }
 
     const { id, role, username } = decoded;
 
-    // Verify user still exists and is active (and not suspended)
     const user = await db.User.findByPk(id);
     if (!user || !user.isActive || user.status === "suspended") {
-      // User not found, inactive, or suspended — continue without authentication
       return next();
     }
 
@@ -179,7 +171,6 @@ export const optionalVerifyJWT: RequestHandler = async (
     };
     next();
   } catch (err: any) {
-    // Token invalid or expired, but continue without authentication
     next();
   }
 };

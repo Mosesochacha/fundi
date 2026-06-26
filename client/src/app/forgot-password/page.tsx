@@ -79,12 +79,10 @@ export default function ForgotPasswordPage() {
   const isEmail = identifier.includes("@");
   const score = passwordScore(newPassword);
 
-  // Scroll to top on every screen change.
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
-  // Resend countdown tick.
   useEffect(() => {
     if (resendLeft <= 0) return;
     const t = setTimeout(() => setResendLeft((s) => s - 1), 1000);
@@ -102,7 +100,6 @@ export default function ForgotPasswordPage() {
       hasError ? "border-red-600 bg-red-50" : "border-border",
     );
 
-  // ── Screen 1 - request reset ──────────────────────────────────────────────
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!identifier.trim()) {
@@ -122,7 +119,6 @@ export default function ForgotPasswordPage() {
     }
   };
 
-  // ── Screen 2 - OTP ────────────────────────────────────────────────────────
   const setDigit = (index: number, value: string) => {
     const digit = value.replace(/\D/g, "").slice(-1);
     setOtp((prev) => {
@@ -171,7 +167,6 @@ export default function ForgotPasswordPage() {
     }
   };
 
-  // ── Screen 3 - new password ───────────────────────────────────────────────
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
     let ok = true;
@@ -214,7 +209,6 @@ export default function ForgotPasswordPage() {
       </div>
 
       <div className="bg-white border border-border rounded-xl p-8 w-full max-w-[400px]">
-        {/* SCREEN 1 - request reset */}
         {screen === 1 && (
           <form onSubmit={handleSend} noValidate>
             <span className={ICON_WRAP}>
@@ -265,7 +259,6 @@ export default function ForgotPasswordPage() {
           </form>
         )}
 
-        {/* SCREEN 2 - OTP verification */}
         {screen === 2 && (
           <div>
             <span className={ICON_WRAP}>
@@ -343,7 +336,6 @@ export default function ForgotPasswordPage() {
           </div>
         )}
 
-        {/* SCREEN 3 - set new password */}
         {screen === 3 && (
           <form onSubmit={handleReset} noValidate>
             <span className={ICON_WRAP}>
@@ -442,7 +434,6 @@ export default function ForgotPasswordPage() {
           </form>
         )}
 
-        {/* SCREEN 4 - success */}
         {screen === 4 && (
           <div>
             <span

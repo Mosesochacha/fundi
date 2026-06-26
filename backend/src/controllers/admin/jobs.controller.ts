@@ -59,7 +59,6 @@ class AdminJobsController {
     });
     if (!job) return sendError(res, HTTP_STATUS.NOT_FOUND, "Job not found");
 
-    // Attach the worker's average rating for the detail sidebar.
     if (job.worker) {
       const reviews = await Db.JobRequest.findAll({
         where: { workerId: job.worker.id, reviewRating: { [Op.ne]: null } },

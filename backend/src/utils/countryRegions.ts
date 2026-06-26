@@ -3,7 +3,6 @@
  * This allows matching "Africa" opportunities with users in "Kenya", etc.
  */
 export const COUNTRY_TO_REGION: Record<string, string[]> = {
-  // African countries
   'kenya': ['africa', 'east africa', 'eastern africa'],
   'nigeria': ['africa', 'west africa', 'western africa'],
   'south africa': ['africa', 'southern africa'],
@@ -56,7 +55,6 @@ export const COUNTRY_TO_REGION: Record<string, string[]> = {
   'mauritius': ['africa', 'east africa', 'eastern africa'],
   'seychelles': ['africa', 'east africa', 'eastern africa'],
   
-  // North American countries
   'canada': ['north america', 'americas'],
   'united states': ['north america', 'americas', 'usa'],
   'united states of america': ['north america', 'americas', 'usa'],
@@ -64,7 +62,6 @@ export const COUNTRY_TO_REGION: Record<string, string[]> = {
   'us': ['north america', 'americas'],
   'mexico': ['north america', 'americas', 'latin america'],
   
-  // European countries
   'united kingdom': ['europe', 'european union', 'eu'],
   'uk': ['europe', 'european union', 'eu'],
   'germany': ['europe', 'european union', 'eu'],
@@ -88,7 +85,6 @@ export const COUNTRY_TO_REGION: Record<string, string[]> = {
   'hungary': ['europe', 'european union', 'eu'],
   'russia': ['europe', 'asia'],
   
-  // Asian countries
   'china': ['asia', 'east asia', 'eastern asia'],
   'india': ['asia', 'south asia', 'southern asia'],
   'japan': ['asia', 'east asia', 'eastern asia'],
@@ -112,7 +108,6 @@ export const COUNTRY_TO_REGION: Record<string, string[]> = {
   'uae': ['asia', 'middle east'],
   'united arab emirates': ['asia', 'middle east'],
   
-  // South American countries
   'brazil': ['south america', 'americas', 'latin america'],
   'argentina': ['south america', 'americas', 'latin america'],
   'colombia': ['south america', 'americas', 'latin america'],
@@ -127,7 +122,6 @@ export const COUNTRY_TO_REGION: Record<string, string[]> = {
   'suriname': ['south america', 'americas'],
   'french guiana': ['south america', 'americas'],
   
-  // Oceania
   'australia': ['oceania', 'australia and oceania'],
   'new zealand': ['oceania', 'australia and oceania'],
   'fiji': ['oceania', 'australia and oceania'],
@@ -143,6 +137,4 @@ export function getRegionsForCountry(country: string): string[] {
   const normalizedCountry = country.toLowerCase().trim();
   return COUNTRY_TO_REGION[normalizedCountry] || [];
 }
-
-
 

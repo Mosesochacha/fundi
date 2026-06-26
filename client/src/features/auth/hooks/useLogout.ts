@@ -21,20 +21,16 @@ export function useLogout() {
   const qc = useQueryClient();
 
   return async (options?: { callbackUrl?: string }) => {
-    // Stop in-flight refetches and drop cached state up front so nothing keeps
-    // spinning or triggers a session refresh mid-logout.
     qc.cancelQueries();
     qc.clear();
     clearAccessTokenCache();
     getSocket()?.disconnect();
 
-    // Revoke the refresh token (kills the resurrection path), bounded by a timeout.
     await Promise.race([
       authService.logout().catch(() => {}),
       new Promise((resolve) => setTimeout(resolve, REVOKE_TIMEOUT_MS)),
     ]);
 
-    // Clear the NextAuth session cookie, then do a single hard redirect home.
     await signOut({ redirect: false });
     if (typeof window !== "undefined") {
       window.location.replace(options?.callbackUrl ?? "/");

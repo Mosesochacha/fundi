@@ -83,7 +83,6 @@ class AdminDashboardController {
       { key: "pendingVerify", label: "Pending verification", number: String(pendingVerification), sub: "workers awaiting ID check", accent: "green" },
     ];
 
-    // ── Activity feed: merge recent users / jobs / reports / payments ──
     const [recentUsers, recentJobs, recentReports, recentPayments] = await Promise.all([
       Db.User.findAll({ order: [["createdAt", "DESC"]], limit: 8, include: [{ model: Db.Profile, as: "profile" }] }),
       Db.JobRequest.findAll({ where: { status: "completed" }, order: [["completedAt", "DESC"]], limit: 8 }),
@@ -114,7 +113,6 @@ class AdminDashboardController {
     activity.sort((a, b) => +new Date(b._at) - +new Date(a._at));
     const activityOut = activity.slice(0, 20).map(({ _at, ...rest }) => rest);
 
-    // ── Top open reports ──
     const openReportRows = await Db.UserReport.findAll({
       where: { status: "open" },
       order: [["createdAt", "DESC"]],
@@ -137,7 +135,6 @@ class AdminDashboardController {
       };
     });
 
-    // ── New registrations ──
     const newUsers = recentUsers.slice(0, 5).map((u: any) => {
       const nm = u.profile?.fullName || `${u.firstName} ${u.lastName}`.trim();
       const role = u.accountType === "employer" ? "employer" : "worker";

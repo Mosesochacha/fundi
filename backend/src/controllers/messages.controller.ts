@@ -9,7 +9,6 @@ import { createNotification } from '../services/notification.service';
 
 const SENDER_ATTRS = ['id', 'fullName', 'avatarUrl', 'username'];
 
-// Deterministic avatar colour from a name, so the same person is always the same hue.
 const AVATAR_COLORS = ['#c9a84c', '#0d1b2a', '#3b7d6e', '#9c5b3b', '#5a4b8a', '#a8872e', '#2f6f9e'];
 
 function initialsOf(name: string): string {
@@ -118,7 +117,6 @@ class MessagesController {
       offset,
     });
 
-    // Mark unread messages from other party as read
     await (db as any).Message.update(
       { readAt: new Date() },
       { where: { conversationId, senderId: { [Op.ne]: profileId }, readAt: null } }
@@ -150,7 +148,6 @@ class MessagesController {
       const recipient = await db.Profile.findByPk(recipientId);
       if (!recipient) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Recipient not found');
 
-      // Find or create conversation (participants stored in canonical order)
       const [p1, p2] = [profileId, recipientId].sort();
       const [created] = await (db as any).Conversation.findOrCreate({
         where: { participant1Id: p1, participant2Id: p2 },
@@ -173,7 +170,6 @@ class MessagesController {
 
     const plain = fullMessage.get({ plain: true });
 
-    // Notify + emit to the other participant's room via Socket.IO.
     const otherProfileId = conv.participant1Id === profileId ? conv.participant2Id : conv.participant1Id;
     const otherProfile = await db.Profile.findByPk(otherProfileId, { attributes: ['userId'] });
     if (otherProfile) {

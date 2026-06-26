@@ -65,7 +65,6 @@ function personSchema(worker: PublicWorkerData) {
     },
   };
   if (worker.avatarUrl) schema.image = worker.avatarUrl;
-  // Only emit ratings when they're real — fake/zero ratings risk a penalty.
   if (worker.reviewCount > 0) {
     schema.aggregateRating = {
       "@type": "AggregateRating",

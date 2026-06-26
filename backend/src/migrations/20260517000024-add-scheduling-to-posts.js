@@ -11,7 +11,6 @@ module.exports = {
       type: Sequelize.DATE,
       allowNull: true,
     });
-    // Backfill all existing rows to PUBLISHED
     await queryInterface.sequelize.query(
       `UPDATE "Posts" SET status = 'PUBLISHED' WHERE status IS NULL`
     );

@@ -14,8 +14,8 @@ import {
 import { redirectPathForRole } from "@/lib/authRedirect";
 import { cn } from "@/lib/utils";
 
-const CODE_TTL = 300; // seconds - code expires after 5:00
-const RESEND_COOLDOWN = 30; // seconds before "Resend code" re-enables
+const CODE_TTL = 300;
+const RESEND_COOLDOWN = 30;
 const BOX_IDS = ["d0", "d1", "d2", "d3", "d4", "d5"];
 
 const LINK_CLASS =
@@ -37,9 +37,6 @@ export default function VerifyEmailPage() {
   const router = useRouter();
   const { success, error: toastError } = useToastContext();
 
-  // The email being verified lives in a server session cookie - this fetch
-  // returns only a masked version and the account type. A failure means the
-  // session expired, so we bounce back to register.
   const {
     data: pending,
     isLoading: checking,
@@ -59,10 +56,6 @@ export default function VerifyEmailPage() {
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
   const redirectedRef = useRef(false);
 
-  // No valid pending-verification session → send the user back to register.
-  // Guarded with a ref so it fires exactly once: the toast helpers are new
-  // function refs on every render, so they must not gate this effect (doing so
-  // would re-toast + re-navigate in a loop).
   // biome-ignore lint/correctness/useExhaustiveDependencies: toastError is a fresh ref each render; the ref guard keeps this one-shot
   useEffect(() => {
     if (noSession && !redirectedRef.current) {
@@ -72,8 +65,6 @@ export default function VerifyEmailPage() {
     }
   }, [noSession, router]);
 
-  // Single ticking clock drives both the expiry countdown and the resend
-  // cooldown. Stops once the email is verified.
   useEffect(() => {
     if (verified) return;
     const t = setInterval(() => {
@@ -83,7 +74,6 @@ export default function VerifyEmailPage() {
     return () => clearInterval(t);
   }, [verified]);
 
-  // Auto-focus the first box once the session check resolves.
   useEffect(() => {
     if (pending) inputs.current[0]?.focus();
   }, [pending]);
@@ -114,7 +104,6 @@ export default function VerifyEmailPage() {
     }
   };
 
-  // Pasting a 6-digit code fills every box at once.
   const onPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     const text = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
     if (!text) return;
@@ -134,8 +123,6 @@ export default function VerifyEmailPage() {
   const onVerify = async () => {
     if (!complete || verifyMutation.isPending) return;
     try {
-      // A successful verify also establishes the session (auto-login), so we can
-      // route straight into the authenticated dashboard.
       const session = await verifyMutation.mutateAsync({ code });
       posthog.capture("email_verified");
       setVerified(true);
@@ -147,8 +134,6 @@ export default function VerifyEmailPage() {
         : dashboardFor(pending?.accountType ?? null);
       setTimeout(() => router.push(dest), 1500);
     } catch {
-      // The no-session case is already handled on mount; by the time the form is
-      // submittable, a failure means the code itself was wrong or expired.
       setErrorMsg("Incorrect code. Try again.");
       setShake(true);
       setTimeout(() => setShake(false), 400);
@@ -188,7 +173,6 @@ export default function VerifyEmailPage() {
 
       <div className="bg-white border-[0.5px] border-border rounded-2xl px-8 py-9 w-full max-w-[420px] shadow-[0_4px_24px_rgba(13,27,42,0.05)]">
         {verified ? (
-          /* ── Success state ─────────────────────────────────────────────── */
           <>
             <span className="w-14 h-14 rounded-[14px] bg-green-50 border border-green-600 flex items-center justify-center mx-auto mb-5 [&_svg]:w-[26px] [&_svg]:h-[26px] [&_svg]:stroke-green-600 [&_svg]:fill-none [&_svg]:[stroke-width:2] [&_svg]:[stroke-linecap:round] [&_svg]:[stroke-linejoin:round]">
               <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -207,10 +191,8 @@ export default function VerifyEmailPage() {
             </div>
           </>
         ) : checking || !pending ? (
-          /* ── Checking session ──────────────────────────────────────────── */
           <p className="text-sm text-ink-3 text-center py-6">Loading…</p>
         ) : (
-          /* ── Verification form ─────────────────────────────────────────── */
           <>
             <span className="w-14 h-14 rounded-[14px] bg-gold-light border border-gold flex items-center justify-center mx-auto mb-5 [&_svg]:w-[26px] [&_svg]:h-[26px] [&_svg]:stroke-gold-dark [&_svg]:fill-none [&_svg]:[stroke-width:1.6] [&_svg]:[stroke-linecap:round] [&_svg]:[stroke-linejoin:round]">
               <svg viewBox="0 0 24 24" aria-hidden="true">

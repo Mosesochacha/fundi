@@ -13,7 +13,6 @@ function isCrossOrigin(req?: Request) {
     const originHostname = new URL(origin).hostname;
     const hostHostname = host.split(":")[0];
 
-    // Treat subdomains of the same root domain as same-site
     const getRootDomain = (h: string) => {
       const parts = h.split(".");
       if (parts.length <= 2) return h;
@@ -23,12 +22,10 @@ function isCrossOrigin(req?: Request) {
     const originRoot = getRootDomain(originHostname);
     const hostRoot = getRootDomain(hostHostname);
 
-    // Same exact host or same root domain → not cross-origin for cookie purposes
     if (originHostname === hostHostname || originRoot === hostRoot) {
       return false;
     }
 
-    // Different sites → treat as cross-origin
     return true;
   } catch {
     return false;
@@ -62,7 +59,6 @@ export function setAuthCookie(
   const crossSite = isCrossOrigin(req);
   const isProduction = process.env.NODE_ENV === "production";
   const isSecure = req?.secure || req?.headers["x-forwarded-proto"] === "https" || isProduction;
-  
 
   const sameSite = crossSite ? (isSecure ? "none" : "lax") : "lax";
   const secure = crossSite ? isSecure : isProduction;
@@ -95,21 +91,14 @@ export function setCsrfCookie(res: Response, token: string, req?: Request) {
   });
 }
 
-// ── Pending email verification ──────────────────────────────────────────────
-// During registration (and when an unverified user asks to verify) we stash the
-// email being verified in a short-lived, signed, httpOnly cookie instead of
-// passing it through the URL. The /verify-email and /resend-verification
-// endpoints read the email from here, so it never appears in a query string,
-// browser history, or a shareable link.
 const PENDING_VERIFICATION_COOKIE = "lot_pv";
-const PENDING_VERIFICATION_TTL_MS = 15 * 60 * 1000; // 15 minutes
+const PENDING_VERIFICATION_TTL_MS = 15 * 60 * 1000;
 
 export interface PendingVerification {
   email: string;
   accountType?: "employer" | "worker" | null;
 }
 
-// Shared cross-site cookie attributes (same logic the auth cookies use).
 function cookieSecurity(req?: Request) {
   const crossSite = isCrossOrigin(req);
   const isProduction = process.env.NODE_ENV === "production";
@@ -141,8 +130,6 @@ export function setPendingVerificationCookie(
   });
 }
 
-// Returns the email/accountType from a valid pending-verification cookie, or
-// null when it is missing, malformed, or expired.
 export function readPendingVerification(req: Request): PendingVerification | null {
   const token = (req as any).cookies?.[PENDING_VERIFICATION_COOKIE];
   if (!token) return null;

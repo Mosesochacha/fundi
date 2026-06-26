@@ -45,7 +45,6 @@ export default function HireModal({ worker, defaultLocation, onClose }: Props) {
   const [description, setDescription] = useState("");
   const [budget, setBudget] = useState("");
 
-  // Prefill from the worker/employer each time the modal opens for a worker.
   useEffect(() => {
     if (!worker) return;
     setJobType(worker.trade ?? "");
@@ -56,7 +55,6 @@ export default function HireModal({ worker, defaultLocation, onClose }: Props) {
     setBudget("");
   }, [worker, defaultLocation]);
 
-  // Close on Escape; lock body scroll while open.
   useEffect(() => {
     if (!worker) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();

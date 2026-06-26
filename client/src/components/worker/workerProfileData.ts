@@ -1,5 +1,3 @@
-// Shared types for the worker profile CV page (see WorkerProfile.tsx).
-
 export interface PortfolioPhoto {
   id: string;
   url: string;
@@ -14,7 +12,7 @@ export interface ExperienceItem {
   title: string;
   company: string;
   startYear: number;
-  endYear: number | null; // null = current
+  endYear: number | null;
   description: string;
 }
 

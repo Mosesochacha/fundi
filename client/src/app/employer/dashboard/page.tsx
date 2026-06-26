@@ -79,7 +79,6 @@ function summary(active: number, pending: number) {
 const mapsHref = (location: string) =>
   `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
 
-/* Shared button class strings (ported from dashboard.css .ed-btn*). */
 const BTN_BASE =
   "inline-flex items-center justify-center gap-1.5 font-medium rounded-lg border whitespace-nowrap cursor-pointer transition-colors disabled:opacity-60 disabled:cursor-not-allowed no-underline";
 const BTN_SM = "text-sm px-[11px] py-1.5";
@@ -139,7 +138,6 @@ export default function EmployerDashboardPage() {
       {/* biome-ignore lint/a11y/useValidAriaRole: `role` is a WelcomeToast prop, not an ARIA attribute */}
       <WelcomeToast role="employer" firstName={firstName} />
       <div className="flex flex-col gap-4 text-ink-2">
-        {/* ── Welcome row ─────────────────────────────────────────────── */}
         <div className="flex items-end justify-between gap-4 flex-wrap">
           <div>
             <div className="text-sm text-ink-3">{longDate(now)}</div>
@@ -180,7 +178,6 @@ export default function EmployerDashboardPage() {
           <DashboardSkeleton />
         ) : (
           <>
-            {/* ── Stats grid ───────────────────────────────────────────── */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               <StatCard
                 accent="gold"
@@ -217,7 +214,6 @@ export default function EmployerDashboardPage() {
               <FirstRunHero />
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-4 items-start">
-                {/* LEFT */}
                 <div className="flex flex-col gap-4">
                   <ActiveJobsCard
                     jobs={activeJobs}
@@ -239,7 +235,6 @@ export default function EmployerDashboardPage() {
                   />
                 </div>
 
-                {/* RIGHT */}
                 <div className="flex flex-col gap-4">
                   <QuickActionsCard />
                   <SpendingCard
@@ -276,9 +271,6 @@ export default function EmployerDashboardPage() {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Avatar
-   ───────────────────────────────────────────────────────────────────────── */
 function Avatar({
   name,
   url,
@@ -309,9 +301,6 @@ function Avatar({
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Card shell
-   ───────────────────────────────────────────────────────────────────────── */
 function CardShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="bg-white border border-border rounded-xl overflow-hidden">
@@ -353,9 +342,6 @@ function CardLink({
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Active jobs
-   ───────────────────────────────────────────────────────────────────────── */
 function ActiveJobsCard({
   jobs,
   onComplete,
@@ -585,9 +571,6 @@ function ActiveJobItem({
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Suggested fundis
-   ───────────────────────────────────────────────────────────────────────── */
 function SuggestedFundisCard({
   workers,
   onHire,
@@ -664,9 +647,6 @@ function SuggestedFundisCard({
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Quick actions
-   ───────────────────────────────────────────────────────────────────────── */
 function QuickActionsCard() {
   return (
     <CardShell>
@@ -728,9 +708,6 @@ function QuickAction({
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Spending this month
-   ───────────────────────────────────────────────────────────────────────── */
 function SpendingCard({ items, total }: { items: SpendItem[]; total: number }) {
   const { user } = useAuth();
   const sym = symbolOf(user?.currency);
@@ -787,9 +764,6 @@ function SpendingCard({ items, total }: { items: SpendItem[]; total: number }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Recent hires
-   ───────────────────────────────────────────────────────────────────────── */
 function RecentHiresCard({
   hires,
   onHireAgain,
@@ -875,9 +849,6 @@ function Stars({ value }: { value: number }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Shared empty state
-   ───────────────────────────────────────────────────────────────────────── */
 function EmptyState({
   icon,
   title,
@@ -912,9 +883,6 @@ function EmptyState({
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   First-run hero (brand-new employer: no hires, no active jobs)
-   ───────────────────────────────────────────────────────────────────────── */
 function FirstRunHero() {
   return (
     <div className="flex flex-col items-center text-center px-6 py-14 bg-white border border-border rounded-xl">
@@ -935,9 +903,6 @@ function FirstRunHero() {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Loading skeleton - mirrors the real layout
-   ───────────────────────────────────────────────────────────────────────── */
 const SKEL = "bg-border rounded-md animate-pulse";
 
 function DashboardSkeleton() {

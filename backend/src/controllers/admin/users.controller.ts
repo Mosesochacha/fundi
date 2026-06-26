@@ -180,7 +180,7 @@ class AdminUsersController {
       resourceId: user.id,
       changes: { email: user.email },
     });
-    await user.destroy(); // cascades to Profile, etc.
+    await user.destroy();
     return sendSuccess(res, "Account and all data deleted");
   });
 }

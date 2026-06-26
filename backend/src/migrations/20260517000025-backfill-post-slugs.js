@@ -28,6 +28,5 @@ module.exports = {
   },
 
   async down() {
-    // Backfill is non-destructive — no rollback needed
   },
 };

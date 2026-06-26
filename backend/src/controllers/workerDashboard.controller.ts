@@ -5,17 +5,6 @@ import db from '../models';
 import { sendSuccess, sendError, asyncHandler } from '../utils/helpers';
 import { HTTP_STATUS } from '../utils/constants';
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Worker dashboard home (/worker/dashboard).
-
-   Aggregates the signed-in worker's job requests, profile views, reviews and
-   profile-completion checklist into the single payload the dashboard page
-   expects (see client features/worker/dashboard/types.ts: WorkerDashboard).
-
-   Reviews/ratings are denormalised onto JobRequest (reviewRating/reviewText/
-   reviewedAt) — there is no separate Review model.
-   ───────────────────────────────────────────────────────────────────────── */
-
 const DAY_MS = 24 * 60 * 60 * 1000;
 const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
 const isSameDay = (a: Date, b: Date) => startOfDay(a) === startOfDay(b);
@@ -30,7 +19,6 @@ const hasItems = (v: unknown): boolean => Array.isArray(v) && v.length > 0;
 function dashStatus(status: string, when: Date, now: Date): 'new' | 'today' | 'active' | 'completed' {
   if (status === 'pending') return 'new';
   if (status === 'completed') return 'completed';
-  // accepted
   return isSameDay(when, now) ? 'today' : 'active';
 }
 
@@ -50,14 +38,12 @@ class WorkerDashboardController {
     const now = new Date();
     const weekAgo = new Date(now.getTime() - 7 * DAY_MS);
 
-    // All of this worker's requests, employer joined, newest first.
     const requests: any[] = await (db as any).JobRequest.findAll({
       where: { workerId: profileId },
       include: [{ model: db.Profile, as: 'employer', attributes: ['id', 'fullName'] }],
       order: [['createdAt', 'DESC']],
     });
 
-    // ── Stats ──────────────────────────────────────────────────────────────
     let newRequests = 0;
     let totalJobs = 0;
     let reviewCount = 0;
@@ -77,7 +63,6 @@ class WorkerDashboardController {
       (db as any).ProfileView.count({ where: { profileId, createdAt: { [Op.gte]: weekAgo } } }),
     ]);
 
-    // ── Recent (actionable) requests: pending + accepted, newest first ──────
     const recentRequests = requests
       .filter((r) => r.status === 'pending' || r.status === 'accepted')
       .slice(0, 5)
@@ -94,7 +79,6 @@ class WorkerDashboardController {
         };
       });
 
-    // ── Upcoming jobs: accepted, scheduled today or later, soonest first ────
     const upcomingJobs = requests
       .filter((r) => r.status === 'accepted' && r.scheduledAt && startOfDay(r.scheduledAt) >= startOfDay(now))
       .sort((a, b) => +a.scheduledAt - +b.scheduledAt)
@@ -108,7 +92,6 @@ class WorkerDashboardController {
         time: timeLabel(r.scheduledAt as Date),
       }));
 
-    // ── Recent reviews (denormalised on JobRequest), newest first ──────────
     const recentReviews = requests
       .filter((r) => r.reviewedAt)
       .sort((a, b) => +b.reviewedAt - +a.reviewedAt)
@@ -121,7 +104,6 @@ class WorkerDashboardController {
         date: (r.reviewedAt as Date).toISOString(),
       }));
 
-    // ── Profile strength checklist ─────────────────────────────────────────
     const checks = [
       { key: 'avatar', label: 'Add a profile photo', done: !!profile.avatarUrl, href: '/worker/profile' },
       { key: 'bio', label: 'Write your bio', done: !!profile.bio?.trim(), href: '/worker/profile' },

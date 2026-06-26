@@ -24,7 +24,6 @@ export default function AdminEmailTemplatesPage() {
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const [preview, setPreview] = useState(false);
 
-  // Seed local drafts + default selection once templates arrive.
   useEffect(() => {
     if (!data) return;
     setDrafts((prev) => {
@@ -63,7 +62,6 @@ export default function AdminEmailTemplatesPage() {
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-4">
-        {/* Template list */}
         <DetailCard title="Templates">
           {isLoading ? (
             <div className="flex flex-col gap-2">
@@ -99,7 +97,6 @@ export default function AdminEmailTemplatesPage() {
           )}
         </DetailCard>
 
-        {/* Editor */}
         <DetailCard
           title={selected ? selected.name : "Editor"}
           action={

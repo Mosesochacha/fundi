@@ -44,7 +44,7 @@ const matches = (path: string, prefix: string) =>
 /** True for protected worker routes; false for `/worker/[id]` public profiles. */
 const isProtectedWorkerPath = (path: string) => {
   if (!matches(path, "/worker")) return false;
-  const seg = path.split("/")[2]; // "/worker/<seg>/..."
+  const seg = path.split("/")[2];
   return !!seg && WORKER_PROTECTED.includes(seg);
 };
 
@@ -53,8 +53,6 @@ export default auth((req) => {
   const path = nextUrl.pathname;
   const session = req.auth;
   const role = session?.user?.role;
-  // OAuth users sign in before choosing worker/employer - they must finish
-  // /onboarding before reaching any role area.
   const complete = !!session?.backendUser?.isProfileComplete;
 
   const toLogin = () => {
@@ -76,25 +74,17 @@ export default auth((req) => {
     return NextResponse.redirect(url);
   };
 
-  // The onboarding completion flow - logged in, but no role check.
   if (matches(path, "/onboarding")) {
     if (!session) return toLogin();
     if (complete) return toDashboard();
     return NextResponse.next();
   }
 
-  // Already signed in → keep them out of the auth screens.
   if (AUTH_ONLY.some((p) => matches(path, p))) {
     if (!session) return NextResponse.next();
     return complete ? toDashboard() : toOnboarding();
   }
 
-  // Worker area.
-  //  • /worker/[id] profile pages are fully PUBLIC (logged-out visitors and
-  //    crawlers must reach them for SEO indexing). They self-gate content
-  //    server-side: anonymous viewers get a minimal profile, signed-in get more.
-  //  • Worker-only app pages (WORKER_PROTECTED) require a signed-in, onboarded
-  //    worker.
   if (matches(path, "/worker")) {
     if (!isProtectedWorkerPath(path)) return NextResponse.next();
     if (!session) return toLogin();
@@ -103,7 +93,6 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
-  // Blanket role-gated areas (employer/admin/moderator).
   for (const [prefix, needed] of Object.entries(ROLE_GATED)) {
     if (matches(path, prefix)) {
       if (!session) return toLogin();
@@ -117,9 +106,6 @@ export default auth((req) => {
 });
 
 export const config = {
-  // Run on every route except static assets and files with an extension.
-  // The handler allow-lists public paths via fallthrough, so broad coverage
-  // here is defense-in-depth: a new protected page can't ship unguarded.
   matcher: [
     "/((?!api|_next/static|_next/image|favicon.ico|icons|images|.*\\.).*)",
   ],

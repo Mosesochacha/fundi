@@ -30,21 +30,17 @@ export async function optimizeImage(
   } = options;
 
   try {
-    // Get original file size
     const originalStats = fs.statSync(inputPath);
     const originalSize = originalStats.size;
 
-    // Create output directory if it doesn't exist
     const outputDir = path.dirname(outputPath);
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
 
-    // Sharp cannot read and write the same file; use a temp path when they match
     const isSamePath = path.resolve(inputPath) === path.resolve(outputPath);
     const writePath = isSamePath ? outputPath + '.tmp' : outputPath;
 
-    // Optimize image based on format
     let sharpInstance = sharp(inputPath)
       .resize(maxWidth, maxHeight, {
         fit: 'inside',
@@ -69,7 +65,6 @@ export async function optimizeImage(
       fs.renameSync(writePath, outputPath);
     }
 
-    // Get optimized file size
     const optimizedStats = fs.statSync(outputPath);
     const optimizedSize = optimizedStats.size;
     const savedBytes = originalSize - optimizedSize;

@@ -28,7 +28,6 @@ class ProfileController {
       db.Post.count({ where: { authorId: profile.id } }),
     ]);
 
-    // Track view with IP deduplication (same IP within 1 hour not counted twice)
     const clientIp = req.ip || req.headers['x-forwarded-for']?.toString().split(',')[0] || 'unknown';
     const ipHash = crypto.createHash('sha256').update(clientIp).digest('hex');
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
@@ -104,7 +103,6 @@ class ProfileController {
       if (key in req.body) updates[key] = req.body[key];
     }
 
-    // Validate username uniqueness if changing
     if (updates.username && updates.username !== profile.username) {
       const usernameRegex = /^[a-z0-9_]{3,30}$/;
       if (!usernameRegex.test(updates.username)) {
@@ -245,7 +243,6 @@ class ProfileController {
       }).catch(() => []) ?? [],
     ]);
 
-    // Build per-day counts for last 7 days
     const dailyCounts: Record<string, number> = {};
     for (let i = 6; i >= 0; i--) {
       const d = new Date(todayStart.getTime() - i * 24 * 60 * 60 * 1000);
@@ -256,7 +253,6 @@ class ProfileController {
       if (day in dailyCounts) dailyCounts[day]++;
     }
 
-    // Referrer breakdown
     const referrerCounts: Record<string, number> = { whatsapp: 0, instagram: 0, google: 0, direct: 0 };
     for (const row of dailyRows as any[]) {
       const r = row.referrer || 'direct';

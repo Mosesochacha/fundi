@@ -47,7 +47,6 @@ export default function FilterBar({ onAskAi }: Props) {
   const [open, setOpen] = useState<OpenPanel>(null);
   const barRef = useRef<HTMLDivElement>(null);
 
-  // Click-outside / Escape closes any open panel.
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent) => {
@@ -87,9 +86,7 @@ export default function FilterBar({ onAskAi }: Props) {
       ref={barRef}
     >
       <div className="flex flex-wrap items-start justify-between gap-3.5 md:items-center">
-        {/* LEFT - filter dropdowns */}
         <div className="flex flex-wrap items-center gap-2.5">
-          {/* TRADE */}
           <div className="relative">
             <button
               type="button"
@@ -131,7 +128,6 @@ export default function FilterBar({ onAskAi }: Props) {
             )}
           </div>
 
-          {/* LOCATION */}
           <div className="relative">
             <button
               type="button"
@@ -174,7 +170,6 @@ export default function FilterBar({ onAskAi }: Props) {
             )}
           </div>
 
-          {/* EXPERIENCE */}
           <div className="relative">
             <button
               type="button"
@@ -205,7 +200,6 @@ export default function FilterBar({ onAskAi }: Props) {
             )}
           </div>
 
-          {/* RATING */}
           <div className="relative">
             <button
               type="button"
@@ -238,7 +232,6 @@ export default function FilterBar({ onAskAi }: Props) {
             )}
           </div>
 
-          {/* AVAILABLE NOW */}
           <button
             type="button"
             className={cn(
@@ -260,7 +253,6 @@ export default function FilterBar({ onAskAi }: Props) {
           </button>
         </div>
 
-        {/* RIGHT - Ask AI + sort */}
         <div className="flex w-full flex-wrap items-center justify-between gap-2.5 md:w-auto md:justify-start">
           <button
             type="button"
@@ -292,7 +284,6 @@ export default function FilterBar({ onAskAi }: Props) {
         </div>
       </div>
 
-      {/* ACTIVE CHIPS */}
       {anyActive && (
         <div className="mt-3.5 flex flex-wrap items-center gap-2">
           {selectedTrades.map((t) => (

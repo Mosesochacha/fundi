@@ -15,9 +15,9 @@ interface OTPData {
 
 class OTPService {
   private readonly OTP_LENGTH = 6;
-  private readonly OTP_EXPIRY = 600; // 10 minutes
+  private readonly OTP_EXPIRY = 600;
   private readonly MAX_ATTEMPTS = 3;
-  private readonly RATE_LIMIT_WINDOW = 3600; // 1 hour
+  private readonly RATE_LIMIT_WINDOW = 3600;
   private readonly MAX_REQUESTS_PER_WINDOW = 3;
 
   /**
@@ -58,7 +58,6 @@ class OTPService {
 
       await RedisService.increment(key);
       
-      // Set expiry if this is the first request
       if (count === 0) {
         await RedisService.setWithExpiry(key, 1, this.RATE_LIMIT_WINDOW);
       }
@@ -66,7 +65,7 @@ class OTPService {
       return true;
     } catch (error) {
       logError(error, 'OTP Rate Limit Check');
-      return true; // Allow if Redis is down
+      return true;
     }
   }
 
@@ -79,7 +78,6 @@ class OTPService {
     retryAfter?: number;
   }> {
     try {
-      // Check rate limiting
       const canSend = await this.checkRateLimit(email);
       if (!canSend) {
         return {
@@ -89,7 +87,6 @@ class OTPService {
         };
       }
 
-      // Generate OTP (4 digits for password reset, 6 for everything else)
       const code = this._generateOTPCode(purpose === 'reset' ? 4 : 6);
       const otpData: OTPData = {
         code,
@@ -99,21 +96,17 @@ class OTPService {
         createdAt: new Date(),
       };
 
-      // Store in Redis
       const key = this.getOTPKey(email, purpose);
       await RedisService.setWithExpiry(key, otpData, this.OTP_EXPIRY);
 
-      // Fetch user's displayName from database
       let displayName: string | undefined;
       try {
         const user = await db.User.findOne({ where: { email: email.toLowerCase() } });
         displayName = user?.displayName;
       } catch (error) {
-        // If user lookup fails, continue without displayName
         logger.warn(`[OTPService] Could not fetch displayName for ${email}`);
       }
 
-      // Send email
       const emailSent = await EmailService.sendOTP(email, code, purpose === 'login' ? 'verification' : purpose, displayName);
       
       if (!emailSent) {
@@ -155,7 +148,6 @@ class OTPService {
         };
       }
 
-      // Check attempts
       if (otpData.attempts >= this.MAX_ATTEMPTS) {
         await RedisService.delete(key);
         return {
@@ -164,7 +156,6 @@ class OTPService {
         };
       }
 
-      // Verify code
       if (otpData.code !== code) {
         otpData.attempts += 1;
         await RedisService.setWithExpiry(key, otpData, this.OTP_EXPIRY);
@@ -176,7 +167,6 @@ class OTPService {
         };
       }
 
-      // Success - delete OTP
       await RedisService.delete(key);
       
       return {
@@ -225,7 +215,6 @@ class OTPService {
         };
       }
 
-      // Valid — intentionally NOT deleted so the reset step can consume it.
       return { success: true, message: 'OTP verified successfully.' };
     } catch (error) {
       logError(error, 'Peek OTP');

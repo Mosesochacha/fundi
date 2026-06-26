@@ -28,7 +28,6 @@ module.exports = {
       allowNull: false,
       defaultValue: 'orange',
     });
-    // Notification preferences
     await queryInterface.addColumn('Profiles', 'emailProfileViewed', {
       type: Sequelize.BOOLEAN,
       allowNull: false,
@@ -59,7 +58,6 @@ module.exports = {
       allowNull: false,
       defaultValue: false,
     });
-    // Privacy settings
     await queryInterface.addColumn('Profiles', 'profilePublic', {
       type: Sequelize.BOOLEAN,
       allowNull: false,
@@ -100,7 +98,6 @@ module.exports = {
       allowNull: false,
       defaultValue: true,
     });
-    // Preferences
     await queryInterface.addColumn('Profiles', 'language', {
       type: Sequelize.STRING(10),
       allowNull: false,

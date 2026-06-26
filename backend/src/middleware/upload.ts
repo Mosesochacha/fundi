@@ -6,7 +6,6 @@ import { Request, Response, NextFunction } from 'express';
 import { optimizeBannerImage } from '../utils/imageOptimizer';
 import logger from '../utils/logger';
 
-// Ensure upload directories exist
 const uploadDirs = ['uploads/avatars', 'uploads/documents', 'uploads/receipts', 'uploads/temp', 'uploads/logos', 'uploads/banners', 'uploads/log', 'uploads/banner', 'uploads/work'];
 uploadDirs.forEach(dir => {
   const fullPath = path.join(__dirname, '..', '..', dir);
@@ -15,11 +14,9 @@ uploadDirs.forEach(dir => {
   }
 });
 
-// File type validation
 const allowedImageTypes = /jpeg|jpg|png|gif|webp|ico/;
 const allowedDocumentTypes = /pdf|doc|docx|xls|xlsx|csv/;
 
-// Storage configuration
 const storage = multer.diskStorage({
   destination: (req: Request, file: Express.Multer.File, cb) => {
     let uploadPath = 'uploads/temp';
@@ -50,7 +47,6 @@ const storage = multer.diskStorage({
   }
 });
 
-// File filter function
 const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
   const extname = path.extname(file.originalname).toLowerCase();
   const mimetype = file.mimetype;
@@ -88,17 +84,14 @@ const upload = multer({
   }
 });
 
-// Middleware to optimize banner images after upload
 const optimizeBannerMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   if (req.file && req.file.fieldname === 'banner') {
     const originalPath = req.file.path;
     const originalSize = req.file.size;
 
     try {
-      // Optimize the banner image
       const optimizedResult = await optimizeBannerImage(originalPath, originalPath);
       
-      // Update file size in request object
       req.file.size = optimizedResult.optimizedSize;
       
       logger.info('Banner image optimized in middleware', {
@@ -109,7 +102,6 @@ const optimizeBannerMiddleware = async (req: Request, res: Response, next: NextF
         compressionRatio: ((optimizedResult.savedBytes / originalSize) * 100).toFixed(2) + '%'
       });
     } catch (optimizeError: any) {
-      // If optimization fails, log warning but continue with original file
       logger.warn('Banner optimization failed in middleware, using original', {
         filename: req.file.filename,
         error: optimizeError.message
@@ -124,7 +116,6 @@ export const uploadReceipt = upload.single('receipt');
 export const uploadDocument = upload.single('document');
 export const uploadLogo = upload.single('logo');
 
-// Banner upload with optimization - wrapper function that applies both middlewares
 export const uploadBanner = (req: Request, res: Response, next: NextFunction) => {
   const multerMiddleware = upload.single('banner');
   multerMiddleware(req, res, (err: any) => {

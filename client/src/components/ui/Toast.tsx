@@ -148,12 +148,10 @@ const ToastItem = ({ toast, onDismiss }: ToastItemProps) => {
       onMouseLeave={() => setPaused(false)}
       className={`relative w-full max-w-[420px] rounded-xl overflow-hidden pointer-events-auto shadow-[0_8px_32px_rgba(0,0,0,0.10),0_2px_8px_rgba(0,0,0,0.06)] ${config.bg}`}
     >
-      {/* Left coloured bar */}
       <div
         className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-xl ${config.bar}`}
       />
 
-      {/* Content */}
       <div className="flex items-center gap-3 pl-5 pr-4 py-3.5">
         <div
           className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${config.iconBg}`}
@@ -174,7 +172,6 @@ const ToastItem = ({ toast, onDismiss }: ToastItemProps) => {
         </button>
       </div>
 
-      {/* Progress bar */}
       <div
         className={`absolute bottom-0 left-0 h-[3px] opacity-40 ${config.bar} ${
           paused ? "" : "transition-[width] duration-[50ms] ease-linear"

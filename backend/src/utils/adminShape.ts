@@ -1,7 +1,3 @@
-// Shapes DB rows into the exact JSON the admin frontend types expect
-// (client/src/features/admin/types.ts). Aggregate values that need extra
-// queries (job counts, ratings, spend) are passed in by the controller so
-// these stay pure and cheap.
 
 type AnyRec = Record<string, any>;
 

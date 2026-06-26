@@ -9,13 +9,6 @@ import { sendSuccess, sendError, asyncHandler, isValidEmail } from '../utils/hel
 import { HTTP_STATUS, normalizeCurrency } from '../utils/constants';
 import { symbolForCurrency } from '../utils/currencyMap';
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Worker settings (/worker/settings). Maps the page's WorkerSettings shape onto
-   the User + Profile models. Worker-specific notification/availability detail
-   lives in the Profile.notificationSettings / availabilitySettings JSON columns;
-   privacy + the simple availability flag reuse existing Profile columns.
-   ───────────────────────────────────────────────────────────────────────── */
-
 const USERNAME_RE = /^[a-z0-9_]{3,30}$/;
 
 const DEFAULT_NOTIFICATIONS = {
@@ -82,7 +75,6 @@ function shapeSettings(user: any, profile: any) {
       emailVerified: !!user.emailVerified,
       phone: user.phoneNumber ?? '',
       phoneVerified: !!user.isPhoneVerified,
-      // Google linking isn't tracked on the account model yet.
       googleConnected: false,
       googleEmail: null,
     },
@@ -103,14 +95,12 @@ function shapeSettings(user: any, profile: any) {
 }
 
 class WorkerSettingsController {
-  // GET /worker/settings — the full settings document.
   getSettings = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const { user, profile } = await loadUserAndProfile(req);
     if (!user || !profile) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Profile not found');
     return sendSuccess(res, 'Settings retrieved', shapeSettings(user, profile));
   });
 
-  // PATCH /worker/profile — names + daily rate on User, the rest on Profile.
   updateProfile = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const { user, profile } = await loadUserAndProfile(req);
     if (!user || !profile) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Profile not found');
@@ -174,12 +164,10 @@ class WorkerSettingsController {
         return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Invalid currency');
       }
       userUpdates.currency = normalized;
-      // Keep the display symbol in sync with the chosen currency.
       userUpdates.currencySymbol =
         String(req.body.currencySymbol || '').trim() || symbolForCurrency(normalized);
     }
 
-    // Keep the profile's display name in sync with first/last name.
     if (userUpdates.firstName !== undefined || userUpdates.lastName !== undefined) {
       const fn = userUpdates.firstName ?? user.firstName;
       const ln = userUpdates.lastName ?? user.lastName;
@@ -193,7 +181,6 @@ class WorkerSettingsController {
     return sendSuccess(res, 'Profile updated', shapeSettings(await db.User.findByPk(user.id), fresh));
   });
 
-  // PATCH /worker/profile/avatar — multipart, field "avatar".
   uploadAvatar = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     if (!req.file) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'No image uploaded');
     const profile = await db.Profile.findOne({ where: { userId: req.user!.id } });
@@ -203,7 +190,6 @@ class WorkerSettingsController {
     return sendSuccess(res, 'Photo updated', { avatarUrl });
   });
 
-  // DELETE /worker/profile/avatar
   deleteAvatar = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const profile = await db.Profile.findOne({ where: { userId: req.user!.id } });
     if (!profile) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Profile not found');
@@ -211,7 +197,6 @@ class WorkerSettingsController {
     return sendSuccess(res, 'Photo removed', { avatarUrl: null });
   });
 
-  // PATCH /worker/account/email
   updateEmail = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const email = String(req.body.email ?? '').trim().toLowerCase();
     if (!isValidEmail(email)) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Please provide a valid email address');
@@ -227,7 +212,6 @@ class WorkerSettingsController {
     return sendSuccess(res, 'Email updated', { email, emailVerified: user.emailVerified });
   });
 
-  // POST /worker/account/email/verify — send a verification code to the email.
   verifyEmail = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const user = await db.User.findByPk(req.user!.id);
     if (!user) return sendError(res, HTTP_STATUS.NOT_FOUND, 'User not found');
@@ -236,7 +220,6 @@ class WorkerSettingsController {
     return sendSuccess(res, 'Verification email sent');
   });
 
-  // PATCH /worker/account/phone
   updatePhone = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const raw = String(req.body.phone ?? '').trim();
     const phone = raw.replace(/[\s-]/g, '');
@@ -247,9 +230,6 @@ class WorkerSettingsController {
     return sendSuccess(res, 'Phone number updated', { phone, phoneVerified: false });
   });
 
-  // POST /worker/account/phone/verify — send a verification code.
-  // SMS isn't wired yet, so the code is delivered to the account email (the
-  // same channel password reset uses).
   verifyPhone = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const user = await db.User.findByPk(req.user!.id);
     if (!user) return sendError(res, HTTP_STATUS.NOT_FOUND, 'User not found');
@@ -259,7 +239,6 @@ class WorkerSettingsController {
     return sendSuccess(res, 'Verification code sent');
   });
 
-  // PATCH /worker/account/password
   updatePassword = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const { currentPassword, newPassword } = req.body;
     if (!currentPassword || !newPassword) {
@@ -279,12 +258,10 @@ class WorkerSettingsController {
     }
   });
 
-  // POST /worker/account/google/disconnect — no Google linking is stored yet.
   disconnectGoogle = asyncHandler(async (_req: AuthenticatedRequest, res: Response) => {
     return sendError(res, HTTP_STATUS.BAD_REQUEST, 'No Google account is linked to this account');
   });
 
-  // PATCH /worker/notifications — merge the posted keys into the JSON blob.
   updateNotifications = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const profile = await db.Profile.findOne({ where: { userId: req.user!.id } });
     if (!profile) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Profile not found');
@@ -296,7 +273,6 @@ class WorkerSettingsController {
     return sendSuccess(res, 'Notifications updated', current);
   });
 
-  // PATCH /worker/privacy — maps onto existing columns + the new toggles.
   updatePrivacy = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const profile = await db.Profile.findOne({ where: { userId: req.user!.id } });
     if (!profile) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Profile not found');
@@ -316,7 +292,6 @@ class WorkerSettingsController {
     return sendSuccess(res, 'Privacy settings updated', req.body);
   });
 
-  // PATCH /worker/account/pause — hide from search + stop requests, reversibly.
   pauseAccount = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const profile = await db.Profile.findOne({ where: { userId: req.user!.id } });
     if (!profile) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Profile not found');
@@ -324,7 +299,6 @@ class WorkerSettingsController {
     return sendSuccess(res, 'Account paused', { paused: true });
   });
 
-  // POST /worker/account/export — download all of the user's data as JSON.
   exportData = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const { user, profile } = await loadUserAndProfile(req);
     if (!user || !profile) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Profile not found');
@@ -350,7 +324,6 @@ class WorkerSettingsController {
     return res.status(HTTP_STATUS.OK).send(JSON.stringify(payload, null, 2));
   });
 
-  // DELETE /worker/account — permanent deletion (cascades to the profile).
   deleteAccount = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     try {
       await AuthService.deleteAccount(req.user!.id, 'Deleted from worker settings');

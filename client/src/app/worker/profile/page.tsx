@@ -24,7 +24,6 @@ export default function WorkerProfilePage() {
   const { data: stats } = useGetRequestStats();
   const { data: conversations } = useConversations();
 
-  // The signed-in worker's own CV.
   const data: WorkerProfileData | null = query.isLoading
     ? null
     : ((query.data as WorkerProfileData | undefined) ?? null);
@@ -37,7 +36,6 @@ export default function WorkerProfilePage() {
     isAvailable: data?.isAvailable ?? false,
   };
 
-  // Real unread badges (hidden when zero by the Shell).
   const unreadMessages =
     conversations?.filter((c) => c.unreadCount > 0).length ?? 0;
   const unreadRequests = stats?.new ?? 0;

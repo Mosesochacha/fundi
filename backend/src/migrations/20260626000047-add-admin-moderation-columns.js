@@ -8,7 +8,6 @@
  */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    // ── Profiles: ID verification ──
     await queryInterface.addColumn("Profiles", "idVerificationStatus", {
       type: Sequelize.ENUM("unverified", "pending", "verified", "rejected"),
       allowNull: false,
@@ -39,7 +38,6 @@ module.exports = {
       allowNull: true,
     });
 
-    // ── JobRequests: review moderation ──
     await queryInterface.addColumn("JobRequests", "reviewHidden", {
       type: Sequelize.BOOLEAN,
       allowNull: false,
@@ -64,7 +62,6 @@ module.exports = {
       allowNull: true,
     });
 
-    // ── Users: ban + suspension metadata ──
     await queryInterface.addColumn("Users", "bannedAt", {
       type: Sequelize.DATE,
       allowNull: true,

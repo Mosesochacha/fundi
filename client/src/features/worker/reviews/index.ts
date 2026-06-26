@@ -4,10 +4,6 @@ import type { WorkerReviews } from "./types";
 
 export type * from "./types";
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Service. Path is relative to the axios baseURL (`…/api/v1`), matching the
-   other worker feature services (e.g. `/worker/dashboard`).
-   ───────────────────────────────────────────────────────────────────────── */
 export const reviewsService = {
   get: () => client.get("/worker/reviews"),
 };

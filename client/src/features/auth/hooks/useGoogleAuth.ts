@@ -19,7 +19,7 @@ export function useGoogleAuth() {
     setIsLoading(true);
     try {
       const idToken = await signInWithGoogleFirebase();
-      if (!idToken) return null; // popup closed
+      if (!idToken) return null;
       const res = await signIn("firebase-google", {
         redirect: false,
         idToken,

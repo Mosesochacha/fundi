@@ -27,7 +27,6 @@ import { csrfProtection } from '../middleware/csrfProtection';
 
 const router = Router();
 
-// Mutating requests: CSRF when JWT is sent via cookie (lot_a1); skipped for Bearer-only clients.
 router.use(csrfProtection);
 
 router.use(authRoutes);
@@ -36,20 +35,13 @@ router.use(feedRoutes);
 router.use(postRoutes);
 router.use(commentRoutes);
 router.use(searchRoutes);
-// Worker profile — has its own per-route verifyJWT (public GET + auth'd mutations).
 router.use(workerRoutes);
-// Employer dashboard — per-route verifyJWT.
 router.use(employerRoutes);
-// Onboarding completion (worker/employer) — per-route verifyJWT.
 router.use(onboardingRoutes);
-// Public "Ask AI" helper for /browse (rate-limited inside the router).
 router.use(aiPublicRoutes);
-// Public IP → currency detection for onboarding / profile rate fields.
 router.use(geoRoutes);
-// Public SEO support (sitemap worker slugs).
 router.use(seoRoutes);
 
-// Routes below require JWT (verifyJWT is not duplicated on individual sub-routers).
 router.use(verifyJWT);
 router.use(likeRoutes);
 router.use(followRoutes);
@@ -61,7 +53,6 @@ router.use(photosRoutes);
 router.use(messagesRoutes);
 router.use(jobsRoutes);
 router.use(notificationsRoutes);
-// Admin console — every route additionally gated by requireRole('admin').
 router.use(adminRoutes);
 
 export default router;

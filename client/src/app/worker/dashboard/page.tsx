@@ -108,7 +108,6 @@ export default function WorkerDashboardPage() {
       {/* biome-ignore lint/a11y/useValidAriaRole: `role` is a WelcomeToast prop, not an ARIA attribute */}
       <WelcomeToast role="worker" firstName={firstName} />
       <div className="flex flex-col gap-4 text-ink-2">
-        {/* ── Welcome row ─────────────────────────────────────────────── */}
         <div className="flex items-end justify-between gap-4 flex-wrap">
           <div>
             <div className="text-sm text-ink-3">{longDate(now)}</div>
@@ -149,7 +148,6 @@ export default function WorkerDashboardPage() {
           <DashboardSkeleton />
         ) : (
           <>
-            {/* ── Stats grid ───────────────────────────────────────────── */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               <StatCard
                 highlighted
@@ -194,15 +192,12 @@ export default function WorkerDashboardPage() {
               />
             </div>
 
-            {/* ── Two-column layout ────────────────────────────────────── */}
             <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-4 items-start">
-              {/* LEFT */}
               <div className="flex flex-col gap-4">
                 <JobRequestsCard requests={data?.recentRequests ?? []} />
                 <UpcomingJobsCard jobs={data?.upcomingJobs ?? []} />
               </div>
 
-              {/* RIGHT */}
               <div className="flex flex-col gap-4">
                 <ProfileStrengthCard
                   percentage={data?.profileStrength.percentage ?? 0}
@@ -220,9 +215,6 @@ export default function WorkerDashboardPage() {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Stat card
-   ───────────────────────────────────────────────────────────────────────── */
 function StatCard({
   value,
   label,
@@ -263,9 +255,6 @@ function StatCard({
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Job requests
-   ───────────────────────────────────────────────────────────────────────── */
 const TAG: Record<JobRequest["status"], { label: string; cls: string }> = {
   new: { label: "New", cls: "bg-gold-light text-gold-dark" },
   today: { label: "Today", cls: "bg-blue-50 text-blue-600" },
@@ -381,9 +370,6 @@ function JobRequestItem({ req }: { req: JobRequest }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Upcoming jobs
-   ───────────────────────────────────────────────────────────────────────── */
 function UpcomingJobsCard({ jobs }: { jobs: UpcomingJob[] }) {
   return (
     <div className={CARD}>
@@ -442,9 +428,6 @@ function UpcomingJobsCard({ jobs }: { jobs: UpcomingJob[] }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Profile strength
-   ───────────────────────────────────────────────────────────────────────── */
 function ProfileStrengthCard({
   percentage,
   completed,
@@ -506,9 +489,6 @@ function ProfileStrengthCard({
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Quick actions
-   ───────────────────────────────────────────────────────────────────────── */
 function QuickActionsCard({ onShare }: { onShare: () => void }) {
   return (
     <div className={CARD}>
@@ -584,9 +564,6 @@ function QuickAction({
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Reviews
-   ───────────────────────────────────────────────────────────────────────── */
 function ReviewsCard({ reviews }: { reviews: Review[] }) {
   return (
     <div className={CARD}>
@@ -654,9 +631,6 @@ function Stars({ value }: { value: number }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Shared empty state
-   ───────────────────────────────────────────────────────────────────────── */
 function EmptyState({
   icon,
   title,
@@ -693,9 +667,6 @@ function EmptyState({
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Loading skeleton - mirrors the real layout
-   ───────────────────────────────────────────────────────────────────────── */
 const SKEL = "bg-cream-2 rounded-md animate-pulse";
 
 function DashboardSkeleton() {

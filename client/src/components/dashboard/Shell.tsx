@@ -87,8 +87,6 @@ export default function Shell({
   const [savingAvail, setSavingAvail] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Logout is a client action — no dedicated /logout route. We show a branded
-  // overlay while the session is revoked + cleared, then hard-redirect home.
   const handleLogout = () => {
     if (loggingOut) return;
     setMenuOpen(false);
@@ -97,7 +95,6 @@ export default function Shell({
     void logout({ callbackUrl: "/" });
   };
 
-  // Close the user dropdown when clicking outside it.
   useEffect(() => {
     if (!menuOpen) return;
     const onDown = (e: MouseEvent) => {
@@ -115,7 +112,6 @@ export default function Shell({
   const badgeOf = (item: NavItem) =>
     item.badge ? counts[item.badge] : undefined;
 
-  // Page title = label of the most specific active nav item.
   const pageTitle =
     config.sections
       .flatMap((s) => s.items)
@@ -129,7 +125,7 @@ export default function Shell({
     try {
       await setAvailability.mutateAsync({ available: next });
     } catch {
-      setAvailable(!next); // revert on failure
+      setAvailable(!next);
     } finally {
       setSavingAvail(false);
     }
@@ -201,7 +197,6 @@ export default function Shell({
       </div>
     ) : null;
 
-  // Admin gets an identity footer (no availability toggle).
   const sidebarFooter =
     role === "admin" ? (
       <div className="border-t border-white/[0.07] p-3">
@@ -223,7 +218,6 @@ export default function Shell({
 
   return (
     <div className="min-h-screen bg-cream text-ink-2 font-sans">
-      {/* ── Desktop sidebar ── */}
       <aside className="hidden lg:flex lg:flex-col lg:fixed lg:top-0 lg:left-0 lg:w-[220px] lg:h-screen lg:bg-navy lg:z-30">
         <Link
           href={config.sections[0].items[0].href}
@@ -240,7 +234,6 @@ export default function Shell({
         {sidebarFooter}
       </aside>
 
-      {/* ── Mobile topbar: logo left, avatar + hamburger right ── */}
       <header className="bg-white border-b border-border sticky top-0 z-30 lg:hidden">
         <div className="h-[52px] flex items-center justify-between px-3">
           <Link
@@ -266,7 +259,6 @@ export default function Shell({
         </div>
       </header>
 
-      {/* ── Mobile drawer ── */}
       <button
         type="button"
         className={cn(
@@ -306,7 +298,6 @@ export default function Shell({
         {sidebarFooter}
       </aside>
 
-      {/* ── Main column ── */}
       <div className="min-h-screen flex flex-col lg:ml-[220px]">
         <header className="hidden lg:flex lg:items-center lg:justify-between lg:h-[60px] lg:bg-white lg:border-b lg:border-border lg:px-6 lg:sticky lg:top-0 lg:z-20">
           <span className="text-sm text-ink-2 font-medium">{pageTitle}</span>
@@ -368,7 +359,6 @@ export default function Shell({
         </main>
       </div>
 
-      {/* ── Mobile bottom nav ── */}
       <nav className="fixed bottom-0 left-0 right-0 h-[58px] z-30 flex bg-navy border-t border-white/[0.07] lg:hidden">
         {config.bottomNav.map((item) => {
           const Icon = item.icon;

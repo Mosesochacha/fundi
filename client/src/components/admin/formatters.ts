@@ -1,5 +1,3 @@
-// Display helpers shared across admin pages.
-
 const SYMBOLS: Record<string, string> = {
   KES: "KSh",
   USD: "$",

@@ -115,13 +115,10 @@ class AuthController {
         agreedToTerms: !!agreedToTerms,
       });
 
-      // Send verification OTP (non-blocking — registration succeeds regardless)
       OTPService.generateOTP(email.toLowerCase().trim(), 'verification').catch((err) => {
         logger.warn('Failed to send verification OTP after register', { email, err });
       });
 
-      // Stash the email being verified in a signed, httpOnly cookie so the
-      // /verify-email page never has to carry it in the URL.
       setPendingVerificationCookie(res, { email: email.toLowerCase().trim(), accountType }, req);
 
       return sendSuccess(res, RESPONSE_MESSAGES.USER_CREATED, result);
@@ -143,7 +140,6 @@ class AuthController {
   });
 
   login = asyncHandler(async (req: Request, res: Response) => {
-    // `identifier` may be an email or a phone number. `email` kept for back-compat.
     const identifier: string = req.body.identifier ?? req.body.email;
     const { password } = req.body;
 
@@ -192,10 +188,6 @@ class AuthController {
     }
   });
 
-  // Sign in / sign up with a Firebase ID token (Google popup on the client).
-  // Verifies the token with the Firebase Admin SDK, then issues the same
-  // { user, profile, tokens } shape as /auth/login (refresh token also set as
-  // the lot_r1 cookie).
   googleLogin = asyncHandler(async (req: Request, res: Response) => {
     const idToken: string = req.body.idToken ?? req.body.credential;
     if (!idToken) {
@@ -204,8 +196,6 @@ class AuthController {
 
     let decoded: import('firebase-admin/auth').DecodedIdToken;
     try {
-      // Lazily import so a missing/incomplete Firebase config fails here (this
-      // request) rather than crashing the whole controller module at load time.
       const { firebaseAuth } = await import('../lib/firebaseAdmin');
       decoded = await firebaseAuth.verifyIdToken(idToken);
     } catch (err) {
@@ -222,7 +212,6 @@ class AuthController {
       return sendError(res, HTTP_STATUS.UNAUTHORIZED, 'Your Google email is not verified.');
     }
 
-    // Firebase ID tokens carry a single `name` claim (no given/family split).
     const [firstName, ...rest] = (decoded.name ?? '').trim().split(/\s+/);
 
     try {
@@ -250,9 +239,6 @@ class AuthController {
     }
   });
 
-  // Sends a short-lived OTP to start a password reset. `identifier` may be an
-  // email or phone number. The OTP is always delivered to the account's email
-  // (no SMS provider yet), even when a phone number was entered.
   forgotPassword = asyncHandler(async (req: Request, res: Response) => {
     const identifier: string = req.body.identifier ?? req.body.email;
 
@@ -260,7 +246,6 @@ class AuthController {
       return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Email or phone number is required');
     }
 
-    // Always return the same message — don't reveal whether the account exists.
     const message = 'If an account matches, a reset code has been sent.';
 
     const user = await findUserByIdentifier(identifier);
@@ -274,7 +259,6 @@ class AuthController {
     return sendSuccess(res, message);
   });
 
-  // Resends the reset OTP. Same generic response as forgot-password.
   resendOtp = asyncHandler(async (req: Request, res: Response) => {
     const identifier: string = req.body.identifier ?? req.body.email;
 
@@ -291,8 +275,6 @@ class AuthController {
     return sendSuccess(res, message);
   });
 
-  // Validates a reset OTP WITHOUT consuming it, so the user can advance to the
-  // "set new password" step before the code is finally spent on reset.
   verifyOtp = asyncHandler(async (req: Request, res: Response) => {
     const { identifier, otp } = req.body;
 
@@ -318,7 +300,7 @@ class AuthController {
     if (refreshToken) {
       await AuthService.logout(refreshToken);
     }
-    clearAuthCookies(res, req); // clears lot_a1, lot_r1, lot_c1 with correct domain
+    clearAuthCookies(res, req);
     return sendSuccess(res, 'Logged out successfully');
   });
 
@@ -424,13 +406,11 @@ class AuthController {
       return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Password must be at least 8 characters');
     }
 
-    // OTP-based reset (current forgot-password flow).
     if (otp && identifier) {
       const user = await findUserByIdentifier(identifier);
       if (!user) {
         return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Invalid or expired code. Please request a new one.');
       }
-      // verifyOTP consumes the code on success.
       const result = await OTPService.verifyOTP(user.email, String(otp).trim(), 'reset');
       if (!result.success) {
         return sendError(res, HTTP_STATUS.BAD_REQUEST, result.message || 'Invalid or expired code.');
@@ -439,7 +419,6 @@ class AuthController {
       return sendSuccess(res, 'Password reset successfully. You can now log in with your new password.');
     }
 
-    // Legacy token-based reset (email reset links).
     if (!token) {
       return sendError(res, HTTP_STATUS.BAD_REQUEST, 'A reset code or token is required');
     }
@@ -457,10 +436,6 @@ class AuthController {
     return sendSuccess(res, 'Password reset successfully. You can now log in with your new password.');
   });
 
-  // Returns the masked email / accountType for the email currently mid-
-  // verification, read from the signed pending-verification cookie. The
-  // /verify-email page calls this on load; a 401 means "no active session →
-  // send the user back to register".
   pendingVerification = asyncHandler(async (req: Request, res: Response) => {
     const pending = readPendingVerification(req);
     if (!pending) {
@@ -472,11 +447,6 @@ class AuthController {
     });
   });
 
-  // Begins (or resumes) email verification for an existing unverified account —
-  // used by the login page when a user with an unverified email tries to sign
-  // in. Sets the pending-verification cookie (so the email stays out of the URL)
-  // and sends a fresh OTP. Always returns a generic 200 so account existence
-  // and verification status are never leaked.
   startVerification = asyncHandler(async (req: Request, res: Response) => {
     const identifier: string = req.body.identifier ?? req.body.email;
     const message = 'If your account exists and is unverified, a code has been sent.';
@@ -497,7 +467,6 @@ class AuthController {
   verifyEmail = asyncHandler(async (req: Request, res: Response) => {
     const { code } = req.body;
 
-    // Email comes from the signed session cookie, never from the request body.
     const pending = readPendingVerification(req);
     if (!pending) {
       return sendError(res, HTTP_STATUS.CONFLICT, 'Session expired, please register again');
@@ -518,14 +487,11 @@ class AuthController {
 
     const user = await db.User.findOne({ where: { email: normalizedEmail } });
     if (!user) {
-      // Shouldn't happen — the OTP existed for this email a moment ago.
       return sendError(res, HTTP_STATUS.INTERNAL_SERVER_ERROR, RESPONSE_MESSAGES.SERVER_ERROR);
     }
 
     emailService.sendWelcomeEmail(normalizedEmail, user.firstName ?? undefined).catch(() => {});
 
-    // Auto-login: issue session tokens (same shape as /auth/login) so the
-    // just-verified user lands authenticated instead of bouncing to /login.
     const tokens = await AuthService.generateTokens(user, req.ip || '', req.get('user-agent') || '');
     await user.update({ lastLoginAt: new Date() });
     setAuthCookie(res, 'lot_r1', tokens.refreshToken, req);
@@ -541,7 +507,6 @@ class AuthController {
   });
 
   resendVerification = asyncHandler(async (req: Request, res: Response) => {
-    // Email comes from the signed session cookie — no body, nothing in the URL.
     const pending = readPendingVerification(req);
     if (!pending) {
       return sendError(res, HTTP_STATUS.CONFLICT, 'Session expired, please register again');
@@ -549,14 +514,13 @@ class AuthController {
 
     const normalizedEmail = pending.email.toLowerCase().trim();
 
-    // Always return the same message — don't reveal whether the email exists.
     const message = 'If your account exists and is unverified, a new code has been sent.';
 
     const userExists = await AuthService.checkUserExists(normalizedEmail);
     if (!userExists) return sendSuccess(res, message);
 
     const result = await OTPService.generateOTP(normalizedEmail, 'verification');
-    if (!result.success) return sendSuccess(res, message); // rate limited — still 200
+    if (!result.success) return sendSuccess(res, message);
 
     return sendSuccess(res, message);
   });

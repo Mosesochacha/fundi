@@ -62,13 +62,11 @@ export default function ChatPanel({
     undefined,
   );
 
-  // Scroll to newest on message change / typing.
   // biome-ignore lint/correctness/useExhaustiveDependencies: messages/othersTyping are intentional scroll triggers
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, othersTyping]);
 
-  // Auto-resize the textarea up to its max height.
   // biome-ignore lint/correctness/useExhaustiveDependencies: `text` drives the resize each keystroke
   useEffect(() => {
     const el = textRef.current;
@@ -100,7 +98,6 @@ export default function ChatPanel({
       ? participant.role[0].toUpperCase() + participant.role.slice(1)
       : null,
     online ? "Online" : "Offline",
-    // location isn't on the conversation payload yet - omitted gracefully.
   ].filter(Boolean);
 
   const showBanner = linkedJob && BANNER_VISIBLE.includes(linkedJob.status);
@@ -108,7 +105,6 @@ export default function ChatPanel({
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-      {/* ── Header ── */}
       <div className="bg-white border-b-[0.5px] border-border px-[18px] py-[11px] flex items-center justify-between gap-3 shrink-0">
         <div className="flex items-center gap-2.5 min-w-0">
           <button
@@ -165,7 +161,6 @@ export default function ChatPanel({
         </div>
       </div>
 
-      {/* ── Job context banner ── */}
       {showBanner && linkedJob && (
         <div className="bg-gold-light border-b-[0.5px] border-gold/20 px-[18px] py-[9px] flex items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">
@@ -192,7 +187,6 @@ export default function ChatPanel({
         </div>
       )}
 
-      {/* ── Messages ── */}
       <div className="flex-1 overflow-y-auto px-[18px] py-4 flex flex-col gap-2">
         {loadingMessages ? (
           <div className="text-center text-sm text-ink-3 p-5">Loading…</div>
@@ -295,7 +289,6 @@ export default function ChatPanel({
         <div ref={bottomRef} />
       </div>
 
-      {/* ── Input ── */}
       <div className="bg-white border-t-[0.5px] border-border px-[18px] py-2.5 shrink-0">
         <div className="flex items-end gap-1 bg-cream border-[0.5px] border-border rounded-[10px] px-2.5 py-[7px] focus-within:border-gold focus-within:bg-white">
           <button
@@ -382,7 +375,6 @@ function renderBannerActions(
         </>
       );
     }
-    // accepted
     return (
       <button
         type="button"
@@ -393,7 +385,6 @@ function renderBannerActions(
       </button>
     );
   }
-  // employer
   if (status === "pending") {
     return (
       <>

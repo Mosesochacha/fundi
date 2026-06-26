@@ -58,12 +58,10 @@ export function RateField({
       </label>
 
       <div className="flex gap-2">
-        {/* Currency badge (read-only, auto-set) */}
         <span className="inline-flex items-center shrink-0 bg-cream-2 border border-border rounded-lg px-3 py-[9px] text-[13px] text-ink-2 whitespace-nowrap">
           {symbol} · {currency}
         </span>
 
-        {/* Rate input */}
         <input
           id={inputId}
           type="number"
@@ -76,7 +74,6 @@ export function RateField({
         />
       </div>
 
-      {/* Manual override */}
       <div className="relative mt-1.5" ref={wrapRef}>
         <button
           type="button"
@@ -112,7 +109,6 @@ export function RateField({
         )}
       </div>
 
-      {/* Live hint */}
       {showHint && (
         <div className="text-[11px] text-ink-3 italic mt-1.5">
           Employers will see this as {symbol} {numeric.toLocaleString("en-US")}

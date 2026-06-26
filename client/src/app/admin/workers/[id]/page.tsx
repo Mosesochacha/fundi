@@ -151,7 +151,6 @@ export default function AdminWorkerDetailPage() {
     } else if (confirm === "reject") {
       await action.mutateAsync(adminEndpoints.rejectWorker(id, reason));
     } else {
-      // removePhoto: no live endpoint yet; client-only action.
       await action.mutateAsync(undefined);
     }
     if (confirm === "suspend") success("Worker suspended.");
@@ -202,7 +201,6 @@ export default function AdminWorkerDetailPage() {
         backLabel="Workers"
       />
 
-      {/* Identity header */}
       <div className="bg-white border border-border rounded-xl p-4 mb-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-4 min-w-0">
           <Avatar
@@ -252,9 +250,7 @@ export default function AdminWorkerDetailPage() {
         </div>
       </div>
 
-      {/* Three-column layout */}
       <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1.2fr_1fr] gap-4">
-        {/* LEFT */}
         <div className="flex flex-col gap-4">
           <DetailCard title="About">
             <p className="text-sm text-ink-2 leading-relaxed">
@@ -346,7 +342,6 @@ export default function AdminWorkerDetailPage() {
           </DetailCard>
         </div>
 
-        {/* MIDDLE */}
         <div className="flex flex-col gap-4">
           <DetailCard title="ID verification">
             <div className="grid grid-cols-2 gap-2">
@@ -442,7 +437,6 @@ export default function AdminWorkerDetailPage() {
           </DetailCard>
         </div>
 
-        {/* RIGHT */}
         <div className="flex flex-col gap-4">
           <DetailCard title="Stats">
             <div className="flex flex-col">

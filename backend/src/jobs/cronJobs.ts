@@ -11,12 +11,8 @@ let reindexTask: cron.ScheduledTask | null = null;
 let jobReminderTask: cron.ScheduledTask | null = null;
 let profileDigestTask: cron.ScheduledTask | null = null;
 
-// Drift-correction safety net: per-document upserts in the controllers keep the
-// index live, this just re-syncs everything periodically. Override with env.
-const REINDEX_CRON = process.env.TYPESENSE_REINDEX_CRON || '0 * * * *'; // hourly
-// Reminders for jobs starting within 24h — hourly is plenty of precision.
+const REINDEX_CRON = process.env.TYPESENSE_REINDEX_CRON || '0 * * * *';
 const JOB_REMINDER_CRON = process.env.JOB_REMINDER_CRON || '0 * * * *';
-// Weekly "people viewed your profile" digest — Mondays at 08:00.
 const PROFILE_DIGEST_CRON = process.env.PROFILE_VIEW_DIGEST_CRON || '0 8 * * 1';
 
 async function publishDueScheduledPosts() {
@@ -165,13 +161,10 @@ async function sendProfileViewDigests() {
 }
 
 export function startCronJobs(): void {
-  // Check every minute for posts due to be published
   scheduledPostsTask = cron.schedule('* * * * *', publishDueScheduledPosts);
 
-  // Periodically re-sync Typesense from the DB
   reindexTask = cron.schedule(REINDEX_CRON, () => { void reindexAll(); });
 
-  // Upcoming-job reminders and the weekly profile-view digest
   jobReminderTask = cron.schedule(JOB_REMINDER_CRON, () => { void sendJobReminders(); });
   profileDigestTask = cron.schedule(PROFILE_DIGEST_CRON, () => { void sendProfileViewDigests(); });
 

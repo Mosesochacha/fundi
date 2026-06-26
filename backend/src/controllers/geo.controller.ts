@@ -3,12 +3,11 @@ import { asyncHandler, sendSuccess } from "../utils/helpers";
 import { getCurrencyFromCountry } from "../utils/currencyMap";
 import logger from "../utils/logger";
 
-const DEFAULT_COUNTRY = "KE"; // primary market — used when detection fails
+const DEFAULT_COUNTRY = "KE";
 
 function clientIp(req: Request): string | null {
   const fwd = (req.headers["x-forwarded-for"] as string) || "";
   const ip = fwd.split(",")[0].trim() || req.socket?.remoteAddress || "";
-  // Strip IPv6 loopback / mapped prefixes; skip private/local addresses.
   const clean = ip.replace(/^::ffff:/, "");
   if (!clean || clean === "::1" || clean.startsWith("127.") || clean.startsWith("10.") || clean.startsWith("192.168.")) {
     return null;
@@ -37,11 +36,9 @@ async function countryFromIp(ip: string): Promise<string | null> {
 class GeoController {
   /** GET /geo/detect — { country, currency, symbol } from CF header or IP. */
   detect = asyncHandler(async (req: Request, res: Response) => {
-    // 1) Cloudflare edge header (zero cost when fronted by Cloudflare).
     let country = (req.headers["cf-ipcountry"] as string) || "";
     country = country && country !== "XX" ? country.toUpperCase() : "";
 
-    // 2) Fall back to an IP geo lookup.
     if (!country) {
       const ip = clientIp(req);
       if (ip) {
@@ -50,7 +47,6 @@ class GeoController {
       }
     }
 
-    // 3) Default to the primary market.
     if (!country) country = DEFAULT_COUNTRY;
 
     const cur = getCurrencyFromCountry(country);

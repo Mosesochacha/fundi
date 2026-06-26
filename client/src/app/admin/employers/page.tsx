@@ -50,7 +50,6 @@ export default function AdminEmployersPage() {
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<string[]>([]);
 
-  // Local optimistic status overrides (mock data is read-only).
   const [overrides, setOverrides] = useState<Record<string, AccountStatus>>({});
 
   const [confirm, setConfirm] = useState<null | {

@@ -67,16 +67,12 @@ export default function MessagesView({
     useConversations();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  // A pending first-contact conversation (from `?to=`) that has no server row
-  // yet. Also kept as a header fallback in the gap between sending the first
-  // message and the conversation list refetching to include it.
   const [draft, setDraft] = useState<ConversationParticipant | null>(null);
   const [search, setSearch] = useState("");
   const [presence, setPresence] = useState<Record<string, boolean>>({});
   const [othersTyping, setOthersTyping] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
 
-  // Fetch messages for the selected conversation.
   const messagesQuery = useMessages(selectedId);
   const sendMutation = useSendMessage();
   const markRead = useMarkRead();
@@ -92,8 +88,6 @@ export default function MessagesView({
     [conversations, selectedId],
   );
 
-  // What the chat panel renders: the real conversation when it's in the list,
-  // otherwise the draft placeholder (pre-send, or during the post-send gap).
   const active: Conversation | null =
     selected ??
     (draft
@@ -105,20 +99,16 @@ export default function MessagesView({
         }
       : null);
 
-  // Sync server messages into local state (real-time appends layer on top).
   // biome-ignore lint/correctness/useExhaustiveDependencies: re-seed when switching conversations
   useEffect(() => {
     setMessages(messagesQuery.data ?? []);
   }, [messagesQuery.data, selectedId]);
 
-  // Reset typing indicator when switching conversations.
   // biome-ignore lint/correctness/useExhaustiveDependencies: selectedId is the intended trigger
   useEffect(() => {
     setOthersTyping(false);
   }, [selectedId]);
 
-  // Once a sent draft's real conversation lands in the list, drop the
-  // placeholder so the real participant (colour, presence, linked job) wins.
   useEffect(() => {
     if (selected && draft) setDraft(null);
   }, [selected, draft]);
@@ -139,9 +129,6 @@ export default function MessagesView({
     [markRead],
   );
 
-  // Initial selection from the URL (?c=conversationId, or ?to=profileId). For
-  // a `?to=` with no existing conversation, open a draft compose panel so the
-  // first message can be sent (it creates the conversation via recipientId).
   const didInit = useRef(false);
   useEffect(() => {
     if (didInit.current || selectedId || draft || convLoading) return;
@@ -159,7 +146,6 @@ export default function MessagesView({
     }
   }, [convLoading, conversations, selectedId, draft, selectConversation, role]);
 
-  // Socket: new messages, typing, presence.
   useEffect(() => {
     if (!socket) return;
     const onNew = ({
@@ -209,8 +195,6 @@ export default function MessagesView({
     async (content: string) => {
       if (!selectedId && !draft) return;
       try {
-        // Existing conversation → send by id; first contact → send by
-        // recipientId, which finds-or-creates the conversation server-side.
         const res = await sendMutation.mutateAsync(
           selectedId
             ? { conversationId: selectedId, content }
@@ -220,8 +204,6 @@ export default function MessagesView({
         const msg = res?.data?.data?.message as Message | undefined;
 
         if (!selectedId && newConvId) {
-          // The draft just became a real conversation. Seed the message cache
-          // so switching to it doesn't flash an empty thread, then select it.
           if (msg) {
             qc.setQueryData(["messages", "conversation", newConvId], {
               data: { data: [msg] },
@@ -244,9 +226,7 @@ export default function MessagesView({
           setMessages((prev) =>
             prev.some((m) => m.id === msg.id) ? prev : [...prev, msg],
           );
-      } catch {
-        /* surfaced via mutation state; keep the thread intact */
-      }
+      } catch {}
     },
     [selectedId, draft, sendMutation, qc],
   );

@@ -62,7 +62,6 @@ export default function AdminReviewsPage() {
   const [selected, setSelected] = useState<string[]>([]);
   const [confirm, setConfirm] = useState<AdminReview | null>(null);
 
-  // Reset to page one whenever the result set changes.
   // biome-ignore lint/correctness/useExhaustiveDependencies: deliberately reset page on filter change
   useEffect(() => {
     setPage(1);

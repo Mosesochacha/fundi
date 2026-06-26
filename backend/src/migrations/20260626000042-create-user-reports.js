@@ -79,7 +79,6 @@ module.exports = {
 
   async down(queryInterface) {
     await queryInterface.dropTable("UserReports");
-    // Drop the ENUM types Postgres leaves behind.
     const q = queryInterface.sequelize;
     await q.query('DROP TYPE IF EXISTS "enum_UserReports_type";');
     await q.query('DROP TYPE IF EXISTS "enum_UserReports_severity";');

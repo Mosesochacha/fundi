@@ -11,7 +11,6 @@ if (!databaseUrl) {
   process.exit(1);
 }
 
-// Load CA certificate from NODE_EXTRA_CA_CERTS if available
 let caCertificate: string | undefined;
 
 const caCertPath = process.env.NODE_EXTRA_CA_CERTS;
@@ -19,24 +18,20 @@ if (caCertPath && fs.existsSync(caCertPath)) {
   caCertificate = fs.readFileSync(caCertPath, "utf8");
 }
 
-// Determine if this is a local database (no SSL needed)
 const isLocalDatabase =
   databaseUrl.includes("localhost") ||
   databaseUrl.includes("127.0.0.1") ||
   databaseUrl.includes("@postgres:") ||
   databaseUrl.includes("@postgres-prod:");
 
-// SSL configuration - only use SSL for remote databases
 const sslConfig: any = isLocalDatabase
   ? false
   : {
       require: true,
-      rejectUnauthorized: !!caCertificate, // verify only if CA cert exists
+      rejectUnauthorized: !!caCertificate,
       ...(caCertificate ? { ca: caCertificate } : {}),
     };
-    
 
-// Initialize Sequelize
 const sequelize = new Sequelize(databaseUrl, {
   dialect: "postgres",
   logging: false,

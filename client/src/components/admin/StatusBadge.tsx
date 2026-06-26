@@ -18,15 +18,12 @@ interface Spec {
   icon?: ReactNode;
 }
 
-// Canonical status → colour mapping from the admin spec.
 const MAP: Record<string, Spec> = {
-  // accounts
   active: { label: "Active", variant: "green" },
   suspended: { label: "Suspended", variant: "red" },
   pending: { label: "Pending", variant: "gold" },
   banned: { label: "Banned", variant: "red", icon: <Ban size={12} /> },
   "pending verification": { label: "Pending verification", variant: "gold" },
-  // verification
   verified: {
     label: "Verified",
     variant: "green",
@@ -34,7 +31,6 @@ const MAP: Record<string, Spec> = {
   },
   unverified: { label: "Unverified", variant: "gray" },
   rejected: { label: "Rejected", variant: "red", icon: <XCircle size={12} /> },
-  // reports
   open: { label: "Open", variant: "red" },
   in_review: { label: "In review", variant: "orange" },
   "in review": { label: "In review", variant: "orange" },
@@ -43,14 +39,12 @@ const MAP: Record<string, Spec> = {
     variant: "green",
     icon: <CheckCircle2 size={12} />,
   },
-  // jobs
   completed: {
     label: "Completed",
     variant: "green",
     icon: <CheckCircle2 size={12} />,
   },
   cancelled: { label: "Cancelled", variant: "gray" },
-  // payments / payouts
   refunded: { label: "Refunded", variant: "orange" },
   failed: { label: "Failed", variant: "red", icon: <XCircle size={12} /> },
   processing: {
@@ -59,7 +53,6 @@ const MAP: Record<string, Spec> = {
     icon: <Clock size={12} />,
   },
   paid: { label: "Paid", variant: "green", icon: <CheckCircle2 size={12} /> },
-  // reviews
   visible: { label: "Visible", variant: "green" },
   hidden: { label: "Hidden", variant: "gray", icon: <EyeOff size={12} /> },
   removed: { label: "Removed", variant: "red" },
@@ -86,7 +79,6 @@ export function StatusBadge({
   );
 }
 
-// Severity dot (reports): red / orange / gray.
 export function SeverityDot({
   severity,
   className = "",

@@ -64,7 +64,6 @@ export default function BannerUpload({
 
   return (
     <div className="relative w-full h-40 rounded-xl overflow-hidden">
-      {/* Banner or gradient placeholder */}
       {bannerUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         // biome-ignore lint/performance/noImgElement: banner URLs are arbitrary external/blob hosts
@@ -77,7 +76,6 @@ export default function BannerUpload({
         <div className="w-full h-full bg-gradient-to-r from-navy-2 to-navy" />
       )}
 
-      {/* Overlay while uploading */}
       {(uploading || removing) && (
         <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
           <div className="text-white text-sm font-medium">
@@ -86,7 +84,6 @@ export default function BannerUpload({
         </div>
       )}
 
-      {/* Action buttons */}
       {!uploading && !removing && (
         <div className="absolute bottom-3 right-3 flex gap-2">
           <button

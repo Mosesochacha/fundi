@@ -1,4 +1,3 @@
-// JWT_SECRET must be set in environment variables - no fallback for security
 if (!process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET environment variable is required');
 }
@@ -7,20 +6,15 @@ if (!process.env.JWT_REFRESH_SECRET) {
   throw new Error('JWT_REFRESH_SECRET environment variable is required');
 }
 
-// Normalize JWT_ACCESS_EXPIRES - remove quotes if present and ensure valid format
 const normalizeExpiresIn = (value: string | undefined): string | number => {
-  if (!value) return 10; // default to 10 seconds as number
-  // Remove surrounding quotes if present
+  if (!value) return 10;
   const cleaned = value.trim().replace(/^["']|["']$/g, '');
-  // If it's a number, return as number
   if (/^\d+$/.test(cleaned)) {
     return parseInt(cleaned, 10);
   }
-  // Convert "10s" to number (10 seconds)
   if (/^(\d+)s$/i.test(cleaned)) {
     return parseInt(cleaned.match(/^(\d+)s$/i)![1], 10);
   }
-  // Otherwise return the string (should be like "1d", "20h", "10 seconds", etc.)
   return cleaned;
 };
 
@@ -31,8 +25,6 @@ export const JWT_CONFIG = {
   REFRESH_EXPIRES_DAYS: parseInt(process.env.JWT_REFRESH_EXPIRES_DAYS || "30", 10),
 };
 
-// Grace window during which a just-rotated refresh token may be reused without
-// failing — tolerates concurrent/duplicate refresh calls (multiple tabs, retries).
 export const REFRESH_GRACE_MS = 60_000;
 
 export const USER_ROLES = {
@@ -84,7 +76,6 @@ export const HTTP_STATUS = {
  * - 3900-3999: System & Configuration errors
  */
 export const CUSTOM_STATUS_CODES = {
-  // Authentication & Authorization (3000-3099)
   AUTH_TOKEN_EXPIRED: 3000,
   AUTH_TOKEN_INVALID: 3001,
   AUTH_REFRESH_TOKEN_INVALID: 3002,
@@ -96,7 +87,6 @@ export const CUSTOM_STATUS_CODES = {
   AUTH_OTP_INVALID: 3008,
   AUTH_RATE_LIMIT_EXCEEDED: 3009,
 
-  // User & Profile (3100-3199)
   USER_NOT_FOUND: 3100,
   USER_ALREADY_EXISTS: 3101,
   USER_PROFILE_INCOMPLETE: 3102,
@@ -106,7 +96,6 @@ export const CUSTOM_STATUS_CODES = {
   USER_DISPLAY_NAME_INVALID: 3106,
   USER_PROFILE_UPDATE_FAILED: 3107,
 
-  // Onboarding & Registration (3200-3299)
   ONBOARDING_NOT_COMPLETED: 3200,
   ONBOARDING_ALREADY_COMPLETED: 3201,
   ONBOARDING_REQUIRED_FIELDS_MISSING: 3202,
@@ -115,7 +104,6 @@ export const CUSTOM_STATUS_CODES = {
   ONBOARDING_INVALID_STEP: 3205,
   ONBOARDING_PROFILE_DATA_INVALID: 3206,
 
-  // Application & Opportunity (3300-3399)
   APPLICATION_NOT_FOUND: 3300,
   APPLICATION_ALREADY_EXISTS: 3301,
   APPLICATION_DEADLINE_PASSED: 3302,
@@ -128,7 +116,6 @@ export const CUSTOM_STATUS_CODES = {
   OPPORTUNITY_ALREADY_APPLIED: 3352,
   OPPORTUNITY_ELIGIBILITY_REQUIREMENTS_NOT_MET: 3353,
 
-  // Validation errors (3400-3499)
   VALIDATION_REQUIRED_FIELD_MISSING: 3400,
   VALIDATION_INVALID_EMAIL_FORMAT: 3401,
   VALIDATION_INVALID_PASSWORD_FORMAT: 3402,
@@ -139,14 +126,12 @@ export const CUSTOM_STATUS_CODES = {
   VALIDATION_FIELD_TOO_SHORT: 3407,
   VALIDATION_INVALID_CHOICE: 3408,
 
-  // Business logic errors (3500-3599)
   BUSINESS_RULE_VIOLATION: 3500,
   BUSINESS_OPERATION_NOT_ALLOWED: 3501,
   BUSINESS_QUOTA_EXCEEDED: 3502,
   BUSINESS_TIME_LIMIT_EXCEEDED: 3503,
   BUSINESS_DEPENDENCY_NOT_MET: 3504,
 
-  // Data & Resource errors (3600-3699)
   RESOURCE_NOT_FOUND: 3600,
   RESOURCE_ALREADY_EXISTS: 3601,
   RESOURCE_CONFLICT: 3602,
@@ -155,13 +140,11 @@ export const CUSTOM_STATUS_CODES = {
   DATA_INTEGRITY_ERROR: 3650,
   DATA_VALIDATION_ERROR: 3651,
 
-  // External service errors (3800-3899)
   EXTERNAL_SERVICE_UNAVAILABLE: 3800,
   EXTERNAL_SERVICE_TIMEOUT: 3801,
   EXTERNAL_SERVICE_ERROR: 3802,
   EXTERNAL_API_RATE_LIMIT: 3803,
 
-  // System & Configuration errors (3900-3999)
   SYSTEM_ERROR: 3900,
   SYSTEM_CONFIGURATION_ERROR: 3901,
   SYSTEM_MAINTENANCE_MODE: 3902,
@@ -172,7 +155,6 @@ export const CUSTOM_STATUS_CODES = {
  * Custom status code messages mapping
  */
 export const CUSTOM_STATUS_MESSAGES: Record<number, string> = {
-  // Authentication & Authorization
   [CUSTOM_STATUS_CODES.AUTH_TOKEN_EXPIRED]: "Authentication token has expired",
   [CUSTOM_STATUS_CODES.AUTH_TOKEN_INVALID]: "Invalid authentication token",
   [CUSTOM_STATUS_CODES.AUTH_REFRESH_TOKEN_INVALID]: "Invalid refresh token",
@@ -184,7 +166,6 @@ export const CUSTOM_STATUS_MESSAGES: Record<number, string> = {
   [CUSTOM_STATUS_CODES.AUTH_OTP_INVALID]: "Invalid verification code",
   [CUSTOM_STATUS_CODES.AUTH_RATE_LIMIT_EXCEEDED]: "Too many requests. Please try again later",
 
-  // User & Profile
   [CUSTOM_STATUS_CODES.USER_NOT_FOUND]: "User not found",
   [CUSTOM_STATUS_CODES.USER_ALREADY_EXISTS]: "User already exists",
   [CUSTOM_STATUS_CODES.USER_PROFILE_INCOMPLETE]: "User profile is incomplete",
@@ -194,7 +175,6 @@ export const CUSTOM_STATUS_MESSAGES: Record<number, string> = {
   [CUSTOM_STATUS_CODES.USER_DISPLAY_NAME_INVALID]: "Invalid display name format",
   [CUSTOM_STATUS_CODES.USER_PROFILE_UPDATE_FAILED]: "Failed to update user profile",
 
-  // Onboarding & Registration
   [CUSTOM_STATUS_CODES.ONBOARDING_NOT_COMPLETED]: "You must complete your profile onboarding before performing this action",
   [CUSTOM_STATUS_CODES.ONBOARDING_ALREADY_COMPLETED]: "Onboarding has already been completed",
   [CUSTOM_STATUS_CODES.ONBOARDING_REQUIRED_FIELDS_MISSING]: "Please complete all required fields",
@@ -203,7 +183,6 @@ export const CUSTOM_STATUS_MESSAGES: Record<number, string> = {
   [CUSTOM_STATUS_CODES.ONBOARDING_INVALID_STEP]: "Invalid onboarding step",
   [CUSTOM_STATUS_CODES.ONBOARDING_PROFILE_DATA_INVALID]: "Invalid profile data provided",
 
-  // Application & Opportunity
   [CUSTOM_STATUS_CODES.APPLICATION_NOT_FOUND]: "Application not found",
   [CUSTOM_STATUS_CODES.APPLICATION_ALREADY_EXISTS]: "You have already applied to this opportunity",
   [CUSTOM_STATUS_CODES.APPLICATION_DEADLINE_PASSED]: "The application deadline has passed",
@@ -216,7 +195,6 @@ export const CUSTOM_STATUS_MESSAGES: Record<number, string> = {
   [CUSTOM_STATUS_CODES.OPPORTUNITY_ALREADY_APPLIED]: "You have already applied to this opportunity",
   [CUSTOM_STATUS_CODES.OPPORTUNITY_ELIGIBILITY_REQUIREMENTS_NOT_MET]: "You do not meet the eligibility requirements for this opportunity",
 
-  // Validation errors
   [CUSTOM_STATUS_CODES.VALIDATION_REQUIRED_FIELD_MISSING]: "Required field is missing",
   [CUSTOM_STATUS_CODES.VALIDATION_INVALID_EMAIL_FORMAT]: "Invalid email format",
   [CUSTOM_STATUS_CODES.VALIDATION_INVALID_PASSWORD_FORMAT]: "Password does not meet requirements",
@@ -227,14 +205,12 @@ export const CUSTOM_STATUS_MESSAGES: Record<number, string> = {
   [CUSTOM_STATUS_CODES.VALIDATION_FIELD_TOO_SHORT]: "Field value is too short",
   [CUSTOM_STATUS_CODES.VALIDATION_INVALID_CHOICE]: "Invalid choice selected",
 
-  // Business logic errors
   [CUSTOM_STATUS_CODES.BUSINESS_RULE_VIOLATION]: "This action violates business rules",
   [CUSTOM_STATUS_CODES.BUSINESS_OPERATION_NOT_ALLOWED]: "This operation is not allowed",
   [CUSTOM_STATUS_CODES.BUSINESS_QUOTA_EXCEEDED]: "Quota exceeded for this operation",
   [CUSTOM_STATUS_CODES.BUSINESS_TIME_LIMIT_EXCEEDED]: "Time limit exceeded for this operation",
   [CUSTOM_STATUS_CODES.BUSINESS_DEPENDENCY_NOT_MET]: "Required dependencies are not met",
 
-  // Data & Resource errors
   [CUSTOM_STATUS_CODES.RESOURCE_NOT_FOUND]: "Resource not found",
   [CUSTOM_STATUS_CODES.RESOURCE_ALREADY_EXISTS]: "Resource already exists",
   [CUSTOM_STATUS_CODES.RESOURCE_CONFLICT]: "Resource conflict occurred",
@@ -243,13 +219,11 @@ export const CUSTOM_STATUS_MESSAGES: Record<number, string> = {
   [CUSTOM_STATUS_CODES.DATA_INTEGRITY_ERROR]: "Data integrity error occurred",
   [CUSTOM_STATUS_CODES.DATA_VALIDATION_ERROR]: "Data validation error occurred",
 
-  // External service errors
   [CUSTOM_STATUS_CODES.EXTERNAL_SERVICE_UNAVAILABLE]: "External service is unavailable",
   [CUSTOM_STATUS_CODES.EXTERNAL_SERVICE_TIMEOUT]: "External service request timed out",
   [CUSTOM_STATUS_CODES.EXTERNAL_SERVICE_ERROR]: "External service error occurred",
   [CUSTOM_STATUS_CODES.EXTERNAL_API_RATE_LIMIT]: "External API rate limit exceeded",
 
-  // System & Configuration errors
   [CUSTOM_STATUS_CODES.SYSTEM_ERROR]: "System error occurred",
   [CUSTOM_STATUS_CODES.SYSTEM_CONFIGURATION_ERROR]: "System configuration error",
   [CUSTOM_STATUS_CODES.SYSTEM_MAINTENANCE_MODE]: "System is under maintenance",

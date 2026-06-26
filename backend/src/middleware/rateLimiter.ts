@@ -14,7 +14,6 @@ interface RateLimitOptions {
 export const createRateLimiter = (options: RateLimitOptions) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // Safely get client IP with fallbacks
       const clientIp = req.ip || 
         (req.headers['x-forwarded-for'] as string)?.split(',')[0] || 
         req.connection.remoteAddress || 
@@ -24,7 +23,6 @@ export const createRateLimiter = (options: RateLimitOptions) => {
       const windowStart = Math.floor(Date.now() / options.windowMs);
       const redisKey = `${key}:${windowStart}`;
 
-      // Get current count
       const currentCount = await RedisService.get(redisKey) || 0;
 
       if (currentCount >= options.maxRequests) {
@@ -35,15 +33,12 @@ export const createRateLimiter = (options: RateLimitOptions) => {
         );
       }
 
-      // Increment counter
       await RedisService.increment(redisKey);
       
-      // Set expiry if this is the first request in the window
       if (currentCount === 0) {
         await RedisService.setWithExpiry(redisKey, 1, Math.ceil(options.windowMs / 1000));
       }
 
-      // Add rate limit headers
       res.set({
         'X-RateLimit-Limit': options.maxRequests.toString(),
         'X-RateLimit-Remaining': Math.max(0, options.maxRequests - currentCount - 1).toString(),
@@ -52,13 +47,11 @@ export const createRateLimiter = (options: RateLimitOptions) => {
 
       next();
     } catch (error) {
-      // If Redis is down, allow the request to proceed
       next();
     }
   };
 };
 
-// Predefined rate limiters
 export const authRateLimit = createRateLimiter({
   windowMs: 15 * 60 * 1000,
   maxRequests: 10,
@@ -95,8 +88,6 @@ export const aiGenerationRateLimit = createRateLimiter({
   message: 'Daily AI generation limit reached. Try again tomorrow.',
 });
 
-// Public "Ask AI / find a fundi" helper — reachable by logged-out visitors, so
-// limit per-IP to keep Groq usage bounded without blocking genuine browsing.
 export const findFundiRateLimit = createRateLimiter({
   windowMs: 60 * 60 * 1000,
   maxRequests: 20,

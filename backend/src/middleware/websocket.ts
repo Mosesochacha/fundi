@@ -3,8 +3,6 @@ import type { Server as HTTPServer } from "http";
 
 let io: SocketIOServer | undefined;
 
-// In-memory presence: userId → number of live socket connections. A user may
-// have several tabs/devices open, so we ref-count and only flip offline at zero.
 const online = new Map<string, number>();
 
 export const setupWebSocket = (server: HTTPServer): void => {
@@ -16,7 +14,6 @@ export const setupWebSocket = (server: HTTPServer): void => {
   });
 
   io.on("connection", (socket) => {
-    // Join personal room for notifications and messages
     socket.on("join", (userId: string) => {
       const id = String(userId);
       socket.data.userId = id;
@@ -29,7 +26,6 @@ export const setupWebSocket = (server: HTTPServer): void => {
       }
     });
 
-    // Typing indicators — relay to the other participant's room
     socket.on("typing", ({ conversationId, toUserId, isTyping }: { conversationId: string; toUserId: string; isTyping: boolean }) => {
       socket.to(String(toUserId)).emit("typing", { conversationId, isTyping });
     });

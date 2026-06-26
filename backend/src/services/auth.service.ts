@@ -20,12 +20,12 @@ export interface RegisterData {
   location: string;
   accountType: "employer" | "worker";
   phoneNumber?: string;
-  trade?: string;             // workers: their main trade
-  interestedTrades?: string[]; // employers: trades they want to hire
-  dailyRate?: number;         // workers: optional daily rate
-  currency?: string;          // per-user currency preference (defaults to USD)
+  trade?: string;
+  interestedTrades?: string[];
+  dailyRate?: number;
+  currency?: string;
   agreedToTerms?: boolean;
-  username?: string;          // optional override; auto-generated when absent
+  username?: string;
   role?: "user" | "admin" | "moderator";
 }
 
@@ -87,8 +87,6 @@ class AuthService {
       phoneNumber, trade, interestedTrades, dailyRate, currency, agreedToTerms, role,
     } = userData;
     const isWorker = accountType === "worker";
-    // Validate currency against the allowed set; reject an explicit bad value,
-    // fall back to the default when omitted.
     let currencyCode = DEFAULT_CURRENCY;
     if (currency !== undefined && currency !== null && currency !== "") {
       const normalized = normalizeCurrency(currency);
@@ -116,8 +114,6 @@ class AuthService {
           accountType,
           phoneNumber: phoneNumber ? normalizePhone(phoneNumber) : null,
           isPhoneVerified: false,
-          // The signup flow collects role + location + trade up front, so the
-          // account is effectively onboarded the moment it is created.
           isProfileComplete: true,
           isOnboarded: true,
           onboardingCompletedAt: new Date(),
@@ -138,8 +134,6 @@ class AuthService {
           userId: user.id,
           username,
           fullName,
-          // Workers surface their trade as their profession; employers get a
-          // neutral label and are kept out of the worker directory/search.
           profession: isWorker ? (trade || 'Other') : 'Client',
           location,
           appearInSearch: isWorker,
@@ -197,7 +191,6 @@ class AuthService {
         throw new Error("Your account has been suspended. Contact support.");
       }
 
-      // Account lock check
       if (user.lockedUntil && user.lockedUntil > new Date()) {
         const minutesLeft = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000);
         throw new Error(`Account locked. Try again in ${minutesLeft} minute${minutesLeft === 1 ? '' : 's'}.`);
@@ -216,7 +209,6 @@ class AuthService {
         throw new Error("Invalid credentials");
       }
 
-      // Reset lock on successful login
       if (user.loginAttempts > 0 || user.lockedUntil) {
         await user.update({ loginAttempts: 0, lockedUntil: null });
       }
@@ -279,7 +271,6 @@ class AuthService {
           googleUser.lastName,
           t
         );
-        // Random password — Google users authenticate via OAuth, not this hash.
         const passwordHash = await bcrypt.hash(uuidv4(), 12);
         user = await db.User.create(
           {
@@ -314,7 +305,6 @@ class AuthService {
         throw err;
       }
     } else if (!user.emailVerified) {
-      // Google verified the email — trust it.
       await user.update({ emailVerified: true });
     }
 
@@ -393,14 +383,12 @@ class AuthService {
   ): Promise<AuthTokens> {
     let decoded: any;
     
-    // Verify the refresh token first
     try {
       decoded = jwt.verify(refreshToken, JWT_CONFIG.REFRESH_SECRET);
       if (!decoded || typeof decoded !== 'object') {
         throw new Error("Invalid refresh token");
       }
       
-      // Check if token is expired (additional check)
       if (decoded.exp && decoded.exp < Math.floor(Date.now() / 1000)) {
         logger.error("Refresh token has expired", {
           tokenExp: decoded.exp,
@@ -428,25 +416,20 @@ class AuthService {
       throw new Error("Invalid refresh token");
     }
 
-    // Extract user info from decoded token
     const { id: userId, email } = decoded;
     if (!userId || !email) {
       logger.error("Invalid refresh token payload:", decoded);
       throw new Error("Invalid refresh token");
     }
 
-    // Find refresh token in database (compare hashed token)
     logger.info("Looking for refresh token in database", { 
       tokenLength: refreshToken.length,
       userId,
       email 
     });
     
-    // Hash the provided token to compare with stored hash
     const hashedToken = hashString(refreshToken);
     
-    // Find candidate tokens: active ones, plus any rotated within the grace window
-    // so concurrent/duplicate refresh calls (multiple tabs, retries) don't fail.
     const graceCutoff = new Date(Date.now() - REFRESH_GRACE_MS);
     const userTokens = await db.RefreshToken.findAll({
       where: {
@@ -460,7 +443,6 @@ class AuthService {
       include: [{ model: db.User, as: "user" }],
     });
     
-    // Find the matching token using safe comparison
     let storedToken = null;
     for (const token of userTokens) {
       if (safeCompare(token.tokenHash, hashedToken)) {
@@ -470,7 +452,6 @@ class AuthService {
     }
 
     if (!storedToken) {
-      // Check if there are any tokens for this user to provide better error message
       const allUserTokens = await db.RefreshToken.findAll({
         where: { userId },
         attributes: ['id', 'isRevoked', 'expiresAt', 'createdAt'],
@@ -501,14 +482,11 @@ class AuthService {
       expiresAt: storedToken.expiresAt
     });
 
-    // Verify the user still exists and is active
     if (!storedToken.user) {
       logger.error("User not found for refresh token");
       throw new Error("Invalid refresh token");
     }
 
-    // Already rotated, but within the grace window: a concurrent/duplicate refresh.
-    // Don't fail — issue a fresh token for the same user so the caller isn't poisoned.
     if (storedToken.isRevoked) {
       logger.info("Refresh token already rotated within grace window; reissuing", {
         tokenId: storedToken.id,
@@ -518,10 +496,8 @@ class AuthService {
       return this.generateTokens(storedToken.user, ipAddress, userAgent);
     }
 
-    // Rotate: revoke old token (stamp rotatedAt so reuse within grace is tolerated)
     await storedToken.update({ isRevoked: true, rotatedAt: new Date() });
 
-    // Generate new tokens
     return this.generateTokens(storedToken.user, ipAddress, userAgent);
   }
 
@@ -532,16 +508,13 @@ class AuthService {
     if (!refreshToken) return;
 
     try {
-      // Verify the refresh token to get user ID
       const decoded: any = jwt.verify(refreshToken, JWT_CONFIG.REFRESH_SECRET);
       if (!decoded || typeof decoded !== 'object' || !decoded.id) {
-        return; // Invalid token, nothing to revoke
+        return;
       }
 
-      // Hash the token to find and revoke it
       const hashedToken = hashString(refreshToken);
       
-      // Find tokens for this specific user only (more efficient)
       const userTokens = await db.RefreshToken.findAll({
         where: {
           userId: decoded.id,
@@ -550,7 +523,6 @@ class AuthService {
         },
       });
       
-      // Find and revoke the matching token
       for (const token of userTokens) {
         if (safeCompare(token.tokenHash, hashedToken)) {
           await token.update({ isRevoked: true });
@@ -558,7 +530,6 @@ class AuthService {
         }
       }
     } catch (error) {
-      // If token verification fails, silently return (token is already invalid)
       logger.warn("Logout: Invalid refresh token provided", { error: error });
     }
   }
@@ -566,7 +537,6 @@ class AuthService {
   /**
    * Check username availability
    */
-  // Username logic removed in new model
 
   /**
    * Check if user exists by email
@@ -592,13 +562,10 @@ class AuthService {
       throw new Error("User not found");
     }
 
-    // Hash new password
     const passwordHash = await bcrypt.hash(newPassword, 12);
 
-    // Update password
     await user.update({ passwordHash });
 
-    // Revoke all refresh tokens to force re-login
     await db.RefreshToken.update(
       { isRevoked: true },
       { where: { userId: user.id } }
@@ -617,7 +584,6 @@ class AuthService {
     const passwordHash = await bcrypt.hash(newPassword, 12);
     await user.update({ passwordHash });
 
-    // Revoke all refresh tokens to force re-login
     await db.RefreshToken.update(
       { isRevoked: true },
       { where: { userId } }
@@ -669,7 +635,6 @@ class AuthService {
       throw new Error("User not found");
     }
 
-    // Check if email is being changed and is unique
     if (updateData.email && updateData.email !== user.email) {
       const existingUser = await db.User.findOne({
         where: { email: updateData.email },
@@ -679,10 +644,8 @@ class AuthService {
       }
     }
 
-    // Exclude non-user fields (e.g., avatarUrl is not stored on users table)
     const { avatarUrl, ...userFields } = updateData as any;
 
-    // Update user
     await user.update(userFields);
     return formatUserResponse(user);
   }
@@ -700,7 +663,6 @@ class AuthService {
       throw new Error("User not found");
     }
 
-    // Verify current password
     const isCurrentPasswordValid = await bcrypt.compare(
       currentPassword,
       user.passwordHash
@@ -709,13 +671,10 @@ class AuthService {
       throw new Error("Current password is incorrect");
     }
 
-    // Hash new password
     const newPasswordHash = await bcrypt.hash(newPassword, 12);
 
-    // Update password
     await user.update({ passwordHash: newPasswordHash });
 
-    // Revoke all refresh tokens to force re-login
     await db.RefreshToken.update({ isRevoked: true }, { where: { userId } });
   }
 
@@ -730,14 +689,12 @@ class AuthService {
 
     const trimmedReason = reason.trim();
 
-    // Store deletion reason in dedicated audit table
     try {
       await db.AccountDeletionLog.create({
         email: user.email,
         reason: trimmedReason,
       });
     } catch (error: any) {
-      // If logging fails, don't block account deletion
       logger.error("Failed to persist account deletion reason", {
         error: error.message,
         stack: error.stack,
@@ -745,10 +702,8 @@ class AuthService {
       });
     }
 
-    // Revoke all refresh tokens
     await db.RefreshToken.update({ isRevoked: true }, { where: { userId } });
 
-    // Delete user
     await user.destroy();
   }
 }

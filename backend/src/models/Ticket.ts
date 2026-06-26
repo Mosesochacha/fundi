@@ -30,7 +30,6 @@ class Ticket extends Model<TicketAttributes, TicketCreationAttributes> implement
   public readonly updatedAt!: Date;
 }
 
-// Export initModel function for dynamic loading
 export const initModel = (sequelize: Sequelize) => {
   Ticket.init(
     {

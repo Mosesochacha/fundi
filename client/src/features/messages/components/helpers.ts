@@ -8,8 +8,6 @@ export const initialsOf = (n: string) =>
     .map((w) => w[0]?.toUpperCase() ?? "")
     .join("") || "?";
 
-// Keep in sync with the backend (messages.controller.ts) so a draft
-// conversation keeps the same avatar colour once it's created server-side.
 const AVATAR_COLORS = [
   "#c9a84c",
   "#0d1b2a",

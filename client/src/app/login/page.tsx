@@ -107,8 +107,6 @@ export default function LoginPage() {
         );
       }
     } catch {
-      // NextAuth credentials only surfaces a generic failure - count the attempt
-      // client-side and offer the email-verification path heuristically.
       const attempts = Number(localStorage.getItem(ATTEMPTS_KEY) ?? 0) + 1;
       localStorage.setItem(ATTEMPTS_KEY, String(attempts));
 
@@ -139,7 +137,7 @@ export default function LoginPage() {
   const onGoogle = async () => {
     try {
       const session = await googleSignIn();
-      if (!session) return; // popup closed
+      if (!session) return;
       const user = session.backendUser ?? null;
       const profile = session.backendProfile ?? null;
       if (user && !user.isProfileComplete) {
@@ -162,17 +160,11 @@ export default function LoginPage() {
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }));
   };
 
-  // Begin email verification: the backend stashes the email in a signed session
-  // cookie (kept out of the URL) and sends a fresh code, then we route to the
-  // standalone verify page which reads that session.
   const onVerifyEmail = async () => {
     if (!unverifiedEmail) return;
     try {
       await startVerification.mutateAsync({ identifier: unverifiedEmail });
-    } catch {
-      // Generic by design - proceed regardless; the verify page redirects to
-      // register if no verification session was established.
-    }
+    } catch {}
     router.push("/verify-email");
   };
 

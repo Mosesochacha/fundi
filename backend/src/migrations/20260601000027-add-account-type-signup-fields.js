@@ -10,9 +10,6 @@
  */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    // NOTE: Sequelize v6's addColumn() emits malformed SQL for native ENUM
-    // columns (the CREATE TYPE DO-block and ALTER TABLE get concatenated with a
-    // stray quote). Create the type + column explicitly to avoid that bug.
     await queryInterface.sequelize.query(
       `DO $$ BEGIN CREATE TYPE "enum_Users_accountType" AS ENUM('employer', 'worker'); EXCEPTION WHEN duplicate_object THEN null; END $$;`
     );
@@ -49,7 +46,6 @@ module.exports = {
       comment: 'Worker daily rate (optional, in KSh)',
     });
 
-    // Remove age-verification fields entirely.
     await queryInterface.removeColumn('Users', 'ageConfirmed');
     await queryInterface.removeColumn('Users', 'ageConfirmedAt');
   },
@@ -71,7 +67,6 @@ module.exports = {
     await queryInterface.removeColumn('Users', 'isPhoneVerified');
     await queryInterface.removeColumn('Users', 'phoneNumber');
     await queryInterface.removeColumn('Users', 'accountType');
-    // Drop the ENUM type created for accountType (Postgres).
     await queryInterface.sequelize.query('DROP TYPE IF EXISTS "enum_Users_accountType";');
   },
 };

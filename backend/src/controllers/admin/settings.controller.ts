@@ -52,7 +52,6 @@ class AdminSettingsController {
     });
   });
 
-  // ── Email templates ──
   listEmailTemplates = asyncHandler(async (_req: AuthenticatedRequest, res: Response) => {
     const rows = await Db.EmailTemplate.findAll({ order: [["createdAt", "ASC"]] });
     const shaped = rows.map((t: any) => ({

@@ -1,5 +1,3 @@
-// Country → currency and currency → symbol maps for geo detection and for
-// deriving a display symbol when the client doesn't send one. No FX conversion.
 
 export interface CountryCurrency {
   code: string;
@@ -21,7 +19,6 @@ export const currencyByCountry: Record<string, CountryCurrency> = {
   AU: { code: "AUD", symbol: "A$" },
 };
 
-// Symbols for currencies we accept beyond the country map (matches the client).
 const SYMBOL_BY_CODE: Record<string, string> = {
   USD: "$", EUR: "€", GBP: "£", KES: "KSh", NGN: "₦", GHS: "GH₵",
   ZAR: "R", UGX: "USh", TZS: "TSh", INR: "₹", AED: "AED", CAD: "CA$",

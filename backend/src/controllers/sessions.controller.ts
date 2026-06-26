@@ -30,7 +30,6 @@ class SessionsController {
   });
 
   revokeAllOtherSessions = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-    // Revoke all except the current token (identified by jti from JWT payload)
     const currentJti = (req as any).jti;
     await db.RefreshToken.update(
       { isRevoked: true },
@@ -38,7 +37,6 @@ class SessionsController {
         where: {
           userId: req.user!.id,
           isRevoked: false,
-          // If we have a jti we can exclude current; otherwise revoke all
           ...(currentJti ? { id: { [Op.ne]: currentJti } } : {}),
         },
       }
@@ -56,7 +54,6 @@ class SessionsController {
     });
     return sendSuccess(res, 'Login history retrieved', history.map((h: any) => {
       const item = h.get({ plain: true });
-      // Partially mask IP: 192.168.x.x → 192.168.*.*
       if (item.ipAddress) {
         const parts = item.ipAddress.split('.');
         if (parts.length === 4) {

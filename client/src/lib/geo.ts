@@ -28,8 +28,6 @@ export async function detectCurrency(): Promise<GeoCurrency> {
       const c = getCurrencyFromCountry(d.country);
       return { country: d.country, currency: c.code, symbol: c.symbol };
     }
-  } catch {
-    /* network/geo failure — fall through to default */
-  }
+  } catch {}
   return FALLBACK;
 }

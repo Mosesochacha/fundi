@@ -1,7 +1,3 @@
-// Live admin API client. Talks to the Express backend at `/api/v1/admin/*`
-// via the shared axios instance (auth + refresh handled by the interceptor).
-// Every reader unwraps the standard `{ success, data }` envelope to `data`.
-
 import client from "@/lib/axios";
 import type {
   AdminBadges,
@@ -58,50 +54,40 @@ export interface AdminMutateReq {
 }
 
 export const adminService = {
-  // ── Overview ──
   dashboard: () => get<DashboardData>("/admin/dashboard"),
   health: () => get<HealthService[]>("/admin/health"),
   badges: () => get<AdminBadges>("/admin/badges"),
 
-  // ── Users ──
   users: (p?: ListParams) => get<Paginated<AdminUser>>(`/admin/users${qs(p)}`),
   user: (id: string) => get<AdminUser>(`/admin/users/${id}`),
 
-  // ── Workers ──
   workers: (p?: ListParams) =>
     get<Paginated<AdminWorker>>(`/admin/workers${qs(p)}`),
   worker: (id: string) => get<AdminWorker>(`/admin/workers/${id}`),
 
-  // ── Employers ──
   employers: (p?: ListParams) =>
     get<Paginated<AdminEmployer>>(`/admin/employers${qs(p)}`),
   employer: (id: string) => get<AdminEmployer>(`/admin/employers/${id}`),
 
-  // ── Jobs ──
   jobs: (p?: ListParams) => get<Paginated<AdminJob>>(`/admin/jobs${qs(p)}`),
   job: (id: string) => get<AdminJob>(`/admin/jobs/${id}`),
 
-  // ── Reviews ──
   reviews: (p?: ListParams) =>
     get<Paginated<AdminReview>>(`/admin/reviews${qs(p)}`),
   review: (id: string) => get<AdminReview>(`/admin/reviews/${id}`),
 
-  // ── Reports ──
   reports: (p?: ListParams) =>
     get<Paginated<AdminReport>>(`/admin/reports${qs(p)}`),
   report: (id: string) => get<AdminReport>(`/admin/reports/${id}`),
 
-  // ── Finance ──
   payments: (p?: ListParams) =>
     get<Paginated<AdminPayment>>(`/admin/payments${qs(p)}`),
   payouts: (p?: ListParams) =>
     get<Paginated<AdminPayout>>(`/admin/payouts${qs(p)}`),
 
-  // ── Settings ──
   settings: () => get<AdminSettings>("/admin/settings"),
   emailTemplates: () => get<EmailTemplate[]>("/admin/settings/email-templates"),
 
-  // ── Generic mutation ── (callers pass a descriptor; see endpoints.ts helpers)
   mutate: (req: AdminMutateReq) =>
     client
       .request({ method: req.method, url: req.url, data: req.body })

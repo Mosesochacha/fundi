@@ -19,7 +19,6 @@ export const errorHandler = (
 ) => {
   logError(error, 'Global Error Handler');
 
-  // Report to Sentry (skip 401/403 auth errors to reduce noise)
   if (process.env.SENTRY_DSN && error.statusCode !== 401 && error.statusCode !== 403) {
     Sentry.captureException(error, {
       tags: {
@@ -42,11 +41,9 @@ export const errorHandler = (
     });
   }
 
-  // Default error values
   let statusCode = error.statusCode || HTTP_STATUS.INTERNAL_SERVER_ERROR;
   let message = error.message || 'Internal server error';
 
-  // Handle specific error types
   if (error.name === 'ValidationError') {
     statusCode = HTTP_STATUS.BAD_REQUEST;
     message = 'Validation error';
@@ -72,7 +69,6 @@ export const errorHandler = (
     message = 'Token expired';
   }
 
-  // Send error response
   res.status(statusCode).json({
     success: false,
     message,

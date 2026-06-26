@@ -39,8 +39,6 @@ export default function WorkerProfileGate({
   const pathname = usePathname();
   const router = useRouter();
   const { profile, isLoggedIn, role } = useAuth();
-  // Only fetch the full profile when signed in — keeps the logged-out/SSR render
-  // purely on the public `initial` data (what crawlers index).
   const query = useGetProfile(isLoggedIn ? id : undefined);
   const { data: conversations } = useConversations();
 
@@ -56,8 +54,6 @@ export default function WorkerProfileGate({
 
   const data = query.data as WorkerProfileData | undefined;
 
-  // Chrome reflects the signed-in viewer (employer or worker); content is the
-  // viewed worker.
   const viewerName = profile?.fullName ?? "";
   const viewer = { name: viewerName, initials: initialsOf(viewerName) };
   const shellRole: DashboardRole = role === "worker" ? "worker" : "employer";

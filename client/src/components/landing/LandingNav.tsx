@@ -45,7 +45,6 @@ export default function LandingNav() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Lock background scroll while the full-screen menu drawer is open.
   useEffect(() => {
     if (!menuOpen) return;
     const prev = document.body.style.overflow;
@@ -85,7 +84,6 @@ export default function LandingNav() {
       >
         <div className="mx-auto flex h-full w-full max-w-[1280px] items-center justify-between px-4 md:px-8">
           <Link href="/" className="inline-flex items-center no-underline">
-            {/* Mobile: compact emblem. Desktop: full wordmark logo. */}
             <Image
               src="/brand/emblem.png"
               alt="Tesilix"

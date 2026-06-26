@@ -8,9 +8,6 @@ const SOCKET_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "") ||
   "http://localhost:9000";
 
-// One shared connection for the whole app, ref-counted across consumers so
-// that multiple components (messages view, notification bells) reuse it and
-// it only tears down when the last consumer unmounts.
 let socket: Socket | null = null;
 let refCount = 0;
 

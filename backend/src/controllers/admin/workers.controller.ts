@@ -91,7 +91,6 @@ class AdminWorkersController {
     const aggs = await workerAggregates(rows.map((u: any) => u.profile?.id).filter(Boolean));
     let shaped = rows.map((u: any) => shapeWorker(u, u.profile, extrasFrom(aggs[u.profile?.id])));
 
-    // Post-sort for aggregate-based orders (page-local).
     if (p.sort === "rating") shaped = shaped.sort((a: any, b: any) => b.rating - a.rating);
     else if (p.sort === "jobs") shaped = shaped.sort((a: any, b: any) => b.jobs - a.jobs);
     else if (p.sort === "pending")

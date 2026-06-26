@@ -43,7 +43,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: absoluteUrl("/privacy"), priority: 0.2, changeFrequency: "monthly" },
   ];
 
-  // Trade and trade×location browse pages (canonical combos).
   const browsePages: MetadataRoute.Sitemap = TRADE_NAMES.flatMap((name) => {
     const t = tradeSlug(name);
     return [
@@ -60,7 +59,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ];
   });
 
-  // All indexable worker profiles.
   const slugs = await getWorkerSlugs();
   const workerPages: MetadataRoute.Sitemap = slugs.map(
     ({ username, updatedAt }) => ({

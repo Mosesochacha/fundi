@@ -10,10 +10,6 @@ import type { JobRequest, RequestFilter, RequestStats } from "./types";
 export type * from "./types";
 export { EMPTY_STATS } from "./types";
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Service. Paths are written relative to the axios baseURL (`…/api/v1`),
-   matching every other feature service (e.g. `/worker/dashboard`).
-   ───────────────────────────────────────────────────────────────────────── */
 export const requestsService = {
   list: (status?: RequestFilter) =>
     client.get("/worker/requests", {
@@ -28,8 +24,6 @@ export const requestsService = {
 /** Root key for every requests query - invalidating it refreshes lists + stats. */
 const REQ_KEY = ["worker", "requests"] as const;
 
-/* ── Queries ──────────────────────────────────────────────────────────────── */
-
 /** List of requests, optionally narrowed to a single status tab. */
 export function useGetRequests(status: RequestFilter = "all") {
   return useQuery({
@@ -37,7 +31,6 @@ export function useGetRequests(status: RequestFilter = "all") {
     queryFn: () => requestsService.list(status),
     select: (res): JobRequest[] => (res.data?.data ?? []) as JobRequest[],
     staleTime: 1000 * 60,
-    // Poll every 2 minutes so new requests surface without a manual refresh.
     refetchInterval: 1000 * 60 * 2,
     refetchOnWindowFocus: true,
   });
@@ -52,8 +45,6 @@ export function useGetRequestStats() {
     staleTime: 1000 * 60,
   });
 }
-
-/* ── Optimistic mutations ─────────────────────────────────────────────────── */
 
 type StatField = keyof Omit<RequestStats, "total">;
 
@@ -74,7 +65,6 @@ async function optimisticTransition(
   await qc.cancelQueries({ queryKey: REQ_KEY });
   const snapshot = qc.getQueriesData({ queryKey: REQ_KEY });
 
-  // Lists: keys are ["worker","requests", filter]; skip the "stats" sibling.
   qc.setQueriesData(
     {
       queryKey: REQ_KEY,
@@ -99,7 +89,6 @@ async function optimisticTransition(
     },
   );
 
-  // Stats: shift one count from `from` to `to`.
   qc.setQueryData([...REQ_KEY, "stats"], (old: unknown) => {
     const env = old as { data?: { data?: RequestStats } } | undefined;
     const s = env?.data?.data;

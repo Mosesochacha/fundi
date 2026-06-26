@@ -22,13 +22,6 @@ import {
   ToggleRow,
 } from "../_components/ui";
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Combined "Availability & privacy" panel - when/where you work plus what
-   employers can see. Two short, related sections that used to be separate
-   tabs, now one well-filled page. Each section still saves to its own
-   endpoint; the shared save bar persists whichever changed.
-   ───────────────────────────────────────────────────────────────────────── */
-
 /** Build "HH:00" → "7am"-style options for an inclusive hour range. */
 function hourOptions(from: number, to: number) {
   const opts: { value: string; label: string }[] = [];
@@ -40,8 +33,8 @@ function hourOptions(from: number, to: number) {
   }
   return opts;
 }
-const FROM_OPTIONS = hourOptions(5, 12); // 5am – 12pm
-const TO_OPTIONS = hourOptions(12, 22); // 12pm – 10pm
+const FROM_OPTIONS = hourOptions(5, 12);
+const TO_OPTIONS = hourOptions(12, 22);
 
 const DISTANCE_OPTIONS: { value: MaxDistance; label: string }[] = [
   { value: "5", label: "5 km" },
@@ -156,7 +149,6 @@ export default function AvailabilityPrivacyPanel({
       }
     >
       <PanelBody>
-        {/* ── Availability (workers only) ── */}
         {showAvailability && (
           <div>
             <div className="text-[11px] font-semibold tracking-[0.06em] uppercase text-ink-3 mb-1.5">
@@ -238,7 +230,6 @@ export default function AvailabilityPrivacyPanel({
           </div>
         )}
 
-        {/* ── Privacy ── */}
         <div className={cn(showAvailability && "mt-[22px]")}>
           <div className="text-[11px] font-semibold tracking-[0.06em] uppercase text-ink-3 mb-1.5">
             Privacy

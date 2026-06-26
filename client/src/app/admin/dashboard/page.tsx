@@ -156,7 +156,6 @@ export default function AdminDashboardPage() {
         </p>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
         {isLoading
           ? Array.from({ length: 8 }).map((_, i) => (
@@ -169,11 +168,8 @@ export default function AdminDashboardPage() {
           : data?.stats.map((s) => <StatCard key={s.key} stat={s} />)}
       </div>
 
-      {/* Two columns */}
       <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-4">
-        {/* Left */}
         <div className="flex flex-col gap-4">
-          {/* Activity feed */}
           <div className="bg-white border border-border rounded-xl">
             <div className="flex items-center justify-between px-4 py-3 border-b border-cream-2">
               <h2 className="text-sm font-semibold text-ink">
@@ -213,7 +209,6 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          {/* Open reports */}
           <div className="bg-white border border-border rounded-xl">
             <div className="flex items-center justify-between px-4 py-3 border-b border-cream-2">
               <h2 className="text-sm font-semibold text-ink">Open reports</h2>
@@ -251,9 +246,7 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Right */}
         <div className="flex flex-col gap-4">
-          {/* Quick actions */}
           <div className="grid grid-cols-2 gap-3">
             <QuickAction
               icon={<ShieldCheck size={18} />}
@@ -290,7 +283,6 @@ export default function AdminDashboardPage() {
             </button>
           </div>
 
-          {/* New registrations */}
           <div className="bg-white border border-border rounded-xl">
             <div className="px-4 py-3 border-b border-cream-2">
               <h2 className="text-sm font-semibold text-ink">
@@ -326,7 +318,6 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          {/* Platform health */}
           <div className="bg-white border border-border rounded-xl">
             <div className="px-4 py-3 border-b border-cream-2">
               <h2 className="text-sm font-semibold text-ink">
@@ -359,7 +350,6 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Email blast modal */}
       <ConfirmModal
         open={blastOpen}
         title="Send email blast"

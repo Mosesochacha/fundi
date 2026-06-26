@@ -24,7 +24,6 @@ export default function PublicWorkerProfile({
       <LandingNav />
 
       <main className="mx-auto max-w-[860px] px-5 pb-24 pt-[96px] md:pt-[120px]">
-        {/* Header card */}
         <section className="rounded-2xl border border-border bg-white p-6 md:p-8">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
             {data.avatarUrl ? (
@@ -69,7 +68,6 @@ export default function PublicWorkerProfile({
             </div>
           </div>
 
-          {/* Stats */}
           <dl className="mt-6 grid grid-cols-2 gap-4 border-t border-border pt-5 sm:grid-cols-4">
             <Stat
               icon={<Star size={16} aria-hidden />}
@@ -104,7 +102,6 @@ export default function PublicWorkerProfile({
           </dl>
         </section>
 
-        {/* About */}
         {data.about && (
           <section className="mt-5 rounded-2xl border border-border bg-white p-6 md:p-8">
             <h2 className="font-serif text-lg font-medium text-ink">About</h2>
@@ -114,7 +111,6 @@ export default function PublicWorkerProfile({
           </section>
         )}
 
-        {/* Services */}
         {data.services.length > 0 && (
           <section className="mt-5 rounded-2xl border border-border bg-white p-6 md:p-8">
             <h2 className="font-serif text-lg font-medium text-ink">
@@ -133,7 +129,6 @@ export default function PublicWorkerProfile({
           </section>
         )}
 
-        {/* Contact CTA — full contact + portfolio is behind login. */}
         <section className="mt-5 rounded-2xl border border-gold-dark/30 bg-white p-6 text-center md:p-8">
           <h2 className="font-serif text-xl font-medium text-ink">
             Want to hire {firstName}?

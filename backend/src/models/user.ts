@@ -1,4 +1,3 @@
-// src/models/user.ts
 import { Sequelize, DataTypes, Model } from "sequelize";
 
 export class User extends Model {

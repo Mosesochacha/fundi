@@ -90,7 +90,6 @@ export default function NotificationBell({
   const markRead = useMarkNotificationRead();
   const markAll = useMarkAllNotificationsRead();
 
-  // Real-time: a `notification` socket event just refetches the list + count.
   useEffect(() => {
     if (!socket) return;
     const onNotif = () => qc.invalidateQueries({ queryKey: ["notifications"] });
@@ -100,7 +99,6 @@ export default function NotificationBell({
     };
   }, [socket, qc]);
 
-  // Close on outside click.
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent) => {
@@ -121,8 +119,6 @@ export default function NotificationBell({
     if (href) router.push(href);
   };
 
-  // Unread count badge. Ring colour differs per surface (white dash/bottom is
-  // navy, nav sits on cream-2).
   const badge =
     unread > 0 ? (
       <span

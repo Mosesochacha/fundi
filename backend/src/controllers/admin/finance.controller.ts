@@ -28,7 +28,6 @@ const userInclude = (alias: string) => ({
 });
 
 class AdminFinanceController {
-  // ── Payments ──
   payments = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const p = parseListParams(req.query);
     const where: any = {};
@@ -63,7 +62,6 @@ class AdminFinanceController {
     return sendSuccess(res, "Payments", paginated(shaped, count, p.page, p.pageSize));
   });
 
-  // ── Payouts ──
   payouts = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const p = parseListParams(req.query);
     const where: any = {};

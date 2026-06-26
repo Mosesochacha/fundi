@@ -7,7 +7,6 @@ import { HTTP_STATUS, USERNAME_CONFIG } from '../utils/constants';
  * Note: Validation is handled in the controller, this middleware is deprecated
  */
 export const validateRegistration = (req: Request, res: Response, next: NextFunction): void => {
-  // Skip validation - handled in controller with new field names
   next();
 };
 
@@ -22,7 +21,6 @@ export const validateLogin = (req: Request, res: Response, next: NextFunction): 
     return;
   }
 
-  // Validate email format
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     sendError(res, HTTP_STATUS.BAD_REQUEST, 'Invalid email format');
@@ -158,13 +156,11 @@ export const validateWithdrawal = (req: Request, res: Response, next: NextFuncti
 export const validateProfileUpdate = (req: Request, res: Response, next: NextFunction): void => {
   const { displayName, email, username, role } = req.body;
 
-  // Validate displayName if provided
   if (displayName && (displayName.length < 2 || displayName.length > 100)) {
     sendError(res, HTTP_STATUS.BAD_REQUEST, 'displayName must be 2-100 characters');
     return;
   }
 
-  // Validate email if provided
   if (email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
@@ -173,7 +169,6 @@ export const validateProfileUpdate = (req: Request, res: Response, next: NextFun
     }
   }
 
-  // Validate username if provided
   if (username) {
     if (!USERNAME_CONFIG.REGEX.test(username)) {
       sendError(res, HTTP_STATUS.BAD_REQUEST, 'Invalid username format');
@@ -188,7 +183,6 @@ export const validateProfileUpdate = (req: Request, res: Response, next: NextFun
     }
   }
 
-  // Validate role if provided to allowed set
   if (role && !['user', 'admin', 'moderator'].includes(role)) {
     sendError(res, HTTP_STATUS.BAD_REQUEST, 'Invalid role');
     return;

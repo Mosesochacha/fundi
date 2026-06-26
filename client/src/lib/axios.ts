@@ -19,9 +19,6 @@ let cachedToken: { value: string | undefined; expiresAt: number } = {
   expiresAt: 0,
 };
 
-// Single-flight: concurrent callers (e.g. a screen mounting many queries at once)
-// share one getSession() call so the NextAuth jwt callback rotates the backend
-// refresh token exactly once, instead of racing N concurrent /auth/refresh calls.
 let inFlight: Promise<string | undefined> | null = null;
 
 /** Drop the cached access token (e.g. on logout) so no stale token is reused. */
@@ -34,10 +31,9 @@ async function getAccessToken(force = false): Promise<string | undefined> {
   if (!force && cachedToken.value && Date.now() < cachedToken.expiresAt) {
     return cachedToken.value;
   }
-  if (inFlight) return inFlight; // piggyback on an in-progress refresh
+  if (inFlight) return inFlight;
   inFlight = (async () => {
     try {
-      // getSession() triggers the server-side jwt callback, refreshing if expired.
       const session = await getSession();
       cachedToken = {
         value: session?.accessToken,
@@ -66,13 +62,11 @@ client.interceptors.response.use(
 
     if (error.response?.status === 401 && original && !original._retry) {
       original._retry = true;
-      // Force a fresh session - the jwt callback rotates the backend token.
       const token = await getAccessToken(true);
       if (token) {
         original.headers.set("Authorization", `Bearer ${token}`);
         return client(original);
       }
-      // No valid session left - bounce to login.
       await signOut({ redirect: false });
       if (typeof window !== "undefined") window.location.replace("/login");
     }

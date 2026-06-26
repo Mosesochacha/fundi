@@ -30,7 +30,6 @@ import {
 import { useSocket } from "@/hooks/useSocket";
 import { cn } from "@/lib/utils";
 
-/* ── Small formatting helpers ─────────────────────────────────────────────── */
 const initialsOf = (n: string) =>
   n
     .trim()
@@ -103,13 +102,8 @@ function sortRequests(list: JobRequest[], sort: SortOption): JobRequest[] {
   }
 }
 
-/* ── Shared button class sets ─────────────────────────────────────────────── */
 const BTN_BASE =
   "inline-flex items-center justify-center gap-1.5 font-sans font-medium text-sm px-[11px] py-1.5 rounded-lg border-[0.5px] cursor-pointer no-underline whitespace-nowrap transition-colors disabled:opacity-55 disabled:cursor-not-allowed max-[640px]:w-full";
-// `enabled:hover:` is used on disable-able <button>s (accept/decline/complete)
-// so their hover styles don't fire while busy; `:enabled` only matches form
-// controls, so the outline/blue variants (used on never-disabled <Link>s and
-// the always-enabled directions button) use a plain `hover:`.
 const BTN_GOLD =
   "bg-gold text-navy border-gold enabled:hover:bg-gold-dark enabled:hover:border-gold-dark";
 const BTN_OUTLINE =
@@ -119,9 +113,6 @@ const BTN_RED =
 const BTN_BLUE =
   "bg-white text-blue-600 border-blue-500/40 hover:bg-blue-50 hover:border-blue-600";
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Page
-   ───────────────────────────────────────────────────────────────────────── */
 export default function WorkerRequestsPage() {
   const pathname = usePathname();
   const { profile, user } = useAuth();
@@ -141,7 +132,6 @@ export default function WorkerRequestsPage() {
     "Worker";
   const shellUser = { name, initials: initialsOf(name) };
 
-  // ── Real-time: surface new requests pushed over the socket ────────────────
   const qc = useQueryClient();
   const toast = useToastContext();
   const toastRef = useRef(toast);
@@ -179,7 +169,6 @@ export default function WorkerRequestsPage() {
       unreadRequests={stats.new}
     >
       <div className="flex flex-col gap-5 text-ink-2">
-        {/* ── Header ─────────────────────────────────────────────────────── */}
         <div className="flex flex-col gap-0.5">
           <h1 className="font-serif text-[26px] font-normal text-ink leading-[1.15]">
             Job requests
@@ -189,7 +178,6 @@ export default function WorkerRequestsPage() {
           </p>
         </div>
 
-        {/* ── Stat strip ─────────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
           <StatCard
             accent="gold"
@@ -218,7 +206,6 @@ export default function WorkerRequestsPage() {
           />
         </div>
 
-        {/* ── Filter bar ─────────────────────────────────────────────────── */}
         <div className="flex items-center gap-2 flex-wrap bg-white border-[0.5px] border-border rounded-[10px] px-4 py-3">
           <div className="flex items-center gap-2 flex-wrap max-[640px]:flex-nowrap max-[640px]:overflow-x-auto max-[640px]:[scrollbar-width:none] max-[640px]:[&::-webkit-scrollbar]:hidden">
             {tabs.map((t, i) => (
@@ -267,7 +254,6 @@ export default function WorkerRequestsPage() {
           </label>
         </div>
 
-        {/* ── Error ──────────────────────────────────────────────────────── */}
         {isError && (
           <button
             type="button"
@@ -278,7 +264,6 @@ export default function WorkerRequestsPage() {
           </button>
         )}
 
-        {/* ── List / states ──────────────────────────────────────────────── */}
         {isLoading ? (
           <RequestsSkeleton />
         ) : requests.length === 0 ? (
@@ -295,9 +280,6 @@ export default function WorkerRequestsPage() {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Stat card
-   ───────────────────────────────────────────────────────────────────────── */
 function StatCard({
   accent,
   value,
@@ -337,16 +319,12 @@ function StatCard({
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Request card
-   ───────────────────────────────────────────────────────────────────────── */
 function RequestCard({ req }: { req: JobRequest }) {
   const { success, error: toastError } = useToastContext();
   const accept = useAcceptRequest();
   const decline = useDeclineRequest();
   const complete = useMarkComplete();
 
-  // Which inline confirmation, if any, is open.
   const [confirm, setConfirm] = useState<null | "decline" | "complete">(null);
 
   const busy =
@@ -398,7 +376,6 @@ function RequestCard({ req }: { req: JobRequest }) {
         req.status === "declined" ? "opacity-70" : "hover:border-gold",
       )}
     >
-      {/* Header */}
       <div className="flex gap-3 px-4 py-3.5 border-b-[0.5px] border-border">
         <div
           className="w-[42px] h-[42px] rounded-full text-white text-sm font-semibold flex items-center justify-center shrink-0"
@@ -433,7 +410,6 @@ function RequestCard({ req }: { req: JobRequest }) {
         </div>
       </div>
 
-      {/* Body */}
       <div className="px-4 py-3 border-b-[0.5px] border-border">
         <p className="text-sm text-ink-2 leading-relaxed line-clamp-3">
           {req.description}
@@ -452,7 +428,6 @@ function RequestCard({ req }: { req: JobRequest }) {
         )}
       </div>
 
-      {/* Inline confirmation */}
       {confirm === "decline" && (
         <div className="flex items-center justify-between gap-3 flex-wrap mx-4 mb-3 px-3 py-2.5 rounded-[10px] bg-red-50 border border-red-200">
           <span className="text-sm text-ink-2 leading-snug">
@@ -504,7 +479,6 @@ function RequestCard({ req }: { req: JobRequest }) {
         </div>
       )}
 
-      {/* Footer */}
       <div className="flex items-center justify-between gap-3 px-4 py-3 max-[640px]:flex-col max-[640px]:items-stretch">
         <div className="flex items-center gap-2 min-w-0">
           <div
@@ -537,7 +511,6 @@ function RequestCard({ req }: { req: JobRequest }) {
   );
 }
 
-/* ── Status badge ─────────────────────────────────────────────────────────── */
 function StatusBadge({ req }: { req: JobRequest }) {
   const BADGE =
     "inline-flex items-center gap-1 text-[10px] font-semibold rounded-full px-[9px] py-[3px] whitespace-nowrap shrink-0 border";
@@ -590,7 +563,6 @@ function StatusBadge({ req }: { req: JobRequest }) {
   );
 }
 
-/* ── Footer action buttons (vary by status) ───────────────────────────────── */
 function CardActions({
   req,
   busy,
@@ -679,7 +651,6 @@ function CardActions({
     );
   }
 
-  // declined
   return (
     <Link
       href={`/worker/requests/${req.id}`}
@@ -690,7 +661,6 @@ function CardActions({
   );
 }
 
-/* ── Employer sub-line ────────────────────────────────────────────────────── */
 function EmployerSub({ employer }: { employer: JobRequest["employer"] }) {
   if (employer.totalHires === 0) {
     return (
@@ -719,7 +689,6 @@ function EmployerSub({ employer }: { employer: JobRequest["employer"] }) {
   );
 }
 
-/* ── Stars row ────────────────────────────────────────────────────────────── */
 function Stars({ value }: { value: number }) {
   return (
     <span
@@ -740,9 +709,6 @@ function Stars({ value }: { value: number }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Empty states
-   ───────────────────────────────────────────────────────────────────────── */
 function EmptyState({
   filter,
   totalAll,
@@ -753,7 +719,6 @@ function EmptyState({
   const wrapCls =
     "flex flex-col items-center text-center px-6 py-[60px] bg-white border-[0.5px] border-border rounded-xl";
 
-  // Brand-new worker with no requests at all.
   if (totalAll === 0) {
     return (
       <div className={wrapCls}>
@@ -811,9 +776,6 @@ function EmptyState({
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Loading skeleton - three cards mirroring the real layout
-   ───────────────────────────────────────────────────────────────────────── */
 const SKEL = "bg-cream-2 rounded-md animate-pulse";
 
 function RequestsSkeleton() {

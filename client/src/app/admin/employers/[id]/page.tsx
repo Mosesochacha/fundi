@@ -191,7 +191,6 @@ export default function AdminEmployerDetailPage() {
         backLabel="Employers"
       />
 
-      {/* Identity header */}
       <div className="bg-white border border-border rounded-xl p-4 mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4 min-w-0">
           <Avatar initials={initialsOf(employer.name)} color="blue" size="xl" />
@@ -235,7 +234,6 @@ export default function AdminEmployerDetailPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-4">
-        {/* LEFT */}
         <div className="flex flex-col gap-4">
           <DetailCard title="Profile information">
             <InfoRow label="Location" value={employer.location} />
@@ -316,7 +314,6 @@ export default function AdminEmployerDetailPage() {
           </DetailCard>
         </div>
 
-        {/* RIGHT */}
         <div className="flex flex-col gap-4">
           <DetailCard title="Stats">
             <InfoRow label="Total hires" value={employer.totalHires} />

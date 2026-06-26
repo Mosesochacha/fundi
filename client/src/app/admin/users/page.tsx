@@ -68,13 +68,11 @@ export default function AdminUsersPage() {
   const [toDate, setToDate] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
 
-  // Which confirm modal is open: "bulk" | a user id (suspend) | null.
   const [confirm, setConfirm] = useState<null | {
     kind: "bulk" | "suspend";
     user?: AdminUser;
   }>(null);
 
-  // Reset to page one whenever the result set changes.
   // biome-ignore lint/correctness/useExhaustiveDependencies: deliberately reset page on filter change
   useEffect(() => {
     setPage(1);

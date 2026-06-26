@@ -15,7 +15,6 @@ export default function NotFound() {
 
       <main className="flex-1 flex items-center justify-center px-6 py-10">
         <div className="max-w-[440px] text-center">
-          {/* 404 number with blurred gold shadow layer */}
           <div className="relative inline-block mb-4">
             <span
               aria-hidden="true"

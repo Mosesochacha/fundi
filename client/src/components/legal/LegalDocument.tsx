@@ -7,14 +7,6 @@ import { Fragment, type ReactNode, useEffect, useState } from "react";
 import LandingNav from "@/components/landing/LandingNav";
 import { cn } from "@/lib/utils";
 
-/* ----------------------------------------------------------------------------
- * Content model
- *
- * Legal pages are passed as structured data so the table-of-contents sidebar
- * can be generated from the numbered H1 sections. All text is plain strings
- * (verbatim from the source documents) — emails are auto-linked at render time.
- * ------------------------------------------------------------------------- */
-
 export type LegalBlock =
   | { type: "p"; text: string }
   | { type: "h2"; text: string }
@@ -51,8 +43,6 @@ function withLinks(text: string): ReactNode {
 
 const sectionId = (number: string) => `section-${number}`;
 
-/* -------------------------------------------------------------------------- */
-
 export default function LegalDocument({
   docTitle,
   effectiveDate,
@@ -67,7 +57,6 @@ export default function LegalDocument({
     sections[0] ? sectionId(sections[0].number) : "",
   );
 
-  // Floating "back to top" button appears after 400px of scroll.
   useEffect(() => {
     const onScroll = () => setShowTop(window.scrollY > 400);
     onScroll();
@@ -75,7 +64,6 @@ export default function LegalDocument({
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Highlight the TOC entry for the section currently near the top.
   useEffect(() => {
     const els = sections
       .map((s) => document.getElementById(sectionId(s.number)))
@@ -104,7 +92,6 @@ export default function LegalDocument({
 
       <div className="flex-1 w-full">
         <div className="mx-auto flex w-full max-w-[1180px] gap-10 px-6 pt-[88px]">
-          {/* Sticky table of contents — desktop only. */}
           <aside className="hidden lg:block w-[200px] shrink-0">
             <nav className="sticky top-[96px] py-12">
               <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-3">
@@ -134,9 +121,7 @@ export default function LegalDocument({
             </nav>
           </aside>
 
-          {/* Document column — 760px, centred in the remaining space. */}
           <main className="w-full max-w-[760px] mx-auto py-12">
-            {/* Document header */}
             <header className="border-b border-border pb-7">
               <p className="font-serif text-4xl font-normal leading-none text-navy">
                 Tesilix
@@ -171,7 +156,6 @@ export default function LegalDocument({
         </div>
       </div>
 
-      {/* Footer */}
       <footer className="border-t border-border px-6 py-7 flex flex-col items-center gap-3 text-sm text-ink-3">
         <Link href="/" className="inline-flex items-center no-underline">
           <Image
@@ -193,7 +177,6 @@ export default function LegalDocument({
         </div>
       </footer>
 
-      {/* Back-to-top button */}
       <button
         type="button"
         onClick={scrollToTop}
@@ -210,8 +193,6 @@ export default function LegalDocument({
     </div>
   );
 }
-
-/* -------------------------------------------------------------------------- */
 
 function BlockView({ block }: { block: LegalBlock }) {
   switch (block.type) {

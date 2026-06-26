@@ -4,12 +4,10 @@ export class Settings extends Model {
   declare id: string;
   declare userId: string;
   
-  // Basic preferences
   declare theme: 'light' | 'dark' | 'system';
   declare language: string;
   declare timezone: string;
   
-  // Notification settings (consolidated)
   declare emailNotifications: {
     applicationUpdates: boolean;
     dailyDigest: boolean;
@@ -40,7 +38,6 @@ export class Settings extends Model {
     socialUpdates: boolean;
   };
   
-  // Advanced notification preferences
   declare deadline: {
     enabled: boolean;
     days: number[];
@@ -69,7 +66,6 @@ export class Settings extends Model {
     days: number[];
   };
   
-  // Privacy settings
   declare privacy: {
     profileVisibility: 'public' | 'private' | 'friends' | 'members';
     showEmail: boolean;
@@ -80,12 +76,10 @@ export class Settings extends Model {
     allowDataSharing: boolean;
   };
   
-  // Admin settings
   declare admin: {
     enabled: boolean;
   };
   
-  // Saved categories for filtering
   declare savedCategories: string[];
   static associate(models: any) {
     Settings.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
@@ -98,7 +92,6 @@ export function initModel(sequelize: Sequelize): typeof Settings {
       id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
       userId: { type: DataTypes.UUID, allowNull: false, unique: true },
       
-      // Basic preferences
       theme: { 
         type: DataTypes.ENUM('light', 'dark', 'system'), 
         allowNull: false, 
@@ -115,7 +108,6 @@ export function initModel(sequelize: Sequelize): typeof Settings {
         defaultValue: 'UTC' 
       },
       
-      // Notification settings as JSON (all enabled by default - opt-out)
       emailNotifications: {
         type: DataTypes.JSON,
         allowNull: false,
@@ -158,13 +150,12 @@ export function initModel(sequelize: Sequelize): typeof Settings {
         }
       },
       
-      // Advanced notification preferences (enabled by default - opt-out)
       deadline: {
         type: DataTypes.JSON,
         allowNull: false,
         defaultValue: {
           enabled: true,
-          days: [2, 1] // 48 hours (2 days) and 24 hours (1 day) before deadline
+          days: [2, 1]
         }
       },
       
@@ -176,7 +167,7 @@ export function initModel(sequelize: Sequelize): typeof Settings {
           daily: true,
           weekly: true,
           hour: 9,
-          weekday: 1 // Monday
+          weekday: 1
         }
       },
       
@@ -203,11 +194,10 @@ export function initModel(sequelize: Sequelize): typeof Settings {
         allowNull: false,
         defaultValue: {
           enabled: true,
-          days: [2, 1] // 48 hours (2 days) and 24 hours (1 day) before deadline
+          days: [2, 1]
         }
       },
       
-      // Privacy settings
       privacy: {
         type: DataTypes.JSON,
         allowNull: false,
@@ -222,7 +212,6 @@ export function initModel(sequelize: Sequelize): typeof Settings {
         }
       },
       
-      // Admin settings
       admin: {
         type: DataTypes.JSON,
         allowNull: false,
@@ -231,7 +220,6 @@ export function initModel(sequelize: Sequelize): typeof Settings {
         }
       },
       
-      // Saved categories
       savedCategories: {
         type: DataTypes.JSON,
         allowNull: false,

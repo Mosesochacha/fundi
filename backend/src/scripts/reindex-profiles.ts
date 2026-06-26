@@ -1,4 +1,4 @@
-import 'dotenv/config'; // must precede typesense.service (reads env at construction)
+import 'dotenv/config';
 import typesenseService from '../services/typesense.service';
 import { reindexProfiles } from '../jobs/reindex';
 

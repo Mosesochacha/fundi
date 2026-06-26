@@ -93,7 +93,6 @@ export default function AdminJobDetailPage() {
         }
       />
 
-      {/* Parties */}
       <div className="bg-white border border-border rounded-xl p-4 mb-4">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
@@ -119,7 +118,6 @@ export default function AdminJobDetailPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-4">
-        {/* Left */}
         <div className="flex flex-col gap-4">
           <DetailCard title="Job details">
             <InfoRow label="Description" value={job.description ?? "—"} />
@@ -176,7 +174,6 @@ export default function AdminJobDetailPage() {
           </DetailCard>
         </div>
 
-        {/* Right */}
         <div className="flex flex-col gap-4">
           <DetailCard title="Worker">
             <div className="flex items-center gap-3">

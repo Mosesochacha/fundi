@@ -51,7 +51,6 @@ export default function EmployerSearchPage() {
   const router = useRouter();
   const { profile, user } = useAuth();
 
-  // Shared filter store (same one /browse uses).
   const selectedTrades = useSearchStore((s) => s.selectedTrades);
   const location = useSearchStore((s) => s.location);
   const availableNow = useSearchStore((s) => s.availableNow);
@@ -81,7 +80,6 @@ export default function EmployerSearchPage() {
   const shellUser = { name, initials: initialsOf(name) };
   const employerLocation = profile?.location ?? "";
 
-  // Any filter change resets to the first page.
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentional reset triggers
   useEffect(() => {
     setPage(1);
@@ -121,7 +119,6 @@ export default function EmployerSearchPage() {
   const allWorkers = data?.workers ?? [];
   const totalPages = data?.totalPages ?? 1;
 
-  // Client-side name/skill filter folded on top of the current page.
   const workers = useMemo(() => {
     if (!nameQuery.trim()) return allWorkers;
     const q = nameQuery.trim().toLowerCase();
@@ -159,7 +156,6 @@ export default function EmployerSearchPage() {
     // biome-ignore lint/a11y/useValidAriaRole: `role` is a Shell prop, not an ARIA attribute
     <Shell role="employer" user={shellUser} currentPath={pathname}>
       <div className="flex flex-col gap-4 text-ink-2">
-        {/* ── Header ──────────────────────────────────────────────────── */}
         <div>
           <div className="text-sm text-ink-3">Hire a fundi</div>
           <h1 className="font-serif text-[26px] font-normal text-ink mt-0.5 leading-[1.15]">
@@ -170,7 +166,6 @@ export default function EmployerSearchPage() {
           </p>
         </div>
 
-        {/* ── Search bar ──────────────────────────────────────────────── */}
         <div className="flex gap-2 flex-wrap">
           <div className={SEARCH_FIELD}>
             <Search size={17} aria-hidden />
@@ -205,7 +200,6 @@ export default function EmployerSearchPage() {
           </button>
         </div>
 
-        {/* ── Filter toolbar ──────────────────────────────────────────── */}
         <div className="flex items-center gap-2 flex-wrap">
           <div className="flex gap-1.5 overflow-x-auto flex-1 min-w-0 pb-0.5">
             {TRADES.map((t) => {
@@ -268,7 +262,6 @@ export default function EmployerSearchPage() {
           )}
         </div>
 
-        {/* ── Results ─────────────────────────────────────────────────── */}
         {isLoading ? (
           <div className={GRID}>
             {Array.from({ length: 9 }, (_, i) => (
@@ -371,9 +364,6 @@ export default function EmployerSearchPage() {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Worker card (employer-styled, with Hire action)
-   ───────────────────────────────────────────────────────────────────────── */
 function WorkerCard({
   worker,
   displayCurrency,
@@ -494,7 +484,6 @@ function WorkerCard({
   );
 }
 
-/* ─── Shared class strings (ported from search.css) ──────────────────────── */
 const GRID =
   "grid grid-cols-1 min-[640px]:grid-cols-2 min-[1200px]:grid-cols-3 gap-3";
 const SEARCH_FIELD =

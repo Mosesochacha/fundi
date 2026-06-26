@@ -17,7 +17,6 @@ export default function WorkerProfileSkeleton() {
       aria-busy="true"
       aria-label="Loading profile"
     >
-      {/* Header card */}
       <div className="bg-white border border-border rounded-xl overflow-hidden">
         <div className="h-24 relative bg-navy bg-[radial-gradient(rgba(201,168,76,0.1)_1px,transparent_1px)] [background-size:20px_20px]">
           <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-gradient-to-r from-gold to-transparent" />
@@ -31,13 +30,11 @@ export default function WorkerProfileSkeleton() {
           {block(120, 14, 10)}
           {block(96, 12, 8)}
 
-          {/* badges */}
           <div className="flex gap-2 mt-3.5">
             {block(82, 22, 0, 20)}
             {block(60, 22, 0, 20)}
           </div>
 
-          {/* stats row */}
           <div className="flex flex-wrap items-center gap-5 border-t-[0.5px] border-border mt-4 pt-4">
             {[0, 1, 2, 3].map((i) => (
               <div key={i}>
@@ -47,7 +44,6 @@ export default function WorkerProfileSkeleton() {
             ))}
           </div>
 
-          {/* actions */}
           <div className="flex gap-2 mt-4">
             {block(104, 34, 0, 8)}
             {block(116, 34, 0, 8)}
@@ -55,7 +51,6 @@ export default function WorkerProfileSkeleton() {
         </div>
       </div>
 
-      {/* Content cards */}
       <div className="grid grid-cols-1 gap-4 mt-4">
         <div className="flex flex-col gap-4">
           {[0, 1].map((i) => (

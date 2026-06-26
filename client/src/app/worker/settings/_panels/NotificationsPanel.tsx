@@ -80,14 +80,14 @@ export default function NotificationsPanel({
 
   async function toggle(key: Key, next: boolean) {
     const prev = prefs;
-    setPrefs({ ...prev, [key]: next }); // optimistic
+    setPrefs({ ...prev, [key]: next });
     try {
       await update.mutateAsync({ [key]: next });
       setSavedAt(true);
       if (savedTimer.current) clearTimeout(savedTimer.current);
       savedTimer.current = setTimeout(() => setSavedAt(false), 2000);
     } catch (e) {
-      setPrefs(prev); // revert
+      setPrefs(prev);
       toastError(apiError(e, "Could not save notification settings"));
     }
   }

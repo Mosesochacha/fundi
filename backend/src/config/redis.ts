@@ -1,10 +1,8 @@
 import Redis from "ioredis";
 import { logError } from "../utils/helpers";
 
-// Create Redis connection URL from environment
 const redisUrl = process.env.REDIS_URL || "redis://127.0.0.1:6379";
 
-// Redis common options
 const commonOptions = {
   retryDelayOnFailover: 100,
   maxRetriesPerRequest: 3,
@@ -14,12 +12,10 @@ const commonOptions = {
   commandTimeout: 5000,
 };
 
-// Create Redis clients
 export const redis = new Redis(redisUrl, commonOptions);
 export const redisPub = new Redis(redisUrl, commonOptions);
 export const redisSub = new Redis(redisUrl, commonOptions);
 
-// Register connection events
 const registerEvents = (client: Redis, name: string) => {
   client.on("error", (error) => logError(error, `Redis (${name}) Error`));
 };
@@ -28,7 +24,6 @@ registerEvents(redis, "main");
 registerEvents(redisPub, "pub");
 registerEvents(redisSub, "sub");
 
-// Redis key patterns
 export const REDIS_KEYS = {
   USER_SESSION: (userId: string) => `user:session:${userId}`,
   USER_ONLINE: (userId: string) => `user:online:${userId}`,
@@ -72,7 +67,6 @@ export const REDIS_KEYS = {
   WITHDRAWAL_QUEUE: "withdrawals:processing",
 } as const;
 
-// Redis pub/sub channels
 export const REDIS_CHANNELS = {
   USER_ONLINE: "user:online",
   USER_OFFLINE: "user:offline",
@@ -87,7 +81,6 @@ export const REDIS_CHANNELS = {
   GIFT_SENT: "gift:sent",
 } as const;
 
-// Redis helper service
 export class RedisService {
   static async setWithExpiry(key: string, value: any, expirySeconds = 3600) {
     try {
@@ -298,7 +291,6 @@ export class RedisService {
   }
 }
 
-// Test & initialize
 export const testRedisConnection = async (): Promise<boolean> => {
   try {
     await redis.ping();

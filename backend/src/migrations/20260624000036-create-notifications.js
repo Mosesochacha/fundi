@@ -60,7 +60,6 @@ module.exports = {
       },
     });
 
-    // Newest-first listing per user, and a cheap unread count.
     await queryInterface.addIndex('Notifications', ['userId', 'createdAt']);
     await queryInterface.addIndex('Notifications', ['userId', 'readAt']);
   },

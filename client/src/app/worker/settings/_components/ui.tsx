@@ -5,12 +5,6 @@ import type { ReactNode } from "react";
 import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Small presentational primitives shared across the settings panels.
-   Lives in a `_components` private folder so it is never treated as a route.
-   ───────────────────────────────────────────────────────────────────────── */
-
-/* ── Shared button classes (mirrors the dashboard's button system) ────────── */
 const BTN_BASE =
   "inline-flex items-center justify-center gap-1.5 font-sans font-medium text-sm px-3.5 py-2 rounded-lg border-[0.5px] border-transparent cursor-pointer no-underline whitespace-nowrap transition-[background-color,border-color,color,opacity] duration-150 disabled:opacity-55 disabled:cursor-default";
 const BTN_SM = "text-sm px-[11px] py-1.5";
@@ -28,11 +22,9 @@ export function btn(variant: string, sm = false) {
   return cn(BTN_BASE, sm && BTN_SM, variant);
 }
 
-/* ── Shared form-field input class ────────────────────────────────────────── */
 export const FIELD_INPUT =
   "w-full font-sans text-sm text-ink py-[9px] px-3 border-[0.5px] border-border rounded-[7px] bg-cream transition-[border-color,background-color] duration-150 outline-none focus:border-gold focus:bg-white";
 
-/* ── Panel shell ──────────────────────────────────────────────────────────── */
 export function Panel({
   id,
   title,
@@ -78,7 +70,6 @@ export function PanelBody({ children }: { children: ReactNode }) {
   return <div className="p-5">{children}</div>;
 }
 
-/* ── Save bar ─────────────────────────────────────────────────────────────── */
 export function SaveBar({
   onCancel,
   onSave,
@@ -112,7 +103,6 @@ export function SaveBar({
   );
 }
 
-/* ── Form field wrapper ───────────────────────────────────────────────────── */
 export function Field({
   label,
   htmlFor,
@@ -144,7 +134,6 @@ export function Field({
   );
 }
 
-/* ── Toggle switch ────────────────────────────────────────────────────────── */
 export function Switch({
   checked,
   onChange,
@@ -179,7 +168,6 @@ export function Switch({
   );
 }
 
-/* ── Toggle row (title + sub + switch) ────────────────────────────────────── */
 export function ToggleRow({
   title,
   sub,
@@ -213,7 +201,6 @@ export function ToggleRow({
   );
 }
 
-/* ── Inline "Saved" pill ──────────────────────────────────────────────────── */
 export function SavedPill() {
   return (
     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-green-700 bg-green-100 rounded-full py-[3px] px-[9px]">
@@ -222,14 +209,12 @@ export function SavedPill() {
   );
 }
 
-/* ── Extract a friendly message from an axios error ───────────────────────── */
 export function apiError(e: unknown, fallback: string): string {
   const msg = (e as { response?: { data?: { message?: string } } })?.response
     ?.data?.message;
   return msg || fallback;
 }
 
-/* ── Confirmation modal ───────────────────────────────────────────────────── */
 export function Modal({
   title,
   danger,
@@ -243,7 +228,6 @@ export function Modal({
   children: ReactNode;
   footer: ReactNode;
 }) {
-  // Close on Escape.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();

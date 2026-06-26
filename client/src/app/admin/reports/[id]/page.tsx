@@ -93,11 +93,9 @@ export default function AdminReportDetailPage() {
   const { success } = useToastContext();
   const action = useAdminAction();
 
-  // Investigation notes (seeded once data arrives).
   const [notes, setNotes] = useState<ReportNote[] | null>(null);
   const [noteText, setNoteText] = useState("");
 
-  // Resolution panel.
   const [status, setStatus] = useState<ReportStatus | null>(null);
   const [resolution, setResolution] = useState<string>("none");
   const [resolutionNote, setResolutionNote] = useState("");
@@ -168,7 +166,6 @@ export default function AdminReportDetailPage() {
         backLabel="Reports"
       />
 
-      {/* Title row */}
       <div className="bg-white border border-border rounded-xl p-4 mb-4">
         <div className="flex flex-wrap items-center gap-2">
           <Badge
@@ -205,7 +202,6 @@ export default function AdminReportDetailPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-4">
-        {/* LEFT */}
         <div className="flex flex-col gap-4">
           <DetailCard title="Report details">
             <p className="text-sm text-ink-2 whitespace-pre-line leading-relaxed">
@@ -284,7 +280,6 @@ export default function AdminReportDetailPage() {
           </DetailCard>
         </div>
 
-        {/* RIGHT */}
         <div className="flex flex-col gap-4">
           <DetailCard title="Reported user">
             <div className="flex items-center gap-3">

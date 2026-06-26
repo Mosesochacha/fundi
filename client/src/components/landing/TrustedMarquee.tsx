@@ -15,7 +15,6 @@ const professions = [
   "AC Technicians",
 ];
 
-// Doubled so the marquee can loop seamlessly; stable keys precomputed.
 const marqueeItems = [...professions, ...professions].map((name, i) => ({
   name,
   key: `${name}-${i}`,

@@ -35,7 +35,6 @@ export default function EmployerReviewsPage() {
     "Employer";
   const shellUser = { name, initials: initialsOf(name) };
 
-  // Only completed jobs the employer has actually reviewed.
   const reviews = useMemo(
     () =>
       (jobs ?? [])

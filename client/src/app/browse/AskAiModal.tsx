@@ -17,7 +17,6 @@ export default function AskAiModal({ open, onClose }: Props) {
   const [input, setInput] = useState("");
   const { mutate, data: answer, isPending, isError, reset } = useFindFundi();
 
-  // Close on Escape; lock body scroll while open.
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();

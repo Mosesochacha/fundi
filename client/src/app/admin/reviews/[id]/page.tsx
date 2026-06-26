@@ -102,7 +102,6 @@ export default function AdminReviewDetailPage() {
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-4">
-        {/* Left */}
         <DetailCard title="Review">
           <div className="flex flex-col gap-4">
             <div className="flex flex-wrap items-center gap-6">
@@ -158,7 +157,6 @@ export default function AdminReviewDetailPage() {
           </div>
         </DetailCard>
 
-        {/* Right */}
         <DetailCard title="Moderation">
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">

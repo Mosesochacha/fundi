@@ -1,7 +1,3 @@
-// Shared types for the admin section. These mirror the documented
-// `/api/admin/*` response shapes so swapping the mock service in
-// `service.ts` for the real axios client is a drop-in change.
-
 export type UserRole = "worker" | "employer";
 export type AccountStatus = "active" | "suspended" | "pending" | "banned";
 export type VerifyStatus = "verified" | "pending" | "unverified" | "rejected";
@@ -16,7 +12,7 @@ export interface AdminUser {
   trade?: string;
   location: string;
   jobs: number;
-  joined: string; // ISO date
+  joined: string;
   status: AccountStatus;
   avatarColor?: "gold" | "blue";
   emailVerified: boolean;
@@ -174,7 +170,6 @@ export interface Paginated<T> {
   totalPages: number;
 }
 
-// ── Dashboard ──
 export interface DashboardStat {
   key: string;
   label: string;
@@ -244,7 +239,6 @@ export interface AdminBadges {
   pendingPayouts: number;
 }
 
-// ── Settings ──
 export interface AdminSettings {
   general: {
     platformName: string;

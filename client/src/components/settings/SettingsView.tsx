@@ -28,7 +28,6 @@ export default function SettingsView({
 
   const [dirty, setDirty] = useState(false);
 
-  // Warn before a full page unload while there are unsaved edits.
   useEffect(() => {
     if (!dirty) return;
     const handler = (e: BeforeUnloadEvent) => {
@@ -73,7 +72,6 @@ export default function SettingsView({
   );
 }
 
-/* ── Loading skeleton - mirrors a panel's shape ───────────────────────────── */
 const SKEL = "bg-border rounded-md animate-pulse";
 
 function PanelSkeleton() {

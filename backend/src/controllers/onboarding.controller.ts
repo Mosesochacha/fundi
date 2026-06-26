@@ -5,15 +5,6 @@ import { sendSuccess, sendError, asyncHandler } from '../utils/helpers';
 import { HTTP_STATUS, normalizeCurrency } from '../utils/constants';
 import { symbolForCurrency } from '../utils/currencyMap';
 
-/* ─────────────────────────────────────────────────────────────────────────
-   First-time onboarding completion for OAuth (Google) users.
-
-   Google sign-in creates a user with accountType=null and
-   isProfileComplete=false. These endpoints capture the worker/employer choice
-   + minimal details and mark the account complete, so the onboarding guard
-   stops redirecting them to /onboarding.
-   ───────────────────────────────────────────────────────────────────────── */
-
 async function loadUserAndProfile(userId: string) {
   const user = await db.User.findByPk(userId);
   const profile = await db.Profile.findOne({ where: { userId } });
@@ -26,7 +17,6 @@ class OnboardingController {
     const userId = req.user?.id;
     if (!userId) return sendError(res, HTTP_STATUS.UNAUTHORIZED, 'Unauthorized');
 
-    // Accept multi-select `trades: string[]` (falls back to legacy `trade`).
     const tradesInput = Array.isArray(req.body.trades)
       ? (req.body.trades as unknown[]).map((t) => String(t).trim()).filter(Boolean)
       : [];
@@ -66,7 +56,6 @@ class OnboardingController {
       isProfileComplete: true,
       isOnboarded: true,
     });
-    // Primary trade drives search/display; all selected trades are saved as services.
     await profile.update({ profession: trades[0], services: trades, location });
 
     return sendSuccess(res, 'Onboarding complete', {

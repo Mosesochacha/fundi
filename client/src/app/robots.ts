@@ -12,15 +12,12 @@ export default function robots(): MetadataRoute.Robots {
         "/employer/",
         "/onboarding",
         "/api/",
-        // Worker app pages (dashboard, settings, etc.) — public /worker/[id]
-        // profiles stay crawlable.
         "/worker/dashboard",
         "/worker/messages",
         "/worker/profile",
         "/worker/requests",
         "/worker/reviews",
         "/worker/settings",
-        // Transient auth screens (login/register stay crawlable + in sitemap).
         "/forgot-password",
         "/reset-password",
         "/verify-email",

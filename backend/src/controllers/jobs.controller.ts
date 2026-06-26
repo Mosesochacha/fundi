@@ -98,7 +98,6 @@ class JobsController {
 
     await createSystemMessage(conv, profileId, `Job request sent by ${(employer as any)?.fullName ?? 'employer'}`);
 
-    // Real-time nudge so the worker's /requests page surfaces it immediately.
     const employerName = (employer as any)?.fullName ?? 'An employer';
     const io = getIo();
     if (io) {
@@ -135,8 +134,6 @@ class JobsController {
       const job: any = await (db as any).JobRequest.findByPk(req.params.id);
       if (!job) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Job request not found');
 
-      // Completing is allowed for either party (worker finishes, or employer
-      // confirms from their dashboard); every other transition is role-locked.
       const allowed =
         action === 'complete'
           ? profileId === job.workerId || profileId === job.employerId
@@ -159,7 +156,6 @@ class JobsController {
         const summary = message((actor as any)?.fullName ?? 'someone');
         await createSystemMessage(conv, profileId, summary);
 
-        // Notify the other party (the one who didn't perform the transition).
         const otherProfileId = profileId === job.workerId ? job.employerId : job.workerId;
         const otherUserId = await userIdForProfile(otherProfileId);
         if (otherUserId) {

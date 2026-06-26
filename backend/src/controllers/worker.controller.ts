@@ -85,10 +85,6 @@ async function getOwnProfile(req: AuthenticatedRequest) {
 }
 
 class WorkerController {
-  // ── Reads ──────────────────────────────────────────────────────────────────
-  // GET /browse/workers — public directory of skilled workers, with filters.
-  // Query: trades (csv/array), location, minRate, maxRate, minRating, minExp,
-  // available, verified, certified, sort, page, limit.
   browseWorkers = asyncHandler(async (req: Request, res: Response) => {
     const q = req.query;
     const toArray = (v: unknown): string[] =>
@@ -120,12 +116,10 @@ class WorkerController {
     if (available) where.isAvailable = true;
     if (minExp > 0) where.yearsExperience = { [Op.gte]: minExp };
 
-    // User-level filters (rate, verification) live on the joined User row.
     const userWhere: any = {};
     if (verified) userWhere.isPhoneVerified = true;
     if (minRate > 0 || maxRate > 0) {
       const hi = maxRate > 0 ? maxRate : 1_000_000;
-      // Keep workers who priced in-range OR haven't set a rate yet.
       userWhere[Op.or] = [
         { dailyRate: { [Op.between]: [minRate, hi] } },
         { dailyRate: { [Op.is]: null } },
@@ -135,14 +129,13 @@ class WorkerController {
       model: db.User,
       as: 'user',
       attributes: ['dailyRate', 'currency', 'currencySymbol', 'isPhoneVerified', 'accountType'],
-      required: verified, // only force the join when filtering by verification
+      required: verified,
     };
     if (Object.keys(userWhere).length) {
       userInclude.where = userWhere;
       userInclude.required = true;
     }
 
-    // Sort. Rating/jobs aren't tracked yet, so those fall back to popularity.
     const popularity = db.sequelize.literal(
       '(SELECT COUNT(*) FROM "Follows" WHERE "followingId" = "Profile"."id")'
     );
@@ -202,9 +195,6 @@ class WorkerController {
     });
   });
 
-  // GET /worker/:id/profile — public (optional auth). `:id` is a profile id
-  // (uuid) or username. Anonymous viewers (incl. crawlers) get a minimal,
-  // SEO-friendly payload; signed-in viewers get the full profile.
   getProfile = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const { id } = req.params;
     const where = UUID_RE.test(id) ? { id } : { username: id };
@@ -214,13 +204,11 @@ class WorkerController {
       db.User.findByPk(profile.userId),
       getWorkerReviewStats(profile.id),
     ]);
-    // Count the view (deduped per IP/hour); powers the dashboard stat + weekly digest.
     void recordProfileView(req, profile.id);
     const full = !!req.user;
     return sendSuccess(res, 'Worker profile', shapeProfile(profile, user, { stats, full }));
   });
 
-  // GET /worker/me/profile — the signed-in worker's own profile.
   getMyProfile = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const profile = await getOwnProfile(req);
     if (!profile) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Profile not found');
@@ -231,7 +219,6 @@ class WorkerController {
     return sendSuccess(res, 'Profile', shapeProfile(profile, user, { stats, full: true }));
   });
 
-  // ── Simple field updates ────────────────────────────────────────────────────
   updateAbout = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const { about } = req.body;
     if (typeof about !== 'string') return sendError(res, HTTP_STATUS.BAD_REQUEST, 'about must be a string');
@@ -263,7 +250,6 @@ class WorkerController {
     if (!user) return sendError(res, HTTP_STATUS.NOT_FOUND, 'User not found');
 
     const update: any = { dailyRate: rate };
-    // Optional currency change alongside the rate (no FX conversion).
     const rawCurrency = req.body.currency;
     if (rawCurrency !== undefined && rawCurrency !== null && rawCurrency !== '') {
       const normalized = normalizeCurrency(rawCurrency);
@@ -292,9 +278,6 @@ class WorkerController {
     return sendSuccess(res, 'Service area updated', { areas: clean });
   });
 
-  // Handles both the Shell footer toggle ({ available }) and the settings
-  // Availability panel (the full object). The `available` flag lives on
-  // Profile.isAvailable; the rest is merged into the availabilitySettings JSON.
   updateAvailability = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const profile = await getOwnProfile(req);
     if (!profile) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Profile not found');
@@ -321,9 +304,6 @@ class WorkerController {
     });
   });
 
-  // ── Portfolio ────────────────────────────────────────────────────────────────
-  // POST /worker/profile/photos/upload — upload a work image, return its URL.
-  // The client then creates the portfolio item with this URL via addPhoto.
   uploadWorkPhoto = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     if (!req.file) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'No image uploaded');
     const url = getFileUrl(req.file.filename, 'work');
@@ -357,7 +337,6 @@ class WorkerController {
     return sendSuccess(res, 'Photo deleted');
   });
 
-  // ── Experience ─────────────────────────────────────────────────────────────
   addExperience = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const { title, company, startYear, endYear, description } = req.body;
     if (!title || typeof title !== 'string') return sendError(res, HTTP_STATUS.BAD_REQUEST, 'title is required');
@@ -407,7 +386,6 @@ class WorkerController {
     return sendSuccess(res, 'Experience deleted');
   });
 
-  // ── Certifications ─────────────────────────────────────────────────────────
   addCertification = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const { name, issuingBody, yearIssued, expiryYear, documentUrl } = req.body;
     if (!name || typeof name !== 'string') return sendError(res, HTTP_STATUS.BAD_REQUEST, 'name is required');
@@ -436,7 +414,6 @@ class WorkerController {
     return sendSuccess(res, 'Certification deleted');
   });
 
-  // ── Education ──────────────────────────────────────────────────────────────
   addEducation = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const { type, name, institution, startYear, endYear } = req.body;
     if (!name || typeof name !== 'string') return sendError(res, HTTP_STATUS.BAD_REQUEST, 'name is required');

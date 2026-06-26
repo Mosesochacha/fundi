@@ -210,10 +210,9 @@ export default function RegisterPage() {
   const onGoogle = async () => {
     try {
       const session = await googleSignIn();
-      if (!session) return; // popup closed
+      if (!session) return;
       const user = session.backendUser ?? null;
       const profile = session.backendProfile ?? null;
-      // Brand-new Google users have isProfileComplete=false → finish onboarding.
       if (!user || !user.isProfileComplete) {
         router.push("/onboarding");
       } else {
@@ -247,7 +246,6 @@ export default function RegisterPage() {
       </div>
 
       <div className="bg-white border border-border rounded-xl p-8 w-full max-w-[420px]">
-        {/* STEP 1 - account */}
         {step === 1 && (
           <div>
             <div className="font-serif text-[24px] font-normal text-ink mb-1">
@@ -454,7 +452,6 @@ export default function RegisterPage() {
           </div>
         )}
 
-        {/* STEP 2 - role */}
         {step === 2 && (
           <div>
             <h1 className="font-serif text-[20px] font-normal text-navy mb-1">
@@ -530,7 +527,6 @@ export default function RegisterPage() {
           </div>
         )}
 
-        {/* STEP 3 - employer */}
         {step === 3 && accountType === "employer" && (
           <div>
             <div className="font-serif text-[24px] font-normal text-ink mb-1">
@@ -596,7 +592,6 @@ export default function RegisterPage() {
           </div>
         )}
 
-        {/* STEP 3 - worker */}
         {step === 3 && accountType === "worker" && (
           <div>
             <div className="font-serif text-[24px] font-normal text-ink mb-1">
@@ -681,7 +676,6 @@ export default function RegisterPage() {
           </div>
         )}
 
-        {/* STEP 4 - success */}
         {step === 4 && (
           <div className="text-center py-4">
             <div className="w-16 h-16 rounded-full bg-gold-light border-2 border-gold/30 flex items-center justify-center mx-auto mb-5">

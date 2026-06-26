@@ -40,17 +40,13 @@ export function parseCutoffDateFromEnv(value: string | undefined): Date | null {
   try {
     let cutoffDate: Date;
 
-    // Format: YYYY-MM-DD:HH:mm:ss → replace first colon after date with 'T'
     if (value.match(/^\d{4}-\d{2}-\d{2}:\d{2}:\d{2}:\d{2}$/)) {
       cutoffDate = new Date(value.replace(/^(\d{4}-\d{2}-\d{2}):/, '$1T'));
     } else if (value.includes('T')) {
-      // ISO format: YYYY-MM-DDTHH:mm:ss
       cutoffDate = new Date(value);
     } else if (value.includes(' ')) {
-      // Space format: YYYY-MM-DD HH:mm:ss
       cutoffDate = new Date(value.replace(' ', 'T'));
     } else {
-      // Fallback: let Date parse it; if only date, treat as that day's start
       cutoffDate = new Date(value);
     }
 
@@ -63,5 +59,4 @@ export function parseCutoffDateFromEnv(value: string | undefined): Date | null {
     return null;
   }
 }
-
 

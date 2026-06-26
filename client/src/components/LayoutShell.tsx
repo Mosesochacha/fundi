@@ -12,12 +12,7 @@ const AUTH_PATHS = [
   "/verify-email",
   "/reset-password",
 ];
-// Pages that ship their own marketing chrome (LandingNav) - render bare.
-// /onboarding is bare too (standalone). Logout is an inline action (no route).
 const BARE_PATHS = ["/", "/browse", "/onboarding"];
-
-// /auth/me is fetched on demand by `useCurrentUser`; the NextAuth session is the
-// source of truth for "logged in", so no Redux session-restorer is needed.
 
 function OnboardingGuard() {
   const router = useRouter();
@@ -28,8 +23,7 @@ function OnboardingGuard() {
   // biome-ignore lint/correctness/useExhaustiveDependencies: `pathname` re-triggers the onboarding guard on every route change
   useEffect(() => {
     if (!isLoggedIn || isAuth) return;
-    if (!user) return; // /auth/me still loading - don't redirect prematurely
-    // OAuth users land here with no role yet → finish onboarding first.
+    if (!user) return;
     if (!user.isProfileComplete) router.replace("/onboarding");
   }, [isLoggedIn, user, isAuth, pathname, router]);
 
@@ -44,12 +38,9 @@ export default function LayoutShell({
   const pathname = usePathname();
   const isAuth = AUTH_PATHS.some((p) => pathname.startsWith(p));
 
-  // Auth pages and bare (marketing / logout) pages render with no app chrome.
   if (isAuth) return <>{children}</>;
   if (BARE_PATHS.includes(pathname)) return <>{children}</>;
 
-  // Everything else (role dashboards, any stray route) just needs session
-  // plumbing - the dashboard <Shell> renders its own sidebar/topbar.
   return (
     <>
       <OnboardingGuard />

@@ -21,8 +21,6 @@ export function useGetWorkerSettings() {
   return useQuery({
     queryKey: SETTINGS_KEY,
     queryFn: () => workerSettingsService.get(),
-    // Tolerate a partial / not-yet-implemented backend: always hand the UI a
-    // complete object by merging onto defaults.
     select: (res): WorkerSettings =>
       mergeSettings(res.data?.data as Partial<WorkerSettings> | undefined),
     staleTime: 1000 * 60,
@@ -76,7 +74,6 @@ export function useVerifyPhone() {
 }
 
 export function useUpdatePassword() {
-  // No cache to invalidate - password isn't part of the settings document.
   return useMutation({
     mutationFn: (data: UpdatePasswordInput) =>
       workerSettingsService.updatePassword(data),

@@ -1,13 +1,6 @@
 import client from "@/lib/axios";
 import { DEFAULT_CURRENCY } from "@/lib/currency";
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Worker settings - shared types.
-   The GET returns the whole settings document; each PATCH updates one slice.
-   Endpoints live under the axios baseURL (`…/api/v1`), so paths are written
-   without the `/api` prefix, matching every other feature service.
-   ───────────────────────────────────────────────────────────────────────── */
-
 export type Trade =
   | "Plumber"
   | "Electrician"
@@ -86,8 +79,8 @@ export interface AvailabilitySettings {
   available: boolean;
   emergencyCallouts: boolean;
   weekends: boolean;
-  workingHoursFrom: string; // "07:00"
-  workingHoursTo: string; // "18:00"
+  workingHoursFrom: string;
+  workingHoursTo: string;
   maxDistance: MaxDistance;
 }
 
@@ -99,7 +92,6 @@ export interface WorkerSettings {
   availability: AvailabilitySettings;
 }
 
-/* ── Mutation payloads ─────────────────────────────────────────────────── */
 export type UpdateProfileInput = Partial<ProfileSettings>;
 export interface UpdateEmailInput {
   email: string;
@@ -115,7 +107,6 @@ export type UpdateNotificationsInput = Partial<NotificationSettings>;
 export type UpdatePrivacyInput = Partial<PrivacySettings>;
 export type UpdateAvailabilityInput = Partial<AvailabilitySettings>;
 
-/* ── Service ───────────────────────────────────────────────────────────── */
 export const workerSettingsService = {
   get: () => client.get("/worker/settings"),
 
@@ -153,10 +144,6 @@ export const workerSettingsService = {
   deleteAccount: () => client.delete("/worker/account"),
 };
 
-/* ── Sensible defaults ─────────────────────────────────────────────────────
-   Used as the form baseline so the page is fully interactive even before the
-   backend settings endpoint is wired, and to fill any gaps in the response.
-   ───────────────────────────────────────────────────────────────────────── */
 export const DEFAULT_SETTINGS: WorkerSettings = {
   profile: {
     firstName: "",

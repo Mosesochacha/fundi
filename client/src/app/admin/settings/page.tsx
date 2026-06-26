@@ -104,11 +104,9 @@ export default function AdminSettingsPage() {
   const [form, setForm] = useState<AdminSettings | null>(null);
   const [active, setActive] = useState("general");
 
-  // Danger-zone confirm modal state + typed confirmation.
   const [danger, setDanger] = useState<DangerKind | null>(null);
   const [typed, setTyped] = useState("");
 
-  // Seed the editable local copy when data arrives.
   useEffect(() => {
     if (data) setForm(data);
   }, [data]);
@@ -135,7 +133,6 @@ export default function AdminSettingsPage() {
     setTyped("");
   };
 
-  // Helpers to patch a slice of the form.
   const setGeneral = (patch: Partial<AdminSettings["general"]>) =>
     setForm((f) => (f ? { ...f, general: { ...f.general, ...patch } } : f));
   const setCommission = (patch: Partial<AdminSettings["commission"]>) =>
@@ -181,7 +178,6 @@ export default function AdminSettingsPage() {
       />
 
       <div className="flex flex-col lg:flex-row gap-5">
-        {/* In-page nav */}
         <nav className="lg:w-48 lg:shrink-0">
           <div className="flex lg:flex-col gap-1 overflow-x-auto lg:sticky lg:top-20 pb-1">
             {SECTIONS.map((s) => (
@@ -202,7 +198,6 @@ export default function AdminSettingsPage() {
           </div>
         </nav>
 
-        {/* Sections */}
         <div className="flex-1 min-w-0 flex flex-col gap-4 scroll-mt-20">
           <div id="general" className="scroll-mt-20">
             <DetailCard title="General">

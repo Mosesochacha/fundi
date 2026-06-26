@@ -5,7 +5,6 @@ import { sendSuccess, sendError, asyncHandler } from '../utils/helpers';
 import { HTTP_STATUS } from '../utils/constants';
 
 class AiController {
-  // Public — powers the "Ask AI" modal on /browse. No auth required.
   findFundi = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const query = String(req.body?.query ?? '').trim();
     if (!query) {

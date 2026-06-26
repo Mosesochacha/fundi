@@ -6,7 +6,6 @@
  */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    // Clean up any half-created enum type from a previously failed run.
     await queryInterface.sequelize.query('DROP TYPE IF EXISTS "enum_JobRequests_status";');
 
     await queryInterface.createTable('JobRequests', {

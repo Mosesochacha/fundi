@@ -20,7 +20,6 @@ router.get('/search/profiles', asyncHandler(async (req: AuthenticatedRequest, re
     return sendSuccess(res, 'Search results', ts);
   }
 
-  // Typesense returned nothing — fall back to PostgreSQL
   const where: any = { profilePublic: true };
   if (q) where[Op.or] = [
     { fullName:   { [Op.iLike]: `%${q}%` } },
@@ -45,7 +44,6 @@ router.get('/search/posts', asyncHandler(async (req: AuthenticatedRequest, res: 
     return sendSuccess(res, 'Search results', ts);
   }
 
-  // Typesense returned nothing — fall back to PostgreSQL
   const where: any = { status: 'PUBLISHED' };
   if (q)        where.content  = { [Op.iLike]: `%${q}%` };
   if (postType && postType !== 'all') where.postType = postType.toUpperCase();

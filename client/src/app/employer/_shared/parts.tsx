@@ -18,8 +18,6 @@ export const shortDate = (iso: string) =>
     year: "numeric",
   });
 
-/* ─── Shared class strings (ported from list.css) ──────────────────────────
-   Reused by the jobs / hires / reviews pages. */
 export const EL_CARD =
   "bg-white border border-border rounded-xl overflow-hidden";
 export const EL_ROW =

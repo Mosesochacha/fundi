@@ -42,6 +42,5 @@ export async function recordProfileView(
       db.Profile.increment('views', { where: { id: profileId } }),
     ]);
   } catch {
-    /* view tracking is best-effort */
   }
 }

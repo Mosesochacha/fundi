@@ -5,7 +5,6 @@ import { authRateLimit, passwordResetRateLimit } from '../middleware/rateLimiter
 
 const router = Router();
 
-// Authentication endpoints
 router.post('/auth/register', authRateLimit, AuthController.register);
 router.post('/auth/login', authRateLimit, AuthController.login);
 router.post('/auth/google', authRateLimit, AuthController.googleLogin);

@@ -233,8 +233,6 @@ class TypesenseService {
       logger.info('Typesense disabled (TYPESENSE_ENABLED=false) — skipping setup');
       return;
     }
-    // Probe reachability once up front. If the server is unconfigured/unreachable
-    // we disable cleanly here instead of failing on every later write + reindex.
     const health: any = await this.client.health
       .retrieve()
       .catch((e) => ({ ok: false, _err: e }));

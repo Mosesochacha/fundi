@@ -37,12 +37,10 @@ export class FeedService {
         ],
       });
 
-      // Preserve Typesense sort order
       const byId: Record<string, any> = Object.fromEntries(rows.map((r: any) => [r.id, r]));
       rows = ids.map((id) => byId[id]).filter(Boolean);
       hasMore = page * limit < total;
     } else {
-      // Typesense unavailable or empty — fall back to direct DB query
       const where: Record<string, any> = { status: 'PUBLISHED' };
       if (type && type !== 'all') where.postType = type.toUpperCase();
       if (profession && profession !== 'all') where['$author.profession$'] = profession;
@@ -64,7 +62,6 @@ export class FeedService {
       hasMore = page * limit < count;
     }
 
-    // Float followed profiles' posts to the top (only makes sense with a full page)
     let followingSet = new Set<string>();
     if (profileId && rows.length > 0) {
       const follows = await db.Follow.findAll({

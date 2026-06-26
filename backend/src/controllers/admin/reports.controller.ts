@@ -120,7 +120,6 @@ class AdminReportsController {
       resolvedAt: nextStatus === "resolved" ? new Date() : null,
     });
 
-    // Apply the chosen penalty to the reported user.
     const reported = await Db.User.findByPk(report.reportedUserId);
     if (reported) {
       if (action === "suspended_7" || action === "suspended_30") {

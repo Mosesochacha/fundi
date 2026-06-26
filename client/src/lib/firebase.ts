@@ -1,6 +1,3 @@
-// Firebase client SDK - used ONLY for the "Continue with Google" popup.
-// Email/phone + password auth stays on our own backend + NextAuth flow.
-// The config values below are public (they ship to the browser).
 import { getApp, getApps, initializeApp } from "firebase/app";
 import {
   type Auth,
@@ -29,11 +26,8 @@ function firebaseAuth(): Auth {
 }
 
 const googleProvider = new GoogleAuthProvider();
-// Always show the Google account chooser instead of silently reusing the last
-// signed-in account, so people can pick which account to continue with.
 googleProvider.setCustomParameters({ prompt: "select_account" });
 
-// Maps Firebase auth error codes to clear, actionable messages.
 function googleErrorMessage(code: string | undefined): string | null {
   switch (code) {
     case "auth/operation-not-allowed":
@@ -49,8 +43,6 @@ function googleErrorMessage(code: string | undefined): string | null {
   }
 }
 
-// Opens the Google popup and returns a Firebase ID token (JWT) that our backend
-// verifies. Returns null if the user closes the popup.
 export async function signInWithGoogleFirebase(): Promise<string | null> {
   try {
     const cred = await signInWithPopup(firebaseAuth(), googleProvider);
@@ -61,7 +53,7 @@ export async function signInWithGoogleFirebase(): Promise<string | null> {
       code === "auth/popup-closed-by-user" ||
       code === "auth/cancelled-popup-request"
     ) {
-      return null; // user dismissed - not an error
+      return null;
     }
     const msg = googleErrorMessage(code);
     throw new Error(

@@ -6,19 +6,6 @@ import { sendSuccess, sendError, asyncHandler } from '../utils/helpers';
 import { HTTP_STATUS } from '../utils/constants';
 import { getIo } from '../middleware/websocket';
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Worker-facing job requests (/worker/requests).
-
-   The same JobRequest rows that power the chat job-banner, reshaped for the
-   worker's request-management page. Backend statuses collapse to the four the
-   UI cares about:
-     pending   → new
-     accepted  → active
-     completed → completed
-     declined  → declined
-     cancelled → declined
-   ───────────────────────────────────────────────────────────────────────── */
-
 type ClientStatus = 'new' | 'active' | 'completed' | 'declined';
 type ClientFilter = 'all' | ClientStatus;
 
@@ -43,7 +30,6 @@ const toClientStatus = (s: string): ClientStatus => {
   }
 };
 
-/* ── Small helpers ────────────────────────────────────────────────────────── */
 const AVATAR_COLORS = [
   '#c9a84c',
   '#3b82f6',
@@ -120,8 +106,6 @@ function shapeRequest(row: any, totalHires: number) {
       initials: initialsOf(employerName),
       avatarColor: colorFor(emp?.id ?? row.employerId),
       totalHires,
-      // No employer-reputation system yet — surfaced as "New to Fundi" client-side
-      // when there are no completed hires.
       rating: null,
     },
     review: row.reviewedAt

@@ -121,7 +121,6 @@ export const sendCustomError = (
   message?: string,
   data?: any
 ) => {
-  // Use provided message or get from CUSTOM_STATUS_MESSAGES
   const errorMessage = message || CUSTOM_STATUS_MESSAGES[customCode] || 'An error occurred';
   
   return sendError(
@@ -230,7 +229,6 @@ export const asyncHandler = (fn: Function) => {
   };
 };
 
-
 export function extractFirstName(displayName?: string): string {
   if (!displayName) return "";
 
@@ -259,10 +257,7 @@ export function adjustIsFeaturedForOrganization(opportunity: any, requestingOrgI
 
   const opp = opportunity.toJSON ? opportunity.toJSON() : opportunity;
 
-  // Priority: Check featuredOrganizations array first
-  // If featuredOrganizations array exists, determine isFeatured based on whether LOT/org ID is in the array
   if (opp.featuredOrganizations && Array.isArray(opp.featuredOrganizations)) {
-    // If no org context is provided, keep the stored isFeatured value
     if (!requestingOrgId && !lotOrgId) {
       return opp;
     }
@@ -270,22 +265,17 @@ export function adjustIsFeaturedForOrganization(opportunity: any, requestingOrgI
     let isFeaturedForOrg = false;
     
     if (requestingOrgId) {
-      // Check if requesting organization ID is in featuredOrganizations
       isFeaturedForOrg = opp.featuredOrganizations.includes(requestingOrgId);
     } else if (lotOrgId) {
-      // Check if LOT ID is in featuredOrganizations
       isFeaturedForOrg = opp.featuredOrganizations.includes(lotOrgId);
     }
     
-    // Set isFeatured based on whether org ID is in featuredOrganizations array
-    // This overrides the database isFeatured value
     return {
       ...opp,
       isFeatured: isFeaturedForOrg
     };
   }
 
-  // No featuredOrganizations array - keep isFeatured as-is (global featured from database)
   return opp;
 }
 

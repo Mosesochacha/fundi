@@ -92,7 +92,6 @@ export const validateBugReportUpdate = [
     .withMessage('Priority must be one of: low, medium, high, critical'),
 ];
 
-
 export const validateChatMessage = [
   body('messages')
     .isArray()
@@ -207,8 +206,6 @@ export const validateClick = [
     .withMessage('Metadata must be an object'),
 ];
 
-
-
 export const validateDomain = [
   body('domain').notEmpty().withMessage('Domain is required')
 ];
@@ -227,7 +224,6 @@ export const validateNotificationSettings = [
   body('emailNotifications').optional().isObject().withMessage('Email notifications must be an object'),
   body('smsNotifications').optional().isObject().withMessage('SMS notifications must be an object'),
 ];
-
 
 export const validateApplicationMatch = [
   body('applicationData').isObject().withMessage('Application data is required'),

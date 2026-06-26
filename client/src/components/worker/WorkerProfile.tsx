@@ -55,7 +55,6 @@ import type {
 
 type Mode = "own" | "public";
 
-/* ── Shared class strings (ported from workerProfile.css) ─────────────────── */
 const CARD = "bg-white border border-border rounded-xl p-[18px]";
 const CARDHEAD = "flex items-center justify-between mb-3.5";
 const TITLE = "font-serif text-base font-medium text-ink";
@@ -120,8 +119,6 @@ export default function WorkerProfile({
   const { success } = useToastContext();
   const [data, setData] = useState<WorkerProfileData>(initialData);
 
-  // Best-effort persistence to the worker API. Local state is updated
-  // optimistically; a failed request is swallowed (the user keeps their edit).
   const updateAbout = useUpdateAbout();
   const updateServices = useUpdateServices();
   const updateRate = useUpdateRate();
@@ -135,7 +132,6 @@ export default function WorkerProfile({
   const addEducationMutation = useAddEducation();
   const deleteEducationMutation = useDeleteEducation();
 
-  // Inline-edit state
   const [editAbout, setEditAbout] = useState(false);
   const [aboutDraft, setAboutDraft] = useState(data.about);
   const [editServices, setEditServices] = useState(false);
@@ -145,7 +141,6 @@ export default function WorkerProfile({
   const [editRate, setEditRate] = useState(false);
   const [rateDraft, setRateDraft] = useState(String(data.dailyRate));
 
-  // Add-form toggles
   const [addPhoto, setAddPhoto] = useState(false);
   const [addExp, setAddExp] = useState(false);
   const [addCert, setAddCert] = useState(false);
@@ -154,14 +149,12 @@ export default function WorkerProfile({
   const set = (patch: Partial<WorkerProfileData>) =>
     setData((d) => ({ ...d, ...patch }));
 
-  // ── About ──
   const saveAbout = () => {
     set({ about: aboutDraft });
     updateAbout.mutate({ about: aboutDraft });
     setEditAbout(false);
   };
 
-  // ── Services ──
   const addService = (v: string) => {
     const t = v.trim();
     if (!t || data.services.includes(t)) return;
@@ -176,7 +169,6 @@ export default function WorkerProfile({
     updateServices.mutate({ services });
   };
 
-  // ── Service area ──
   const addArea = (v: string) => {
     const t = v.trim();
     if (!t || data.serviceAreas.includes(t)) return;
@@ -191,7 +183,6 @@ export default function WorkerProfile({
     updateServiceArea.mutate({ areas });
   };
 
-  // ── Rate ──
   const saveRate = () => {
     const rate = Math.max(0, Number(rateDraft.replace(/[^0-9]/g, "")) || 0);
     set({ dailyRate: rate });
@@ -199,7 +190,6 @@ export default function WorkerProfile({
     setEditRate(false);
   };
 
-  // ── Portfolio ──
   const removePhoto = (id: string) => {
     set({ portfolio: data.portfolio.filter((p) => p.id !== id) });
     deletePhotoMutation.mutate(id);
@@ -211,7 +201,6 @@ export default function WorkerProfile({
     setAddPhoto(false);
   };
 
-  // ── Experience ──
   const removeExp = (id: string) => {
     set({ experience: data.experience.filter((e) => e.id !== id) });
     deleteExperienceMutation.mutate(id);
@@ -222,7 +211,6 @@ export default function WorkerProfile({
     setAddExp(false);
   };
 
-  // ── Certifications ──
   const removeCert = (id: string) => {
     set({ certifications: data.certifications.filter((c) => c.id !== id) });
     deleteCertificationMutation.mutate(id);
@@ -238,7 +226,6 @@ export default function WorkerProfile({
     setAddCert(false);
   };
 
-  // ── Education ──
   const removeEdu = (id: string) => {
     set({ education: data.education.filter((e) => e.id !== id) });
     deleteEducationMutation.mutate(id);
@@ -262,13 +249,11 @@ export default function WorkerProfile({
     }
   };
 
-  // Portfolio split: standalone photos vs before/after pairs
   const beforePhotos = data.portfolio.filter((p) => p.isBefore);
   const standalonePhotos = data.portfolio.filter(
     (p) => !p.isBefore && !beforePhotos.some((b) => b.afterPhotoId === p.id),
   );
 
-  // Profile strength
   const checklist = [
     { label: "Phone verified", done: data.phoneVerified },
     { label: "About added", done: data.about.trim().length > 0 },
@@ -283,13 +268,9 @@ export default function WorkerProfile({
   );
   const maxBucket = Math.max(1, ...data.ratingBreakdown.map((b) => b.count));
 
-  // Show the worker's currency symbol verbatim — no FX conversion.
   const money = (n: number) =>
     `${symbolOf(data.currency)} ${n.toLocaleString()}`;
 
-  // Public-view polish: soften zero-states and hide empty sections so a sparse
-  // profile reads as "new" rather than broken. Own view always shows every
-  // section (with its add/edit controls) so the worker can fill them in.
   const rateText =
     data.dailyRate > 0 ? `${money(data.dailyRate)}/day` : "Rate on request";
   const hasRightCol =
@@ -304,7 +285,6 @@ export default function WorkerProfile({
         !own && "w-full pb-0 max-lg:pb-[72px]",
       )}
     >
-      {/* ── HEADER CARD ── */}
       <div className="bg-white border border-border rounded-xl overflow-hidden">
         <div className="h-24 relative bg-navy bg-[radial-gradient(rgba(201,168,76,0.1)_1px,transparent_1px)] [background-size:20px_20px]">
           <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-gradient-to-r from-gold to-transparent" />
@@ -469,7 +449,6 @@ export default function WorkerProfile({
         </div>
       </div>
 
-      {/* ── TWO COLUMNS ── */}
       <div
         className={cn(
           "grid grid-cols-1 gap-4 mt-4 min-[900px]:items-start",
@@ -478,9 +457,7 @@ export default function WorkerProfile({
             : "min-[900px]:grid-cols-[1.5fr_1fr]",
         )}
       >
-        {/* LEFT */}
         <div className="flex flex-col gap-4">
-          {/* About */}
           {!hideIfEmpty(data.about.trim().length > 0) && (
             <section className={CARD}>
               <div className={CARDHEAD}>
@@ -530,7 +507,6 @@ export default function WorkerProfile({
             </section>
           )}
 
-          {/* Services */}
           {!hideIfEmpty(data.services.length > 0) && (
             <section className={CARD}>
               <div className={CARDHEAD}>
@@ -598,7 +574,6 @@ export default function WorkerProfile({
             </section>
           )}
 
-          {/* Portfolio */}
           {!hideIfEmpty(data.portfolio.length > 0) && (
             <section className={CARD}>
               <div className={CARDHEAD}>
@@ -712,7 +687,6 @@ export default function WorkerProfile({
             </section>
           )}
 
-          {/* Experience */}
           {!hideIfEmpty(data.experience.length > 0) && (
             <section className={CARD}>
               <div className={CARDHEAD}>
@@ -766,7 +740,6 @@ export default function WorkerProfile({
             </section>
           )}
 
-          {/* Service area */}
           {!hideIfEmpty(data.serviceAreas.length > 0) && (
             <section className={CARD}>
               <div className={CARDHEAD}>
@@ -834,7 +807,6 @@ export default function WorkerProfile({
             </section>
           )}
 
-          {/* Reviews */}
           <section className={CARD}>
             <div className={CARDHEAD}>
               <span className={TITLE}>Reviews</span>
@@ -908,10 +880,8 @@ export default function WorkerProfile({
           </section>
         </div>
 
-        {/* RIGHT */}
         {!hideIfEmpty(hasRightCol) && (
           <div className="flex flex-col gap-4 max-[899px]:contents">
-            {/* Profile strength (own only) */}
             {own && (
               <section className={cn(CARD, "max-[899px]:order-3")}>
                 <div className={CARDHEAD}>
@@ -947,7 +917,6 @@ export default function WorkerProfile({
               </section>
             )}
 
-            {/* Certifications */}
             {!hideIfEmpty(data.certifications.length > 0) && (
               <section className={cn(CARD, "max-[899px]:order-1")}>
                 <div className={CARDHEAD}>
@@ -1012,7 +981,6 @@ export default function WorkerProfile({
               </section>
             )}
 
-            {/* Education & training */}
             {!hideIfEmpty(data.education.length > 0) && (
               <section className={cn(CARD, "max-[899px]:order-2")}>
                 <div className={CARDHEAD}>
@@ -1067,7 +1035,6 @@ export default function WorkerProfile({
         )}
       </div>
 
-      {/* Sticky mobile employer actions */}
       {!own && (
         <div className="fixed left-0 right-0 bottom-[58px] z-[25] flex gap-2.5 bg-white border-t border-border py-3 px-4 lg:hidden">
           <button
@@ -1089,8 +1056,6 @@ export default function WorkerProfile({
     </div>
   );
 }
-
-// ── Inline add forms ────────────────────────────────────────────────────────
 
 function FormButtons({
   onCancel,
@@ -1132,7 +1097,7 @@ function PhotoForm({
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    e.target.value = ""; // allow re-selecting the same file
+    e.target.value = "";
     if (!file) return;
     try {
       const res = await upload.mutateAsync(file);
@@ -1156,7 +1121,6 @@ function PhotoForm({
           });
       }}
     >
-      {/* Image uploader */}
       {url ? (
         <div className="flex flex-col gap-1.5 items-start">
           <div

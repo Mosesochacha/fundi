@@ -37,7 +37,6 @@ async function main() {
   });
   console.log(`Found ${workers.length} workers, ${employers.length} employers.`);
 
-  // ── Worker ID-verification statuses (so the queue has variety) ──
   let verUpdated = 0;
   for (let i = 0; i < workers.length; i++) {
     const p = workers[i].profile;
@@ -55,7 +54,6 @@ async function main() {
   }
   console.log(`Set verification status on ${verUpdated} worker profiles.`);
 
-  // ── Payments (from completed jobs where possible, else synthesised) ──
   const jobs = await Db.JobRequest.findAll({ limit: 60, order: [["createdAt", "DESC"]] });
   const profById: Record<string, any> = {};
   for (const u of [...workers, ...employers]) if (u.profile) profById[u.profile.id] = u;
@@ -88,7 +86,6 @@ async function main() {
     console.log(`Payments already present (${existingPayments}), skipping.`);
   }
 
-  // ── Payouts ──
   const existingPayouts = await Db.Payout.count();
   if (existingPayouts === 0) {
     let n = 0;
@@ -111,7 +108,6 @@ async function main() {
     console.log(`Payouts already present (${existingPayouts}), skipping.`);
   }
 
-  // ── User reports ──
   const existingReports = await Db.UserReport.count();
   if (existingReports === 0 && workers.length && employers.length) {
     let n = 0;

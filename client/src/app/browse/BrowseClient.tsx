@@ -51,7 +51,6 @@ export default function BrowseClient({
 }: Props) {
   const router = useRouter();
 
-  // --- store filter state ---
   const selectedTrades = useSearchStore((s) => s.selectedTrades);
   const location = useSearchStore((s) => s.location);
   const availableNow = useSearchStore((s) => s.availableNow);
@@ -65,14 +64,12 @@ export default function BrowseClient({
   const setFilter = useSearchStore((s) => s.setFilter);
   const resetFilters = useSearchStore((s) => s.resetFilters);
 
-  // --- local UI state ---
   const [page, setPage] = useState(1);
   const [nameInput, setNameInput] = useState("");
   const [locInput, setLocInput] = useState("");
-  const [nameQuery, setNameQuery] = useState(""); // applied client-side
+  const [nameQuery, setNameQuery] = useState("");
   const [aiOpen, setAiOpen] = useState(false);
 
-  // Seed filters from an SEO route (/browse/[trade]/[location]) once on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: run-once seed
   useEffect(() => {
     if (initialTrade) setFilter("selectedTrades", [initialTrade]);
@@ -83,7 +80,6 @@ export default function BrowseClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Any filter change resets pagination back to the first page.
   // biome-ignore lint/correctness/useExhaustiveDependencies: these filters are intentional reset triggers
   useEffect(() => {
     setPage(1);
@@ -134,7 +130,6 @@ export default function BrowseClient({
   const allWorkers = data?.workers ?? [];
   const totalPages = data?.totalPages ?? 1;
 
-  // Client-side name/skill filter folded on top of the current page.
   const workers = useMemo(() => {
     if (!nameQuery.trim()) return allWorkers;
     const q = nameQuery.trim().toLowerCase();
@@ -146,7 +141,6 @@ export default function BrowseClient({
     );
   }, [allWorkers, nameQuery]);
 
-  // --- handlers ---
   const handleSearch = () => {
     setNameQuery(nameInput);
     setFilter("location", locInput.trim());
@@ -179,7 +173,6 @@ export default function BrowseClient({
       <LandingNav />
 
       <main className="pb-[90px]">
-        {/* HERO */}
         <header className="mx-auto max-w-[1240px] px-5 pt-[82px] md:px-10 md:pt-[116px]">
           <p className="m-0 text-sm font-semibold uppercase tracking-[0.18em] text-ink-3">
             Discover skilled professionals
@@ -193,7 +186,6 @@ export default function BrowseClient({
             skill-assessed, and reviewed by real customers.
           </p>
 
-          {/* SEARCH BAR */}
           <div className="mt-[22px] flex flex-wrap items-stretch rounded-[18px] border border-border bg-white p-2 shadow-[0_2px_10px_rgba(33,28,20,0.05)] md:mt-[30px] md:flex-nowrap">
             <div className="flex flex-[1_1_100%] items-center gap-3 px-[18px] text-ink-3 md:flex-1">
               <Search size={19} aria-hidden />
@@ -230,10 +222,8 @@ export default function BrowseClient({
           </div>
         </header>
 
-        {/* FILTER TOOLBAR */}
         <FilterBar onAskAi={() => setAiOpen(true)} />
 
-        {/* RESULTS */}
         <section
           className="mx-auto max-w-[1240px] px-5 pt-[26px] md:px-10"
           aria-busy={isFetching}

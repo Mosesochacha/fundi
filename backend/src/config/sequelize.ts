@@ -1,4 +1,3 @@
-// backend/src/config/sequelize.ts
 
 import { Options as SequelizeOptions } from "sequelize";
 import dotenv from "dotenv";
@@ -17,7 +16,6 @@ interface DBConfig {
 
 const isProduction = process.env.NODE_ENV === "production";
 
-// Detect if using local database
 const databaseUrl = process.env.DATABASE_URL || "";
 const isLocalDatabase =
   databaseUrl.includes("localhost") ||
@@ -25,7 +23,6 @@ const isLocalDatabase =
   databaseUrl.includes("@postgres:") ||
   databaseUrl.includes("@postgres-prod:");
 
-// SSL configuration - cloud databases require SSL with rejectUnauthorized: false
 const dialectOptions = isLocalDatabase
   ? {}
   : {
@@ -64,6 +61,5 @@ const config: { [key: string]: DBConfig } = {
   },
 };
 
-// CommonJS + ES module export
 export default config;
 module.exports = config;

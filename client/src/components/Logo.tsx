@@ -9,7 +9,6 @@ import { cn } from "@/lib/utils";
  * - <LogoMark> renders the square "TX" emblem — for favicons, avatars, tight spaces.
  */
 
-// Kept for back-compat with existing call sites; the emblem is a single asset.
 type MarkVariant = "navy" | "gold" | "bare-navy" | "bare-gold";
 
 export function LogoMark({
@@ -37,7 +36,6 @@ export function LogoMark({
 type LogoTone = "navy" | "light";
 type LogoSize = "sm" | "md" | "lg";
 
-// Height of the wordmark lockup per size; width auto-scales (asset is 1027×219).
 const WORD_HEIGHT: Record<LogoSize, string> = {
   sm: "h-7",
   md: "h-8",

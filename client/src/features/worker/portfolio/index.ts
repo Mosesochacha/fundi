@@ -15,7 +15,6 @@ export const portfolioService = {
     client.post("/worker/profile/photos", data),
   deletePhoto: (photoId: string) =>
     client.delete(`/worker/profile/photos/${photoId}`),
-  // Upload an image file; returns { url } to attach to a new portfolio item.
   uploadPhoto: (file: File) => {
     const fd = new FormData();
     fd.append("work", file);

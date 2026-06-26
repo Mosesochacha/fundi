@@ -26,7 +26,6 @@ export function WorkerCardGrid({ worker, onView }: Props) {
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-[18px] border border-border bg-white shadow-[0_1px_2px_rgba(33,28,20,0.04)] transition-all duration-[220ms] hover:-translate-y-[3px] hover:border-ink-4 hover:shadow-[0_16px_36px_rgba(33,28,20,0.12)]">
-      {/* COVER BANNER */}
       <div
         className="relative h-20"
         style={{ background: bannerGradient(worker.trade) } as CSSProperties}
@@ -41,7 +40,6 @@ export function WorkerCardGrid({ worker, onView }: Props) {
         </span>
       </div>
 
-      {/* AVATAR */}
       <div className="relative ml-[18px] mt-[-31px] w-[62px]">
         <span
           className="flex h-[62px] w-[62px] items-center justify-center overflow-hidden rounded-full border-[3px] border-white font-serif text-[23px] font-medium shadow-[0_2px_6px_rgba(33,28,20,0.08)]"
@@ -75,7 +73,6 @@ export function WorkerCardGrid({ worker, onView }: Props) {
         )}
       </div>
 
-      {/* CONTENT */}
       <div className="flex flex-1 flex-col px-[18px] pb-[18px] pt-[11px]">
         <h3 className="m-0 font-serif text-[19px] font-medium leading-[1.15] text-ink">
           {worker.name}

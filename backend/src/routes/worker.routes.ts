@@ -9,25 +9,16 @@ import { uploadAvatar, uploadWork } from '../middleware/upload';
 
 const router = Router();
 
-// Public worker directory (browse page) — no auth required.
 router.get('/browse/workers', WorkerController.browseWorkers);
 
-// Authenticated own-profile read — MUST be registered before the public
-// `/worker/:id/profile` route so "me" isn't captured as an :id.
 router.get('/worker/me/profile', verifyJWT, WorkerController.getMyProfile);
 
-// Dashboard home aggregate.
 router.get('/worker/dashboard', verifyJWT, WorkerDashboardController.getDashboard);
 
-// Reviews page aggregate.
 router.get('/worker/reviews', verifyJWT, WorkerReviewsController.getReviews);
 
-// Public worker profile — by profile id or username. Optional auth: anonymous
-// viewers (incl. crawlers) get a minimal SEO payload, signed-in viewers get the
-// full profile.
 router.get('/worker/:id/profile', optionalVerifyJWT, WorkerController.getProfile);
 
-// Authenticated mutations on the signed-in worker's own profile.
 router.patch('/worker/profile/about', verifyJWT, WorkerController.updateAbout);
 router.patch('/worker/profile/services', verifyJWT, WorkerController.updateServices);
 router.patch('/worker/profile/rate', verifyJWT, WorkerController.updateRate);
@@ -49,15 +40,12 @@ router.delete('/worker/profile/education/:id', verifyJWT, WorkerController.delet
 
 router.patch('/worker/availability', verifyJWT, WorkerController.updateAvailability);
 
-// ── Job requests page (/worker/requests) ────────────────────────────────────
-// `stats` is registered before the `/:id/*` action routes so it isn't shadowed.
 router.get('/worker/requests/stats', verifyJWT, WorkerRequestsController.getStats);
 router.get('/worker/requests', verifyJWT, WorkerRequestsController.getRequests);
 router.patch('/worker/requests/:id/accept', verifyJWT, WorkerRequestsController.acceptRequest);
 router.patch('/worker/requests/:id/decline', verifyJWT, WorkerRequestsController.declineRequest);
 router.patch('/worker/requests/:id/complete', verifyJWT, WorkerRequestsController.completeRequest);
 
-// ── Settings page (/worker/settings) ────────────────────────────────────────
 router.get('/worker/settings', verifyJWT, WorkerSettingsController.getSettings);
 
 router.patch('/worker/profile', verifyJWT, WorkerSettingsController.updateProfile);

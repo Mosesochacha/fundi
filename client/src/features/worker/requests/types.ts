@@ -1,10 +1,3 @@
-/* ─────────────────────────────────────────────────────────────────────────
-   Job requests (/worker/requests) - shared types.
-
-   Distinct from the lightweight `JobRequest` on the dashboard feature: the
-   requests page needs the full record (employer, tags, schedule, review …).
-   ───────────────────────────────────────────────────────────────────────── */
-
 export type RequestStatus = "new" | "active" | "completed" | "declined";
 
 /** The status filter tabs, plus the catch-all "all". */

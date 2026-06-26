@@ -15,13 +15,11 @@ const sequelize = config.use_env_variable
       config.options
     );
 
-// Models object
 const models: Record<
   string,
   ReturnType<any> & { associate?: (models: Record<string, any>) => void }
 > = {};
 
-// Load all model files dynamically (except index.ts)
 const isTsRuntime = __filename.endsWith('.ts') || process.env.TS_NODE_DEV === 'true';
 const fileExt = isTsRuntime ? '.ts' : '.js';
 
@@ -41,14 +39,12 @@ fs.readdirSync(__dirname)
     }
   });
 
-// Setup associations
 Object.values(models).forEach((model: any) => {
   if (typeof model.associate === "function") {
     model.associate(models);
   }
 });
 
-// Compose final db object
 const db = {
   sequelize,
   Sequelize,

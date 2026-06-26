@@ -153,8 +153,8 @@ export class CacheService {
       await Promise.all([
         RedisService.delete(REDIS_KEYS.VIDEO_DETAILS(videoId)),
         RedisService.delete(REDIS_KEYS.TRENDING_VIDEOS),
-        RedisService.clearPattern('feed:*'), // Clear all user feeds
-        RedisService.clearPattern('search:*') // Clear search cache
+        RedisService.clearPattern('feed:*'),
+        RedisService.clearPattern('search:*')
       ]);
     } catch (error) {
       logError(error, 'Invalidate Video Cache');

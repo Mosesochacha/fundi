@@ -34,7 +34,6 @@ export class Profile extends Model<
   declare certifications: CreationOptional<object[] | null>;
   declare serviceAreas: CreationOptional<string[] | null>;
   declare isAvailable: CreationOptional<boolean>;
-  // ID verification (admin moderation)
   declare idVerificationStatus: CreationOptional<
     "unverified" | "pending" | "verified" | "rejected"
   >;
@@ -44,14 +43,12 @@ export class Profile extends Model<
   declare idRejectionReason: CreationOptional<string | null>;
   declare idSubmittedAt: CreationOptional<Date | null>;
   declare idVerifiedAt: CreationOptional<Date | null>;
-  // Notification preferences
   declare emailProfileViewed: CreationOptional<boolean>;
   declare emailNewFollower: CreationOptional<boolean>;
   declare emailPostLiked: CreationOptional<boolean>;
   declare emailPostComment: CreationOptional<boolean>;
   declare emailWeeklySummary: CreationOptional<boolean>;
   declare emailProductUpdates: CreationOptional<boolean>;
-  // Privacy settings
   declare profilePublic: CreationOptional<boolean>;
   declare showPhone: CreationOptional<boolean>;
   declare showEmail: CreationOptional<boolean>;
@@ -60,14 +57,11 @@ export class Profile extends Model<
   declare appearInSearch: CreationOptional<boolean>;
   declare allowComments: CreationOptional<boolean>;
   declare allowFollowers: CreationOptional<boolean>;
-  // Worker-settings privacy toggles (see /worker/settings)
   declare showRate: CreationOptional<boolean>;
   declare showOnline: CreationOptional<boolean>;
   declare allowDirectMessages: CreationOptional<boolean>;
-  // Worker-settings JSON blobs (notifications + availability detail)
   declare notificationSettings: CreationOptional<Record<string, unknown> | null>;
   declare availabilitySettings: CreationOptional<Record<string, unknown> | null>;
-  // Preferences
   declare language: CreationOptional<string>;
   declare country: CreationOptional<string>;
   declare timezone: CreationOptional<string>;
@@ -137,14 +131,12 @@ export function initModel(sequelize: Sequelize): typeof Profile {
       idRejectionReason: { type: DataTypes.TEXT, allowNull: true },
       idSubmittedAt: { type: DataTypes.DATE, allowNull: true },
       idVerifiedAt: { type: DataTypes.DATE, allowNull: true },
-      // Notification preferences
       emailProfileViewed: { type: DataTypes.BOOLEAN, defaultValue: true },
       emailNewFollower: { type: DataTypes.BOOLEAN, defaultValue: true },
       emailPostLiked: { type: DataTypes.BOOLEAN, defaultValue: true },
       emailPostComment: { type: DataTypes.BOOLEAN, defaultValue: true },
       emailWeeklySummary: { type: DataTypes.BOOLEAN, defaultValue: true },
       emailProductUpdates: { type: DataTypes.BOOLEAN, defaultValue: false },
-      // Privacy settings
       profilePublic: { type: DataTypes.BOOLEAN, defaultValue: true },
       showPhone: { type: DataTypes.BOOLEAN, defaultValue: true },
       showEmail: { type: DataTypes.BOOLEAN, defaultValue: false },
@@ -153,14 +145,11 @@ export function initModel(sequelize: Sequelize): typeof Profile {
       appearInSearch: { type: DataTypes.BOOLEAN, defaultValue: true },
       allowComments: { type: DataTypes.BOOLEAN, defaultValue: true },
       allowFollowers: { type: DataTypes.BOOLEAN, defaultValue: true },
-      // Worker-settings privacy toggles
       showRate: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
       showOnline: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
       allowDirectMessages: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
-      // Worker-settings JSON blobs
       notificationSettings: { type: DataTypes.JSON, allowNull: true, defaultValue: null },
       availabilitySettings: { type: DataTypes.JSON, allowNull: true, defaultValue: null },
-      // Preferences
       language: { type: DataTypes.STRING(10), defaultValue: 'en' },
       country: { type: DataTypes.STRING(10), defaultValue: 'KE' },
       timezone: { type: DataTypes.STRING(50), defaultValue: 'Africa/Nairobi' },

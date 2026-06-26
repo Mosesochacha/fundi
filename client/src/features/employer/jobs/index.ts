@@ -1,8 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import client from "@/lib/axios";
 
-// Mutations live in ../dashboard and invalidate the whole ["employer"] key
-// prefix, so they refresh these jobs lists too.
 export {
   useCancelJob,
   useMarkComplete,

@@ -267,8 +267,6 @@ export default function AdminUserDetailPage() {
 
   const { data, isLoading } = useAdminUser(id);
 
-  // Which confirm is open. Header actions use "suspend"/"unsuspend"/"ban";
-  // danger zone rows use their own keys.
   const [confirm, setConfirm] = useState<string | null>(null);
 
   if (isLoading) {
@@ -309,7 +307,6 @@ export default function AdminUserDetailPage() {
     setConfirm(null);
   };
 
-  // Map a confirm key (header action or danger-zone row) to its live descriptor.
   const descriptorFor = (key: string): AdminMutateReq => {
     switch (key) {
       case "suspend30":
@@ -415,7 +412,6 @@ export default function AdminUserDetailPage() {
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-4">
-        {/* LEFT */}
         <div className="flex flex-col gap-4">
           <DetailCard title="Profile information">
             <InfoRow label="Location" value={u.location} />
@@ -464,7 +460,6 @@ export default function AdminUserDetailPage() {
           </DetailCard>
         </div>
 
-        {/* RIGHT */}
         <div className="flex flex-col gap-4">
           <DetailCard title="Account status">
             <div className="mb-2">
@@ -528,7 +523,6 @@ export default function AdminUserDetailPage() {
         </div>
       </div>
 
-      {/* Header action confirms */}
       <ConfirmModal
         open={!!activeHeader}
         title={activeHeader?.title ?? ""}
@@ -543,7 +537,6 @@ export default function AdminUserDetailPage() {
         onCancel={() => setConfirm(null)}
       />
 
-      {/* Danger zone confirms */}
       <ConfirmModal
         open={!!activeDanger}
         title={activeDanger?.title ?? ""}

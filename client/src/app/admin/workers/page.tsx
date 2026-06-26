@@ -72,7 +72,6 @@ export default function AdminWorkersPage() {
   const [selected, setSelected] = useState<string[]>([]);
   const [confirm, setConfirm] = useState<ConfirmState | null>(null);
 
-  // Reset page when filters change.
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset paging on filter change
   useEffect(() => {
     setPage(1);

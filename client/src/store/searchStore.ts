@@ -49,15 +49,11 @@ type SearchFilters = Pick<
 export const SEARCH_DEFAULTS: SearchFilters = {
   selectedTrades: [],
   location: "",
-  // "Available now" starts as an opt-in toggle (matches the Find-a-Fundi design).
   availableNow: false,
-  // Defaulted OFF for now: no workers are phone-verified yet, so verified-only
-  // would show an empty page. Flip back to `true` once verification is live.
   verifiedOnly: false,
   certified: false,
   minRate: 500,
   maxRate: 10000,
-  // Ratings aren't tracked yet; start unfiltered so the Rating pill reads "Any".
   minRating: 0,
   minExp: 0,
   sortBy: "best_match",

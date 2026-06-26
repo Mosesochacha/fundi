@@ -16,7 +16,6 @@ class PhotosController {
       return sendError(res, HTTP_STATUS.NOT_FOUND, 'Profile not found');
     }
 
-    // Delete old Cloudinary image
     if (profile.avatarUrl) {
       const publicId = cloudinaryService.extractPublicId(profile.avatarUrl);
       if (publicId) cloudinaryService.deleteImage(publicId).catch(() => {});

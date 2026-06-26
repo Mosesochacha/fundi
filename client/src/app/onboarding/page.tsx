@@ -59,7 +59,6 @@ const initialsOf = (n: string) =>
 
 const FIELD_LABEL =
   "block text-sm font-semibold text-ink-2 tracking-[0.02em] mb-2";
-// Plain label for the trade picker (no accent — avoids the "selected text" look).
 const TRADE_LABEL = "block text-xs font-medium text-ink-2 mb-2 select-none";
 const FIELD_INPUT =
   "w-full px-3.5 py-[11px] border border-border rounded-lg text-sm bg-cream text-ink font-sans outline-none transition-all placeholder:text-ink-3 focus:border-gold focus:bg-white";
@@ -81,14 +80,11 @@ export default function OnboardingPage() {
   const [dailyRate, setDailyRate] = useState("");
   const [currency, setCurrency] = useState("KES");
   const [symbol, setSymbol] = useState("KSh");
-  // True once the user picks a currency manually or via location, so IP
-  // detection / further location parsing won't override their choice.
   const [currencyManual, setCurrencyManual] = useState(false);
   const [eLocation, setELocation] = useState("");
   const [interested, setInterested] = useState<string[]>([]);
   const [terms, setTerms] = useState(false);
 
-  // Auto-detect currency from IP on first load (unless already overridden).
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount
   useEffect(() => {
     let active = true;
@@ -103,7 +99,6 @@ export default function OnboardingPage() {
     };
   }, []);
 
-  // Update currency from the location field as the worker types.
   const onWLocationChange = (value: string) => {
     setWLocation(value);
     if (currencyManual) return;
@@ -121,7 +116,6 @@ export default function OnboardingPage() {
     setCurrencyManual(true);
   };
 
-  // Guard: not signed in → login; already complete → dashboard.
   useEffect(() => {
     if (status === "unauthenticated") {
       router.replace("/login");
@@ -155,8 +149,6 @@ export default function OnboardingPage() {
         currency,
         currencySymbol: symbol,
       });
-      // JWT auto-heals in the auth jwt callback (re-pulls /auth/me while the
-      // cached user is incomplete), so middleware lets the dashboard through.
       router.push("/worker/dashboard?welcome=true");
     } catch {
       toastError("Could not complete setup. Please try again.");
@@ -204,7 +196,6 @@ export default function OnboardingPage() {
           </span>
         </div>
 
-        {/* Prefilled identity from the OAuth session */}
         <div className="flex items-center gap-[11px] bg-cream border border-border rounded-[10px] px-[13px] py-[11px] mb-6">
           <span className="w-[38px] h-[38px] rounded-full bg-gold-light border border-gold/30 text-gold-dark grid place-items-center text-sm font-semibold shrink-0">
             {initialsOf(name)}

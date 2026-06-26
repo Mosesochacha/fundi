@@ -35,14 +35,12 @@ export default function ToggleSwitch({
       onKeyDown={handleKeyDown}
       className="relative shrink-0 w-11 h-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 rounded-full disabled:opacity-50"
     >
-      {/* Track */}
       <span
         className={cn(
           "block w-11 h-6 rounded-xl transition-colors duration-200",
           checked ? "bg-gold" : "bg-ink-4",
         )}
       />
-      {/* Thumb */}
       <span
         className={cn(
           "absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] transition-[left] duration-200 flex items-center justify-center",

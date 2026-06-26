@@ -62,10 +62,8 @@ export const updateTrendingHashtags = async (hashtags: string[]): Promise<void> 
     await RedisService.addToSortedSet(trendingKey, Date.now(), hashtag);
   }
   
-  // Keep only top 100 trending hashtags
   const allHashtags = await RedisService.getSortedSetRange(trendingKey, 0, -1);
   if (allHashtags.length > 100) {
-    // Remove oldest entries
     await RedisService.getSortedSetRange(trendingKey, 0, allHashtags.length - 101);
   }
 };
@@ -83,7 +81,7 @@ export const getTrendingHashtags = async (limit: number = 20): Promise<string[]>
  */
 export const updateNotificationCount = async (userId: string, count: number): Promise<void> => {
   const countKey = REDIS_KEYS.UNREAD_COUNT(userId);
-  await RedisService.setWithExpiry(countKey, count, 3600); // 1 hour
+  await RedisService.setWithExpiry(countKey, count, 3600);
 };
 
 /**
@@ -118,7 +116,6 @@ export const trackUserActivity = async (userId: string, activity: string): Promi
   
   await RedisService.addToSortedSet(activityKey, timestamp, activity);
   
-  // Keep only last 100 activities
   const activities = await RedisService.getSortedSetRange(activityKey, 0, -1);
   if (activities.length > 100) {
     await RedisService.getSortedSetRange(activityKey, -100, -1);

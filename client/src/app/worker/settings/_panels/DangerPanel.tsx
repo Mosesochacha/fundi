@@ -86,7 +86,6 @@ export default function DangerPanel() {
       danger
     >
       <PanelBody>
-        {/* Pause */}
         <div className="flex items-center justify-between gap-4 py-4 border-b-[0.5px] border-cream-2 first:pt-0 last:border-b-0 last:pb-0">
           <div>
             <div className="text-sm font-medium text-ink">Pause account</div>
@@ -104,7 +103,6 @@ export default function DangerPanel() {
           </button>
         </div>
 
-        {/* Export */}
         <div className="flex items-center justify-between gap-4 py-4 border-b-[0.5px] border-cream-2 first:pt-0 last:border-b-0 last:pb-0">
           <div>
             <div className="text-sm font-medium text-ink">Export my data</div>
@@ -124,7 +122,6 @@ export default function DangerPanel() {
           </button>
         </div>
 
-        {/* Delete */}
         <div className="flex items-center justify-between gap-4 py-4 border-b-[0.5px] border-cream-2 first:pt-0 last:border-b-0 last:pb-0">
           <div>
             <div className="text-sm font-medium text-red-600">
@@ -145,7 +142,6 @@ export default function DangerPanel() {
         </div>
       </PanelBody>
 
-      {/* Pause modal */}
       {dialog === "pause" && (
         <Modal
           title="Pause your account?"
@@ -178,7 +174,6 @@ export default function DangerPanel() {
         </Modal>
       )}
 
-      {/* Delete modal - two-step */}
       {dialog === "delete" && (
         <Modal
           title="Delete your account?"

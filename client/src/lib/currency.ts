@@ -1,11 +1,3 @@
-/* ─────────────────────────────────────────────────────────────────────────
-   Currency catalogue + helpers.
-
-   Currency is a per-user preference (saved to the profile via the backend).
-   There is NO FX conversion - only the displayed SYMBOL changes. Each amount
-   is shown in its owner's currency.
-   ───────────────────────────────────────────────────────────────────────── */
-
 export interface Currency {
   code: string;
   symbol: string;
@@ -46,11 +38,6 @@ export function formatMoney(
   return `${symbolOf(code)}${amount.toLocaleString("en-US")}`;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Country → currency mapping for IP / location auto-detection.
-   No FX conversion: the worker's chosen currency is shown verbatim.
-   ───────────────────────────────────────────────────────────────────────── */
-
 export interface CountryCurrency {
   code: string;
   symbol: string;
@@ -77,10 +64,7 @@ export function getCurrencyFromCountry(code?: string | null): CountryCurrency {
   return currencyByCountry[code.toUpperCase()] ?? { code: "USD", symbol: "$" };
 }
 
-// Country names + well-known cities → ISO country code, for parsing the free-text
-// location field so the currency updates as the worker types.
 const LOCATION_TO_COUNTRY: Record<string, string> = {
-  // countries
   kenya: "KE",
   uganda: "UG",
   tanzania: "TZ",
@@ -99,7 +83,6 @@ const LOCATION_TO_COUNTRY: Record<string, string> = {
   scotland: "GB",
   canada: "CA",
   australia: "AU",
-  // cities
   nairobi: "KE",
   mombasa: "KE",
   kisumu: "KE",

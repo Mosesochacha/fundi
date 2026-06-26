@@ -63,7 +63,6 @@ class SettingsController {
     if (!profile) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Profile not found');
     const data: Record<string, any> = {};
     PREFERENCE_FIELDS.forEach(f => { data[f] = profile[f]; });
-    // Currency is a per-user preference (lives on the User model alongside dailyRate).
     data.currency = user?.currency ?? 'USD';
     return sendSuccess(res, 'Preferences retrieved', data);
   });
@@ -77,7 +76,6 @@ class SettingsController {
     });
     await profile.update(updates);
 
-    // Currency is stored on the User model, not the Profile.
     let currency: string | undefined;
     if ('currency' in req.body) {
       const normalized = normalizeCurrency(req.body.currency);

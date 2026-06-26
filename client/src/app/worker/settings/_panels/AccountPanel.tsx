@@ -31,7 +31,6 @@ import {
   PanelBody,
 } from "../_components/ui";
 
-/* ── Email / phone forms ──────────────────────────────────────────────────── */
 const emailSchema = z.object({
   email: z.string().email("Enter a valid email"),
 });
@@ -39,7 +38,6 @@ const phoneSchema = z.object({
   phone: z.string().min(7, "Enter a valid phone number"),
 });
 
-/* ── Password form ────────────────────────────────────────────────────────── */
 const passwordSchema = z
   .object({
     currentPassword: z.string().min(1, "Enter your current password"),
@@ -167,7 +165,6 @@ export default function AccountPanel({
     }
   }
 
-  /* Password form */
   const {
     register,
     handleSubmit,
@@ -205,7 +202,6 @@ export default function AccountPanel({
       subtitle="Manage how you sign in and stay reachable."
     >
       <PanelBody>
-        {/* Email */}
         <Field label="Email address" htmlFor="email">
           <div className="flex items-center gap-2.5">
             <input
@@ -244,7 +240,6 @@ export default function AccountPanel({
           )}
         </div>
 
-        {/* Phone */}
         <Field label="Phone number" htmlFor="phone">
           <div className="flex items-center gap-2.5">
             <input
@@ -283,7 +278,6 @@ export default function AccountPanel({
           )}
         </div>
 
-        {/* Currency */}
         <div className="pt-4 mt-4 border-t-[0.5px] border-border">
           <Field
             label="Currency"
@@ -310,7 +304,6 @@ export default function AccountPanel({
           )}
         </div>
 
-        {/* Change password */}
         <form
           className="pt-4 mt-4 border-t-[0.5px] border-border"
           onSubmit={onSubmitPassword}
@@ -403,7 +396,6 @@ export default function AccountPanel({
           </div>
         </form>
 
-        {/* Google */}
         <div className="pt-4 mt-4 border-t-[0.5px] border-border">
           <div className="text-sm font-medium text-ink mb-3.5">
             Google account

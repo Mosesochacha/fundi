@@ -1,7 +1,3 @@
-// Typed builders for admin mutation descriptors. Pages call e.g.
-//   action.mutateAsync(adminEndpoints.suspendUser(id, { days: 30 }))
-// and `useAdminAction` turns the descriptor into a live API call.
-
 import type { AdminMutateReq } from "./service";
 
 const patch = (url: string, body?: unknown): AdminMutateReq => ({
@@ -17,7 +13,6 @@ const post = (url: string, body?: unknown): AdminMutateReq => ({
 const del = (url: string): AdminMutateReq => ({ method: "delete", url });
 
 export const adminEndpoints = {
-  // Users
   suspendUser: (id: string, body?: { days?: number; reason?: string }) =>
     patch(`/admin/users/${id}/suspend`, body),
   unsuspendUser: (id: string) => patch(`/admin/users/${id}/unsuspend`),
@@ -25,31 +20,26 @@ export const adminEndpoints = {
     patch(`/admin/users/${id}/ban`, body),
   deleteUser: (id: string) => del(`/admin/users/${id}`),
 
-  // Workers
   verifyWorker: (id: string) => patch(`/admin/workers/${id}/verify`),
   rejectWorker: (id: string, reason?: string) =>
     patch(`/admin/workers/${id}/reject-verification`, { reason }),
   suspendWorker: (id: string, body?: { reason?: string }) =>
     patch(`/admin/workers/${id}/suspend`, body),
 
-  // Employers
   suspendEmployer: (id: string, body?: { reason?: string }) =>
     patch(`/admin/employers/${id}/suspend`, body),
   unsuspendEmployer: (id: string) => patch(`/admin/employers/${id}/unsuspend`),
 
-  // Jobs
   cancelJob: (id: string) => patch(`/admin/jobs/${id}/cancel`),
   flagJob: (id: string, note?: string) =>
     patch(`/admin/jobs/${id}/flag`, { note }),
 
-  // Reviews
   hideReview: (id: string) => patch(`/admin/reviews/${id}/hide`),
   keepReview: (id: string) => patch(`/admin/reviews/${id}/keep`),
   removeReview: (id: string) => del(`/admin/reviews/${id}`),
   warnReviewer: (id: string, reason?: string) =>
     post(`/admin/reviews/${id}/warn`, { reason }),
 
-  // Reports
   resolveReport: (
     id: string,
     body: {
@@ -62,12 +52,10 @@ export const adminEndpoints = {
   addReportNote: (id: string, text: string) =>
     post(`/admin/reports/${id}/notes`, { text }),
 
-  // Finance
   markPayoutPaid: (id: string) => patch(`/admin/payouts/${id}/paid`),
   rejectPayout: (id: string) => patch(`/admin/payouts/${id}/reject`),
   processAllPayouts: () => post(`/admin/payouts/process-all`),
 
-  // Settings
   updateSettings: (body: unknown) => patch(`/admin/settings`, body),
   updateEmailTemplate: (
     id: string,

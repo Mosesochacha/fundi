@@ -1,9 +1,7 @@
 
-// backend/src/server.ts
 import dotenv from "dotenv";
 dotenv.config();
 
-// Initialize Sentry before other imports
 import * as Sentry from "@sentry/node";
 import type { ErrorEvent, EventHint } from "@sentry/node";
 
@@ -12,9 +10,8 @@ if (process.env.SENTRY_DSN) {
     dsn: process.env.SENTRY_DSN,
     environment: process.env.NODE_ENV || "development",
     tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
-    debug: process.env.SENTRY_DEBUG === "true", // Only enable debug if explicitly set
+    debug: process.env.SENTRY_DEBUG === "true",
     beforeSend(event: ErrorEvent, hint: EventHint) {
-      // Filter out certain errors if needed
       return event;
     },
   });
@@ -32,13 +29,11 @@ import { startCronJobs, stopCronJobs } from "./jobs/cronJobs";
 import { setupWebSocket } from "./middleware/websocket";
 import logger from "./utils/logger";
 
-// Server configuration
 const PORT = parseInt(process.env.PORT || "5001", 10);
 const HOST = process.env.HOST || "0.0.0.0";
 const NODE_ENV = process.env.NODE_ENV || "development";
 
 const expressServer = http.createServer(app);
-// Initialize WebSocket server on the same HTTP server
 setupWebSocket(expressServer);
 const server = expressServer;
 
@@ -130,7 +125,6 @@ const setupErrorHandlers = (): void => {
     logError(error, "Uncaught Exception");
     logger.error("Uncaught Exception", { error });
 
-    // Report to Sentry
     if (process.env.SENTRY_DSN) {
       Sentry.captureException(error, {
         tags: {
@@ -147,7 +141,6 @@ const setupErrorHandlers = (): void => {
     logError(error, "Unhandled Rejection");
     logger.error("Unhandled Rejection", { reason });
     
-    // Report to Sentry
     if (process.env.SENTRY_DSN) {
       Sentry.captureException(error, {
         tags: {
@@ -185,7 +178,6 @@ const main = async (): Promise<void> => {
     process.exit(1);
   }
 };
-
 
 main();
 

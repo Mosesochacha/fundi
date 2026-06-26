@@ -46,7 +46,6 @@ const websiteSchema = {
 };
 
 export default async function LandingPage() {
-  // Signed-in users don't see the landing page - send them to their dashboard.
   const session = await auth();
   if (session?.user) {
     redirect(dashboardPathForRole(session.user.role));

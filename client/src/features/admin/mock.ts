@@ -1,8 +1,3 @@
-// Realistic mock data for the admin section. Deterministic (no Math.random /
-// Date.now at module load) so renders are stable. The shapes match types.ts,
-// which mirror the `/api/admin/*` contracts — service.ts is the only file that
-// needs to change when the real backend lands.
-
 import type {
   AdminEmployer,
   AdminJob,
@@ -121,7 +116,6 @@ const isoDaysAgo = (d: number) => new Date(BASE - d * 86_400_000).toISOString();
 
 const slug = (n: string) => n.toLowerCase().replace(/[^a-z]+/g, "-");
 
-// ── Workers ──
 export const WORKERS: AdminWorker[] = Array.from({ length: 64 }, (_, i) => {
   const n = name(i);
   const verify =
@@ -175,7 +169,6 @@ export const WORKERS: AdminWorker[] = Array.from({ length: 64 }, (_, i) => {
   };
 });
 
-// ── Employers ──
 export const EMPLOYERS: AdminEmployer[] = Array.from({ length: 38 }, (_, i) => {
   const n = name(i + 31);
   const status = i % 13 === 0 ? "suspended" : "active";
@@ -209,7 +202,6 @@ export const USERS: AdminUser[] = [...WORKERS, ...EMPLOYERS].sort(
   (a, b) => +new Date(b.joined) - +new Date(a.joined),
 );
 
-// ── Jobs ──
 const JOB_STATUSES = ["completed", "active", "cancelled", "pending"] as const;
 export const JOBS: AdminJob[] = Array.from({ length: 56 }, (_, i) => {
   const worker = pick(WORKERS, i);
@@ -248,7 +240,6 @@ export const JOBS: AdminJob[] = Array.from({ length: 56 }, (_, i) => {
   };
 });
 
-// ── Reviews ──
 export const REVIEWS: AdminReview[] = Array.from({ length: 48 }, (_, i) => {
   const worker = pick(WORKERS, i * 2);
   const reviewer = pick(EMPLOYERS, i);
@@ -274,7 +265,6 @@ export const REVIEWS: AdminReview[] = Array.from({ length: 48 }, (_, i) => {
   };
 });
 
-// ── Reports ──
 const R_TYPES = [
   "Fake profile",
   "Harassment",
@@ -320,7 +310,6 @@ export const REPORTS: AdminReport[] = Array.from({ length: 27 }, (_, i) => {
   };
 });
 
-// ── Payments ──
 const P_STATUS = ["completed", "pending", "refunded", "failed"] as const;
 export const PAYMENTS: AdminPayment[] = Array.from({ length: 44 }, (_, i) => {
   const employer = pick(EMPLOYERS, i);
@@ -341,7 +330,6 @@ export const PAYMENTS: AdminPayment[] = Array.from({ length: 44 }, (_, i) => {
   };
 });
 
-// ── Payouts ──
 const PO_STATUS = ["pending", "processing", "paid", "failed"] as const;
 export const PAYOUTS: AdminPayout[] = Array.from({ length: 31 }, (_, i) => {
   const worker = pick(WORKERS, i * 3);
@@ -364,7 +352,6 @@ export const PENDING_PAYOUTS = PAYOUTS.filter(
 ).length;
 export const OPEN_REPORTS = REPORTS.filter((r) => r.status === "open").length;
 
-// ── Dashboard ──
 export const DASHBOARD: DashboardData = {
   stats: [
     {
@@ -599,7 +586,6 @@ export const DASHBOARD: DashboardData = {
   ],
 };
 
-// ── Settings ──
 export const SETTINGS: AdminSettings = {
   general: {
     platformName: "Tesilix",

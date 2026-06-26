@@ -78,7 +78,6 @@ function ResetPasswordForm() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: "easeOut" }}
     >
-      {/* White card */}
       <div className="bg-white border border-border rounded-2xl p-8 shadow-[0_1px_3px_rgba(13,27,42,0.06)]">
         {!token ? (
           <div className="space-y-6 text-center">

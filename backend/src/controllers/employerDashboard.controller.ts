@@ -5,17 +5,6 @@ import db from '../models';
 import { sendSuccess, sendError, asyncHandler } from '../utils/helpers';
 import { HTTP_STATUS } from '../utils/constants';
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Employer dashboard home (GET /employer/dashboard).
-
-   The mirror of workerDashboard.controller: aggregates the signed-in
-   employer's job requests (employerId = their profileId) into the single
-   payload the dashboard page expects (client features/employer/dashboard).
-
-   Reviews are denormalised onto JobRequest (reviewRating/reviewText/
-   reviewedAt) — the employer reviews the worker via PATCH /jobs/:id/review.
-   ───────────────────────────────────────────────────────────────────────── */
-
 const DAY_MS = 24 * 60 * 60 * 1000;
 const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
 const isSameDay = (a: Date, b: Date) => startOfDay(a) === startOfDay(b);
@@ -42,7 +31,6 @@ class EmployerDashboardController {
     const weekAgo = new Date(now.getTime() - 7 * DAY_MS);
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    // Every job this employer has sent, worker joined, newest first.
     const jobs: any[] = await (db as any).JobRequest.findAll({
       where: { employerId: profileId },
       include: [
@@ -55,7 +43,6 @@ class EmployerDashboardController {
       order: [['createdAt', 'DESC']],
     });
 
-    // ── Stats ────────────────────────────────────────────────────────────────
     let activeJobs = 0;
     let pendingResponses = 0;
     let totalHires = 0;
@@ -72,7 +59,6 @@ class EmployerDashboardController {
       if (r.createdAt >= weekAgo) weekTrend++;
     }
 
-    // ── Active jobs list (pending + accepted), newest first ───────────────────
     const activeList = jobs
       .filter((r) => r.status === 'pending' || r.status === 'accepted')
       .slice(0, 6)
@@ -114,7 +100,6 @@ class EmployerDashboardController {
         };
       });
 
-    // ── Recent hires (completed), newest completion first ─────────────────────
     const recentHires = jobs
       .filter((r) => r.status === 'completed')
       .sort((a, b) => +completedDate(b) - +completedDate(a))
@@ -132,7 +117,6 @@ class EmployerDashboardController {
         reviewed: !!r.reviewedAt,
       }));
 
-    // ── Spending this month, grouped by trade category ────────────────────────
     const spendMap = new Map<string, { category: string; jobCount: number; amount: number }>();
     let spendTotal = 0;
     for (const r of jobs) {
@@ -151,7 +135,6 @@ class EmployerDashboardController {
       total: spendTotal,
     };
 
-    // ── Suggested workers (by employer's interested trades + availability) ────
     const interestedTrades: string[] = Array.isArray(profile.user?.interestedTrades)
       ? profile.user.interestedTrades
       : [];
@@ -179,7 +162,6 @@ class EmployerDashboardController {
       limit: 4,
     });
 
-    // Rating + completed-job count for the suggested workers, in one query.
     const suggestedIds = suggestedProfiles.map((p) => p.id);
     const ratingByWorker = new Map<string, { sum: number; reviews: number; jobs: number }>();
     if (suggestedIds.length > 0) {

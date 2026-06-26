@@ -44,7 +44,7 @@ export interface CreateNotificationInput {
 /** True if the recipient hasn't switched off the category this `type` belongs to. */
 async function categoryEnabled(userId: string, type: string): Promise<boolean> {
   const key = TYPE_SETTING[type];
-  if (!key) return true; // uncategorised types are always delivered
+  if (!key) return true;
   const profile = await db.Profile.findOne({
     where: { userId },
     attributes: ['notificationSettings'],
