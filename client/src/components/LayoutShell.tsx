@@ -13,8 +13,8 @@ const AUTH_PATHS = [
   "/reset-password",
 ];
 // Pages that ship their own marketing chrome (LandingNav) - render bare.
-// /logout and /onboarding are bare too (they self-redirect / are standalone).
-const BARE_PATHS = ["/", "/browse", "/logout", "/onboarding"];
+// /onboarding is bare too (standalone). Logout is an inline action (no route).
+const BARE_PATHS = ["/", "/browse", "/onboarding"];
 
 // /auth/me is fetched on demand by `useCurrentUser`; the NextAuth session is the
 // source of truth for "logged in", so no Redux session-restorer is needed.

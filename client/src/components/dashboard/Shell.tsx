@@ -13,6 +13,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Logo, LogoMark } from "@/components/Logo";
+import Spinner from "@/components/ui/Spinner";
+import { useLogout } from "@/features/auth";
 import { NotificationBell } from "@/features/notifications";
 import { useSetAvailability } from "@/features/worker/availability";
 import { cn } from "@/lib/utils";
@@ -77,11 +79,23 @@ export default function Shell({
   const showVerified = role === "worker" && !!user.isVerified;
 
   const setAvailability = useSetAvailability();
+  const logout = useLogout();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
   const [available, setAvailable] = useState(!!user.isAvailable);
   const [savingAvail, setSavingAvail] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Logout is a client action — no dedicated /logout route. We show a branded
+  // overlay while the session is revoked + cleared, then hard-redirect home.
+  const handleLogout = () => {
+    if (loggingOut) return;
+    setMenuOpen(false);
+    setDrawerOpen(false);
+    setLoggingOut(true);
+    void logout({ callbackUrl: "/" });
+  };
 
   // Close the user dropdown when clicking outside it.
   useEffect(() => {
@@ -336,13 +350,13 @@ export default function Shell({
                   >
                     <Settings size={15} /> Settings
                   </Link>
-                  <Link
-                    href="/logout"
-                    className="flex items-center gap-2 w-full text-sm text-ink-2 no-underline px-2.5 py-2 rounded-md hover:bg-cream-2 hover:text-ink"
-                    onClick={() => setMenuOpen(false)}
+                  <button
+                    type="button"
+                    className="flex items-center gap-2 w-full text-sm text-ink-2 px-2.5 py-2 rounded-md hover:bg-cream-2 hover:text-ink cursor-pointer"
+                    onClick={handleLogout}
                   >
                     <LogOut size={15} /> Logout
-                  </Link>
+                  </button>
                 </div>
               )}
             </div>
@@ -389,6 +403,18 @@ export default function Shell({
         })}
         <NotificationBell variant="bottom" />
       </nav>
+
+      {loggingOut && (
+        <div className="fixed inset-0 z-[100] grid place-items-center bg-cream">
+          <div className="flex flex-col items-center gap-5">
+            <Logo size="lg" />
+            <div className="flex items-center gap-2.5 text-ink-2">
+              <Spinner className="h-4 w-4" />
+              <span className="text-sm">Signing you out…</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

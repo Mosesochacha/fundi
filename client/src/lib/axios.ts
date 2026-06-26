@@ -24,6 +24,12 @@ let cachedToken: { value: string | undefined; expiresAt: number } = {
 // refresh token exactly once, instead of racing N concurrent /auth/refresh calls.
 let inFlight: Promise<string | undefined> | null = null;
 
+/** Drop the cached access token (e.g. on logout) so no stale token is reused. */
+export function clearAccessTokenCache(): void {
+  cachedToken = { value: undefined, expiresAt: 0 };
+  inFlight = null;
+}
+
 async function getAccessToken(force = false): Promise<string | undefined> {
   if (!force && cachedToken.value && Date.now() < cachedToken.expiresAt) {
     return cachedToken.value;
@@ -68,7 +74,7 @@ client.interceptors.response.use(
       }
       // No valid session left - bounce to login.
       await signOut({ redirect: false });
-      if (typeof window !== "undefined") window.location.href = "/login";
+      if (typeof window !== "undefined") window.location.replace("/login");
     }
 
     return Promise.reject(error);
