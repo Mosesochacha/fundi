@@ -9,12 +9,12 @@ export const initialsOf = (n: string) =>
     .join("") || "?";
 
 const AVATAR_COLORS = [
-  "#c9a84c",
-  "#0d1b2a",
+  "var(--color-gold)",
+  "var(--color-navy)",
   "#3b7d6e",
   "#9c5b3b",
   "#5a4b8a",
-  "#a8872e",
+  "var(--color-gold-dark)",
   "#2f6f9e",
 ];
 

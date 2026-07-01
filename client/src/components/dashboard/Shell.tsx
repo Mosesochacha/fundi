@@ -153,6 +153,7 @@ export default function Shell({
                     ? "bg-gold/[0.14] text-gold"
                     : "text-white/60 hover:bg-white/[0.06] hover:text-white/90",
                 )}
+                aria-current={isActive(item.href) ? "page" : undefined}
                 onClick={onNavigate}
               >
                 <Icon size={15} />
@@ -308,6 +309,9 @@ export default function Shell({
                 type="button"
                 className="flex items-center gap-2 rounded-full px-1.5 py-1 cursor-pointer transition-colors hover:bg-cream"
                 onClick={() => setMenuOpen((o) => !o)}
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
+                aria-label="Account menu"
               >
                 <span className="w-[34px] h-[34px] rounded-full bg-gold-light text-gold-dark text-[11px] font-semibold flex items-center justify-center shrink-0">
                   {user.initials}

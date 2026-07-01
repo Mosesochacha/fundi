@@ -19,7 +19,7 @@ export function Card({
   return (
     <div
       className={cn(
-        "bg-white border border-border rounded-2xl overflow-hidden",
+        "bg-white border border-border rounded-xl overflow-hidden",
         className,
       )}
     >

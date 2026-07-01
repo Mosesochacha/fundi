@@ -14,6 +14,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import Shell from "@/components/dashboard/Shell";
+import { Select } from "@/components/ui";
 import { useToastContext } from "@/context/ToastContext";
 import { useAuth } from "@/features/auth";
 import {
@@ -238,20 +239,16 @@ export default function WorkerRequestsPage() {
               </Fragment>
             ))}
           </div>
-          <label className="ml-auto inline-flex items-center gap-1.5 text-ink-3 text-sm max-[640px]:ml-0">
-            Sort
-            <select
-              className="font-sans text-sm font-medium text-ink-2 bg-cream border border-border rounded-lg px-2.5 py-1.5 cursor-pointer hover:border-gold"
+          <div className="ml-auto inline-flex items-center gap-1.5 text-ink-3 text-sm max-[640px]:ml-0">
+            <span>Sort</span>
+            <Select
               value={sort}
-              onChange={(e) => setSort(e.target.value as SortOption)}
-            >
-              {SORTS.map((s) => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
-                </option>
-              ))}
-            </select>
-          </label>
+              onChange={(v) => setSort(v as SortOption)}
+              options={SORTS}
+              aria-label="Sort requests"
+              className="bg-cream py-1.5"
+            />
+          </div>
         </div>
 
         {isError && (

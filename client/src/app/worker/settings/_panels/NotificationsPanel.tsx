@@ -17,10 +17,22 @@ import {
 
 type Key = keyof NotificationSettings;
 
-const GROUPS: {
+type Group = {
   title: string;
   rows: { key: Key; title: string; sub?: string }[];
-}[] = [
+};
+
+const DELIVERY_GROUP: Group = {
+  title: "Delivery method",
+  rows: [
+    { key: "push", title: "Push notifications" },
+    { key: "email", title: "Email notifications" },
+    { key: "sms", title: "SMS notifications" },
+  ],
+};
+
+/** Worker-facing notification groups (they receive requests, reviews, views). */
+const WORKER_GROUPS: Group[] = [
   {
     title: "Job requests",
     rows: [
@@ -33,10 +45,7 @@ const GROUPS: {
       },
     ],
   },
-  {
-    title: "Messages",
-    rows: [{ key: "newMessages", title: "New messages" }],
-  },
+  { title: "Messages", rows: [{ key: "newMessages", title: "New messages" }] },
   {
     title: "Reviews & profile",
     rows: [
@@ -48,21 +57,34 @@ const GROUPS: {
       },
     ],
   },
+  DELIVERY_GROUP,
+];
+
+/** Employer-facing groups: they send requests, so they care about responses. */
+const EMPLOYER_GROUPS: Group[] = [
   {
-    title: "Delivery method",
+    title: "Hires",
     rows: [
-      { key: "push", title: "Push notifications" },
-      { key: "email", title: "Email notifications" },
-      { key: "sms", title: "SMS notifications" },
+      { key: "jobAccepted", title: "A fundi accepts your request" },
+      {
+        key: "jobReminders",
+        title: "Job reminders",
+        sub: "24 hours before a scheduled job",
+      },
     ],
   },
+  { title: "Messages", rows: [{ key: "newMessages", title: "New messages" }] },
+  DELIVERY_GROUP,
 ];
 
 export default function NotificationsPanel({
   settings,
+  role = "worker",
 }: {
   settings: WorkerSettings;
+  role?: "worker" | "employer";
 }) {
+  const groups = role === "employer" ? EMPLOYER_GROUPS : WORKER_GROUPS;
   const { error: toastError } = useToastContext();
   const update = useUpdateNotifications();
   const [prefs, setPrefs] = useState<NotificationSettings>(
@@ -100,7 +122,7 @@ export default function NotificationsPanel({
       action={savedAt ? <SavedPill /> : null}
     >
       <PanelBody>
-        {GROUPS.map((group) => (
+        {groups.map((group) => (
           <div className="[&+&]:mt-[22px]" key={group.title}>
             <div className="text-[11px] font-semibold tracking-[0.06em] uppercase text-ink-3 mb-1.5">
               {group.title}

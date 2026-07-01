@@ -58,13 +58,13 @@ export default function SettingsView({
         ) : (
           <>
             <AccountPanel settings={settings} />
-            <NotificationsPanel settings={settings} />
+            <NotificationsPanel settings={settings} role={role} />
             <AvailabilityPrivacyPanel
               settings={settings}
               onDirty={onDirty}
               showAvailability={isWorker}
             />
-            <DangerPanel />
+            <DangerPanel role={role} />
           </>
         )}
       </div>

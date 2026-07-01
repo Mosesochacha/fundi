@@ -1,27 +1,45 @@
 /** Static reference data + helpers for the /browse page UI. */
 
+import {
+  Blocks,
+  ChefHat,
+  Flame,
+  Hammer,
+  House,
+  type LucideIcon,
+  PaintRoller,
+  Snowflake,
+  Sparkles,
+  Sprout,
+  Wrench,
+  Zap,
+} from "lucide-react";
 import { symbolOf } from "@/lib/currency";
 
 export interface TradeOption {
   name: string;
-  emoji: string;
+  /** Lucide icon for the trade — used in filter pills and cards. */
+  icon: LucideIcon;
   count: string;
 }
 
+/** Fallback icon for any trade not in the map above. */
+export const DEFAULT_TRADE_ICON: LucideIcon = Wrench;
+
 /** Trade list shown in the Trade dropdown (label === store value). */
 export const TRADES: TradeOption[] = [
-  { name: "Plumber", emoji: "🔧", count: "8.2k" },
-  { name: "Electrician", emoji: "⚡", count: "6.1k" },
-  { name: "Carpenter", emoji: "🪚", count: "5.4k" },
-  { name: "Painter", emoji: "🎨", count: "3.9k" },
-  { name: "Mason", emoji: "🧱", count: "4.8k" },
-  { name: "House help", emoji: "🧹", count: "7.2k" },
-  { name: "Mechanic", emoji: "🔩", count: "3.3k" },
-  { name: "Gardener", emoji: "🌿", count: "2.1k" },
-  { name: "Cleaner", emoji: "🧽", count: "4.1k" },
-  { name: "Welder", emoji: "🔥", count: "2.8k" },
-  { name: "AC Tech", emoji: "❄️", count: "1.9k" },
-  { name: "Chef", emoji: "🍳", count: "1.4k" },
+  { name: "Plumber", icon: Wrench, count: "8.2k" },
+  { name: "Electrician", icon: Zap, count: "6.1k" },
+  { name: "Carpenter", icon: Hammer, count: "5.4k" },
+  { name: "Painter", icon: PaintRoller, count: "3.9k" },
+  { name: "Mason", icon: Blocks, count: "4.8k" },
+  { name: "House help", icon: House, count: "7.2k" },
+  { name: "Mechanic", icon: Wrench, count: "3.3k" },
+  { name: "Gardener", icon: Sprout, count: "2.1k" },
+  { name: "Cleaner", icon: Sparkles, count: "4.1k" },
+  { name: "Welder", icon: Flame, count: "2.8k" },
+  { name: "AC Tech", icon: Snowflake, count: "1.9k" },
+  { name: "Chef", icon: ChefHat, count: "1.4k" },
 ];
 
 export interface CityOption {

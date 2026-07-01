@@ -708,10 +708,10 @@ export default function WorkerProfile({
                 />
               )}
               <div className="relative pl-[22px] before:content-[''] before:absolute before:left-[5px] before:top-1 before:bottom-1 before:w-px before:bg-border">
-                {data.experience.map((e) => (
+                {data.experience.map((e, i) => (
                   <div
                     className="relative pb-4 mb-4 border-b-[0.5px] border-border last:border-b-0 last:mb-0 last:pb-0"
-                    key={e.id}
+                    key={`${e.id ?? e.company ?? "exp"}-${i}`}
                   >
                     <span className="absolute -left-[22px] top-[3px] w-[13px] h-[13px] rounded-full bg-gold border-2 border-white shadow-[0_0_0_2px_var(--color-border)]" />
                     {own && (
@@ -810,11 +810,6 @@ export default function WorkerProfile({
           <section className={CARD}>
             <div className={CARDHEAD}>
               <span className={TITLE}>Reviews</span>
-              {data.reviewCount > 0 && (
-                <button type="button" className={LINK}>
-                  See all →
-                </button>
-              )}
             </div>
             {!hideIfEmpty(data.reviewCount > 0) && (
               <div className="flex gap-6 flex-wrap items-center pb-4 mb-4 border-b-[0.5px] border-border">

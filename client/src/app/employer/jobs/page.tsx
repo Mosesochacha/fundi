@@ -3,7 +3,7 @@
 import { Briefcase } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Shell from "@/components/dashboard/Shell";
 import { useToastContext } from "@/context/ToastContext";
 import { useAuth } from "@/features/auth";
@@ -59,6 +59,25 @@ export default function EmployerJobsPage() {
   const { data: jobs, isLoading } = useGetEmployerJobs();
   const [tab, setTab] = useState("all");
   const [reviewTarget, setReviewTarget] = useState<ReviewTarget | null>(null);
+  const tablistRef = useRef<HTMLDivElement>(null);
+
+  // Roving arrow-key navigation across the status tabs (WAI-ARIA tabs pattern).
+  const onTabKeyDown = (e: React.KeyboardEvent) => {
+    const idx = TABS.findIndex((t) => t.key === tab);
+    let next = idx;
+    if (e.key === "ArrowRight") next = (idx + 1) % TABS.length;
+    else if (e.key === "ArrowLeft")
+      next = (idx - 1 + TABS.length) % TABS.length;
+    else if (e.key === "Home") next = 0;
+    else if (e.key === "End") next = TABS.length - 1;
+    else return;
+    e.preventDefault();
+    const key = TABS[next].key;
+    setTab(key);
+    tablistRef.current
+      ?.querySelector<HTMLButtonElement>(`#tab-${key}`)
+      ?.focus();
+  };
 
   const name =
     profile?.fullName ||
@@ -91,11 +110,22 @@ export default function EmployerJobsPage() {
           </p>
         </div>
 
-        <div className="flex gap-1.5 flex-wrap">
+        <div
+          ref={tablistRef}
+          role="tablist"
+          aria-label="Filter jobs by status"
+          onKeyDown={onTabKeyDown}
+          className="flex gap-1.5 flex-wrap"
+        >
           {TABS.map((t) => (
             <button
               key={t.key}
+              id={`tab-${t.key}`}
               type="button"
+              role="tab"
+              aria-selected={tab === t.key}
+              aria-controls="jobs-panel"
+              tabIndex={tab === t.key ? 0 : -1}
               className={`inline-flex items-center gap-1.5 border rounded-full px-[13px] py-1.5 text-sm cursor-pointer ${
                 tab === t.key
                   ? "bg-gold-light border-gold text-gold-dark font-semibold"
@@ -113,39 +143,46 @@ export default function EmployerJobsPage() {
           ))}
         </div>
 
-        {isLoading ? (
-          <ListSkeleton rows={4} />
-        ) : visible.length === 0 ? (
-          <EmptyCard
-            icon={<Briefcase size={40} />}
-            title="No jobs here"
-            sub="Find a fundi and send your first hire request."
-            cta={
-              <Link
-                href="/employer/search"
-                className={`${EL_BTN} ${EL_BTN_GOLD}`}
-              >
-                Find a fundi
-              </Link>
-            }
-          />
-        ) : (
-          <div className={EL_CARD}>
-            {visible.map((job) => (
-              <JobRow
-                key={job.id}
-                job={job}
-                onReview={() =>
-                  setReviewTarget({
-                    jobId: job.id,
-                    workerName: job.workerName,
-                    jobType: job.jobType,
-                  })
-                }
-              />
-            ))}
-          </div>
-        )}
+        <div
+          role="tabpanel"
+          id="jobs-panel"
+          aria-labelledby={`tab-${tab}`}
+          className="outline-none"
+        >
+          {isLoading ? (
+            <ListSkeleton rows={4} />
+          ) : visible.length === 0 ? (
+            <EmptyCard
+              icon={<Briefcase size={40} />}
+              title="No jobs here"
+              sub="Find a fundi and send your first hire request."
+              cta={
+                <Link
+                  href="/employer/search"
+                  className={`${EL_BTN} ${EL_BTN_GOLD}`}
+                >
+                  Find a fundi
+                </Link>
+              }
+            />
+          ) : (
+            <div className={EL_CARD}>
+              {visible.map((job) => (
+                <JobRow
+                  key={job.id}
+                  job={job}
+                  onReview={() =>
+                    setReviewTarget({
+                      jobId: job.id,
+                      workerName: job.workerName,
+                      jobType: job.jobType,
+                    })
+                  }
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <ReviewModal
@@ -266,7 +303,7 @@ function JobRow({ job, onReview }: { job: EmployerJob; onReview: () => void }) {
             )}
             {job.status === "completed" &&
               (job.reviewedAt ? (
-                <span className={`${EL_BTN} ${EL_BTN_OUTLINE}`} aria-disabled>
+                <span className={`${EL_BTN} ${EL_BTN_OUTLINE} cursor-default`}>
                   Reviewed ✓
                 </span>
               ) : (

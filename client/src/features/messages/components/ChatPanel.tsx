@@ -6,13 +6,12 @@ import {
   CheckCheck,
   ChevronLeft,
   ImagePlus,
+  Loader2,
   MessageSquare,
-  MoreHorizontal,
-  Paperclip,
-  Phone,
   Send,
   User,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import type { Conversation, JobStatus, Message } from "../types";
@@ -30,6 +29,7 @@ interface Props {
   othersTyping: boolean;
   loadingMessages: boolean;
   onSend: (content: string) => void;
+  onSendImage: (file: File) => Promise<void>;
   onJobAction: (action: "accept" | "decline" | "complete" | "cancel") => void;
   onTypingChange: (isTyping: boolean) => void;
   onBack: () => void;
@@ -50,14 +50,18 @@ export default function ChatPanel({
   othersTyping,
   loadingMessages,
   onSend,
+  onSendImage,
   onJobAction,
   onTypingChange,
   onBack,
 }: Props) {
   const { participant, linkedJob } = conversation;
+  const router = useRouter();
   const [text, setText] = useState("");
+  const [uploading, setUploading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLTextAreaElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const typingTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   );
@@ -91,6 +95,18 @@ export default function ChatPanel({
     emitTyping(false);
     clearTimeout(typingTimer.current);
     onSend(content);
+  };
+
+  const pickImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow re-selecting the same file
+    if (!file) return;
+    setUploading(true);
+    try {
+      await onSendImage(file);
+    } finally {
+      setUploading(false);
+    }
   };
 
   const subtitle = [
@@ -148,17 +164,18 @@ export default function ChatPanel({
             </div>
           </div>
         </div>
-        <div className="flex gap-1.5 shrink-0">
-          <button type="button" className={ICON_BTN} aria-label="View profile">
-            <User size={15} />
-          </button>
-          <button type="button" className={ICON_BTN} aria-label="Call">
-            <Phone size={15} />
-          </button>
-          <button type="button" className={ICON_BTN} aria-label="More">
-            <MoreHorizontal size={15} />
-          </button>
-        </div>
+        {participant.role === "worker" && (
+          <div className="flex gap-1.5 shrink-0">
+            <button
+              type="button"
+              className={ICON_BTN}
+              aria-label={`View ${participant.name}'s profile`}
+              onClick={() => router.push(`/worker/${participant.id}`)}
+            >
+              <User size={15} />
+            </button>
+          </div>
+        )}
       </div>
 
       {showBanner && linkedJob && (
@@ -182,7 +199,9 @@ export default function ChatPanel({
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            {renderBannerActions(linkedJob.status, role, onJobAction)}
+            {renderBannerActions(linkedJob.status, role, onJobAction, () =>
+              router.push("/employer/jobs"),
+            )}
           </div>
         </div>
       )}
@@ -252,6 +271,24 @@ export default function ChatPanel({
                             : "bg-white text-ink border-[0.5px] border-border rounded-[12px_12px_12px_3px]",
                         )}
                       >
+                        {m.attachmentUrl && m.attachmentType === "image" && (
+                          <a
+                            href={m.attachmentUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="block"
+                          >
+                            {/* biome-ignore lint/performance/noImgElement: chat images are arbitrary external host URLs */}
+                            <img
+                              src={m.attachmentUrl}
+                              alt="Shared attachment"
+                              className={cn(
+                                "rounded-[8px] max-w-full max-h-[240px] object-cover",
+                                m.content && "mb-1.5",
+                              )}
+                            />
+                          </a>
+                        )}
                         {m.content}
                       </div>
                       <div className="flex items-center gap-1 text-[10px] text-ink-3 mt-[3px]">
@@ -291,25 +328,32 @@ export default function ChatPanel({
 
       <div className="bg-white border-t-[0.5px] border-border px-[18px] py-2.5 shrink-0">
         <div className="flex items-end gap-1 bg-cream border-[0.5px] border-border rounded-[10px] px-2.5 py-[7px] focus-within:border-gold focus-within:bg-white">
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={pickImage}
+          />
           <button
             type="button"
-            className="w-[26px] h-[26px] border-none bg-transparent text-ink-3 rounded-md flex items-center justify-center cursor-pointer shrink-0 hover:text-ink-2"
-            aria-label="Attach file"
-          >
-            <Paperclip size={16} />
-          </button>
-          <button
-            type="button"
-            className="w-[26px] h-[26px] border-none bg-transparent text-ink-3 rounded-md flex items-center justify-center cursor-pointer shrink-0 hover:text-ink-2"
+            className="w-[26px] h-[26px] border-none bg-transparent text-ink-3 rounded-md flex items-center justify-center cursor-pointer shrink-0 hover:text-ink-2 disabled:opacity-50 disabled:cursor-default"
             aria-label="Attach photo"
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
           >
-            <ImagePlus size={16} />
+            {uploading ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <ImagePlus size={16} />
+            )}
           </button>
           <textarea
             ref={textRef}
             className="flex-1 border-none bg-transparent outline-none resize-none text-sm leading-normal text-ink max-h-[70px] px-0.5 py-1 placeholder:text-ink-3"
             rows={1}
             placeholder="Type a message..."
+            aria-label="Message"
             value={text}
             onChange={handleChange}
             onKeyDown={(e) => {
@@ -353,6 +397,7 @@ function renderBannerActions(
   status: JobStatus,
   role: Role,
   onJobAction: Props["onJobAction"],
+  onViewRequest: () => void,
 ) {
   if (role === "worker") {
     if (status === "pending") {
@@ -388,7 +433,7 @@ function renderBannerActions(
   if (status === "pending") {
     return (
       <>
-        <button type="button" className={BTN_OUTLINE}>
+        <button type="button" className={BTN_OUTLINE} onClick={onViewRequest}>
           View request
         </button>
         <button

@@ -11,13 +11,13 @@ import {
   tradeAccent,
 } from "@/app/browse/constants";
 import Shell from "@/components/dashboard/Shell";
+import { Select } from "@/components/ui";
 import { useAuth } from "@/features/auth";
 import {
   type BrowseFilters,
   type BrowseWorker,
   useBrowseWorkers,
 } from "@/features/browse";
-import { CURRENCIES } from "@/lib/currency";
 import { useSearchStore } from "@/store/searchStore";
 import HireModal from "../dashboard/HireModal";
 
@@ -61,10 +61,8 @@ export default function EmployerSearchPage() {
   const minRating = useSearchStore((s) => s.minRating);
   const minExp = useSearchStore((s) => s.minExp);
   const sortBy = useSearchStore((s) => s.sortBy);
-  const displayCurrency = useSearchStore((s) => s.displayCurrency);
   const toggleTrade = useSearchStore((s) => s.toggleTrade);
   const setFilter = useSearchStore((s) => s.setFilter);
-  const setDisplayCurrency = useSearchStore((s) => s.setDisplayCurrency);
   const resetFilters = useSearchStore((s) => s.resetFilters);
 
   const [page, setPage] = useState(1);
@@ -204,6 +202,7 @@ export default function EmployerSearchPage() {
           <div className="flex gap-1.5 overflow-x-auto flex-1 min-w-0 pb-0.5">
             {TRADES.map((t) => {
               const active = selectedTrades.includes(t.name);
+              const Icon = t.icon;
               return (
                 <button
                   key={t.name}
@@ -215,7 +214,7 @@ export default function EmployerSearchPage() {
                   }`}
                   onClick={() => toggleTrade(t.name)}
                 >
-                  <span aria-hidden>{t.emoji}</span> {t.name}
+                  <Icon size={14} aria-hidden className="shrink-0" /> {t.name}
                 </button>
               );
             })}
@@ -231,30 +230,13 @@ export default function EmployerSearchPage() {
           >
             Available now
           </button>
-          <select
-            className="text-sm text-ink-2 bg-white border border-border rounded-full px-3 py-1.5 cursor-pointer"
-            value={displayCurrency}
-            onChange={(e) => setDisplayCurrency(e.target.value)}
-            aria-label="Display currency"
-          >
-            {CURRENCIES.map((c) => (
-              <option key={c.code} value={c.code}>
-                {c.code} ({c.symbol})
-              </option>
-            ))}
-          </select>
-          <select
-            className="text-sm text-ink-2 bg-white border border-border rounded-full px-3 py-1.5 cursor-pointer"
+          <Select
             value={sortBy}
-            onChange={(e) => setFilter("sortBy", e.target.value)}
+            onChange={(v) => setFilter("sortBy", v)}
+            options={SORT_OPTIONS}
             aria-label="Sort by"
-          >
-            {SORT_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
+            className="rounded-full bg-white py-1.5"
+          />
           {hasActiveFilters && (
             <button type="button" className={CLEAR_BTN} onClick={clearAll}>
               Clear all
@@ -297,7 +279,6 @@ export default function EmployerSearchPage() {
                 <WorkerCard
                   key={w.id}
                   worker={w}
-                  displayCurrency={displayCurrency}
                   onView={() => router.push(`/worker/${w.username}`)}
                   onHire={() =>
                     setHireTarget({ id: w.id, name: w.name, trade: w.trade })
@@ -366,12 +347,10 @@ export default function EmployerSearchPage() {
 
 function WorkerCard({
   worker,
-  displayCurrency,
   onView,
   onHire,
 }: {
   worker: BrowseWorker;
-  displayCurrency: string;
   onView: () => void;
   onHire: () => void;
 }) {
@@ -459,7 +438,7 @@ function WorkerCard({
             <strong>{worker.jobsDone}</strong> jobs
           </span>
           <span className="ml-auto bg-gold-light border border-gold/40 text-gold-dark text-[11px] font-semibold rounded-full px-2 py-px">
-            {formatRate(displayCurrency, worker.dailyRate)}
+            {formatRate(worker.currency, worker.dailyRate)}
           </span>
         </div>
 

@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Op } from "sequelize";
 import db from "../models";
 import { JWT_CONFIG, USERNAME_CONFIG, REFRESH_GRACE_MS, normalizeCurrency, DEFAULT_CURRENCY } from "../utils/constants";
+import { symbolForCurrency } from "../utils/currencyMap";
 import {
   hashString,
   safeCompare,
@@ -120,6 +121,7 @@ class AuthService {
           interestedTrades: isWorker ? [] : (interestedTrades || []),
           dailyRate: isWorker ? (dailyRate ?? null) : null,
           currency: currencyCode,
+          currencySymbol: symbolForCurrency(currencyCode),
           emailVerified: false,
           status: 'active',
           termsAccepted: !!agreedToTerms,
