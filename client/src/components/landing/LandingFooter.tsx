@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 const LINK_CLASS =
-  "block text-[15px] font-semibold tracking-[-0.01em] text-white/40 mb-2.5 transition-colors hover:text-white";
+  "block text-[15px] font-semibold tracking-[-0.01em] text-white/55 mb-2.5 transition-colors hover:text-white";
 const BTN_CLASS = `${LINK_CLASS} no-underline bg-transparent border-none p-0 text-left cursor-pointer`;
 
 /** A footer entry navigates (href) or is a not-yet-built placeholder (no href). */
@@ -13,9 +13,8 @@ const COLUMNS: { heading: string; links: FooterLink[] }[] = [
     heading: "Platform",
     links: [
       { label: "Find a worker", href: "/browse" },
-      { label: "Post a job" },
+      { label: "Post a job", href: "/register" },
       { label: "Join as a worker", href: "/register" },
-      { label: "Pricing" },
     ],
   },
   {
@@ -25,15 +24,6 @@ const COLUMNS: { heading: string; links: FooterLink[] }[] = [
       { label: "Electricians", href: "/browse" },
       { label: "Carpenters", href: "/browse" },
       { label: "All categories", href: "/browse" },
-    ],
-  },
-  {
-    heading: "Company",
-    links: [
-      { label: "About" },
-      { label: "Blog" },
-      { label: "Careers" },
-      { label: "Contact" },
     ],
   },
 ];
@@ -57,7 +47,7 @@ export default function LandingFooter() {
   return (
     <footer className="bg-navy px-6 pt-16 pb-10">
       <div className="max-w-[1080px] mx-auto">
-        <div className="grid grid-cols-2 min-[480px]:grid-cols-2 md:grid-cols-[2fr_1fr_1fr_1fr] gap-7 md:gap-12 pb-12 border-b border-white/[0.07]">
+        <div className="grid grid-cols-2 min-[480px]:grid-cols-2 md:grid-cols-[2fr_1fr_1fr] gap-7 md:gap-12 pb-12 border-b border-white/[0.07]">
           <div className="col-span-2 md:col-span-1">
             <div className="mb-3">
               <Image
@@ -68,7 +58,7 @@ export default function LandingFooter() {
                 className="h-12 w-auto"
               />
             </div>
-            <p className="text-sm text-white/40 leading-[1.7] md:max-w-[240px]">
+            <p className="text-sm text-white/55 leading-[1.7] md:max-w-[240px]">
               The home for blue-collar workers everywhere - built for the people
               who build the world.
             </p>
@@ -84,27 +74,27 @@ export default function LandingFooter() {
             </div>
           ))}
         </div>
-        <div className="flex flex-col min-[480px]:flex-row min-[480px]:justify-between min-[480px]:items-center items-start pt-8 text-sm text-white/25 gap-3 flex-wrap">
+        <div className="flex flex-col min-[480px]:flex-row min-[480px]:justify-between min-[480px]:items-center items-start pt-8 text-sm text-white/50 gap-3 flex-wrap">
           <div>© 2026 Tesilix Technologies Ltd. All rights reserved.</div>
           <div className="flex gap-5">
             <Link
               href="/privacy"
-              className="text-[15px] font-semibold tracking-[-0.01em] text-white/40 no-underline transition-colors hover:text-white"
+              className="text-[15px] font-semibold tracking-[-0.01em] text-white/55 no-underline transition-colors hover:text-white"
             >
               Privacy
             </Link>
             <Link
               href="/terms"
-              className="text-[15px] font-semibold tracking-[-0.01em] text-white/40 no-underline transition-colors hover:text-white"
+              className="text-[15px] font-semibold tracking-[-0.01em] text-white/55 no-underline transition-colors hover:text-white"
             >
               Terms
             </Link>
-            <button
-              type="button"
-              className="text-[15px] font-semibold tracking-[-0.01em] text-white/40 transition-colors hover:text-white bg-transparent border-none p-0 cursor-pointer"
+            <Link
+              href="/#trust"
+              className="text-[15px] font-semibold tracking-[-0.01em] text-white/55 no-underline transition-colors hover:text-white"
             >
               Safety
-            </button>
+            </Link>
           </div>
         </div>
       </div>

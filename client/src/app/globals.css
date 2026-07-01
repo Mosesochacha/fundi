@@ -14,6 +14,16 @@
   --color-ink-4: #c2bdb0;
   --color-border: #e5e0d5;
 
+  /* Dark gold for small text on light backgrounds — gold-dark fails AA at
+     label sizes (2.96:1 on cream); this hits 5.3:1. */
+  --color-gold-deep: #7a5f18;
+}
+
+/* Fonts must live in an `inline` theme: next/font defines --font-dm-sans /
+   --font-fraunces at runtime on <body>, so the utilities have to emit a live
+   var() reference rather than a build-time-resolved value (which would be
+   empty, silently dropping the whole type system back to system-sans). */
+@theme inline {
   --font-sans: var(--font-dm-sans), sans-serif;
   --font-serif: var(--font-fraunces), serif;
 }

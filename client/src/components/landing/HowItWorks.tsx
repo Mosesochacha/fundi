@@ -36,7 +36,10 @@ const STEPS: { num: string; icon: ReactNode; title: string; desc: string }[] = [
 
 export default function HowItWorks() {
   return (
-    <section id="how" className="bg-cream-2 px-5 py-16 md:px-6 md:py-24">
+    <section
+      id="how"
+      className="scroll-mt-20 bg-cream-2 px-5 py-16 md:px-6 md:py-24"
+    >
       <div className="max-w-[1080px] mx-auto">
         <div className={eyebrow}>How it works</div>
         <h2 className={secTitle}>

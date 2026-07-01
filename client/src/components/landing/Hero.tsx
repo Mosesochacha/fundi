@@ -39,7 +39,7 @@ export default function Hero() {
               <div className="font-serif text-[28px] font-medium text-ink">
                 {s.num}
               </div>
-              <div className="text-[11px] text-ink-3 tracking-[0.05em] uppercase mt-0.5">
+              <div className="text-[11px] text-ink-2 tracking-[0.05em] uppercase mt-0.5">
                 {s.label}
               </div>
             </div>

@@ -30,10 +30,13 @@ const mapDots = [
 
 export default function GlobalSection() {
   return (
-    <section id="global" className="bg-cream-2 px-5 py-16 md:px-6 md:py-24">
+    <section
+      id="global"
+      className="scroll-mt-20 bg-cream-2 px-5 py-16 md:px-6 md:py-24"
+    >
       <div className="max-w-[1080px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
         <div className="reveal">
-          <div className="text-[11px] tracking-[0.12em] uppercase text-gold-dark font-medium mb-4">
+          <div className="text-[11px] tracking-[0.12em] uppercase text-gold-deep font-medium mb-4">
             Global by design
           </div>
           <h2 className="font-serif text-[clamp(30px,4vw,50px)] font-normal tracking-[-0.025em] leading-[1.1] text-ink">
