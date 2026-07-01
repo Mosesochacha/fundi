@@ -8,14 +8,15 @@ import {
   Search,
   Star,
   TrendingUp,
+  UserCheck,
   Users,
+  Wallet,
   Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import Shell from "@/components/dashboard/Shell";
-import { StatCard } from "@/components/ui";
 import WelcomeToast from "@/components/WelcomeToast";
 import { useToastContext } from "@/context/ToastContext";
 import { useAuth } from "@/features/auth";
@@ -49,23 +50,11 @@ function greeting(d: Date) {
   return "Good evening";
 }
 
-const longDate = (d: Date) =>
-  d.toLocaleDateString("en-GB", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-
 const shortDate = (iso: string) =>
   new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 
 /** Plain amount with thousands separators (symbol is prepended by callers). */
 const fmtMoney = (n: number) => n.toLocaleString("en-US");
-
-/** Compact money, e.g. 28400 → "28.4k". */
-const fmtK = (n: number) =>
-  n >= 1000 ? `${(n / 1000).toFixed(1).replace(/\.0$/, "")}k` : String(n);
 
 function summary(active: number, pending: number) {
   if (active === 0 && pending === 0) return "No active jobs right now.";
@@ -140,11 +129,10 @@ export default function EmployerDashboardPage() {
       <div className="flex flex-col gap-4 text-ink-2">
         <div className="flex items-end justify-between gap-4 flex-wrap">
           <div>
-            <div className="text-sm text-ink-3">{longDate(now)}</div>
-            <h1 className="font-serif text-[26px] font-normal text-ink mt-0.5 leading-[1.15]">
+            <h1 className="font-serif text-[26px] font-normal text-[#2c2620] leading-[1.15]">
               {greeting(now)}, {firstName}.
             </h1>
-            <p className="text-sm text-ink-3 mt-1">
+            <p className="text-[13px] text-[#8a8a85] mt-1">
               {summary(stats?.activeJobs ?? 0, stats?.pendingResponses ?? 0)}
             </p>
           </div>
@@ -180,38 +168,29 @@ export default function EmployerDashboardPage() {
           <>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               <StatCard
-                accent="gold"
+                icon={<Briefcase size={16} />}
                 number={stats?.activeJobs ?? 0}
                 label="Active jobs"
-                sub="In progress now"
               />
               <StatCard
-                accent="blue"
+                icon={<Clock size={16} />}
                 number={stats?.pendingResponses ?? 0}
                 label="Pending responses"
-                sub="Awaiting fundi reply"
               />
               <StatCard
-                accent="green"
+                icon={<UserCheck size={16} />}
                 number={stats?.totalHires ?? 0}
                 label="Total hires"
-                sub="Since joining Tesilix"
               />
               <StatCard
-                accent="purple"
-                number={fmtK(stats?.totalSpent ?? 0)}
-                label="Total spent this month"
-                sub={`${symbolOf(user?.currency)} this month`}
-                trend={
-                  (stats?.weekTrend ?? 0) > 0
-                    ? `↑ ${stats?.weekTrend} jobs this week`
-                    : undefined
-                }
+                icon={<Wallet size={16} />}
+                number={`${symbolOf(user?.currency)} ${fmtMoney(stats?.totalSpent ?? 0)}`}
+                label="Spent this month"
               />
             </div>
 
             {brandNew ? (
-              <FirstRunHero />
+              <GetStartedPanel />
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-4 items-start">
                 <div className="flex flex-col gap-4">
@@ -883,22 +862,122 @@ function EmptyState({
   );
 }
 
-function FirstRunHero() {
+function StatCard({
+  icon,
+  number,
+  label,
+}: {
+  icon: React.ReactNode;
+  number: React.ReactNode;
+  label: string;
+}) {
   return (
-    <div className="flex flex-col items-center text-center px-6 py-14 bg-white border border-border rounded-xl">
-      <span className="text-[32px]">🔧</span>
-      <div className="text-sm font-medium text-ink-2 mt-3">
-        Find your first fundi
+    <div className="bg-white border-[0.5px] border-[#e5e0d5] rounded-xl p-4">
+      <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#22201c] text-[#c9a84c]">
+        {icon}
+      </span>
+      <div className="text-[24px] font-medium text-[#2c2620] leading-none mt-3.5">
+        {number}
       </div>
-      <p className="text-sm text-ink-3 leading-relaxed max-w-[260px] mt-1">
-        Browse verified plumbers, electricians, carpenters and more near you.
-      </p>
-      <Link
-        href="/employer/search"
-        className={`${BTN_BASE} text-sm px-3.5 py-2 ${BTN_GOLD} mt-3.5`}
-      >
-        Browse workers
-      </Link>
+      <div className="text-xs text-[#8a8a85] mt-0.5">{label}</div>
+    </div>
+  );
+}
+
+const GET_STARTED_STEPS = [
+  "Search by trade and area",
+  "Message and agree on price",
+  "Get the job done, leave a review",
+];
+
+/**
+ * First-run panel shown until the employer has any jobs or hires. Once they
+ * post their first job this is replaced by their active jobs list, and the
+ * highlighted step should track their real progress.
+ */
+function GetStartedPanel() {
+  return (
+    <div>
+      <div className="flex flex-col lg:flex-row gap-8 bg-[#221d16] rounded-xl px-8 py-9">
+        <div className="flex-1">
+          <div className="text-[11px] font-medium uppercase tracking-[0.6px] text-[#c9a84c]">
+            Get started
+          </div>
+          <h2 className="font-serif text-[22px] font-normal text-[#faf8f4] leading-[1.2] mt-2">
+            Post your first job in under two minutes
+          </h2>
+          <p className="text-[13px] text-[#c4bda9] leading-relaxed max-w-[380px] mt-2">
+            Tell us what you need done. We match you with verified fundis near
+            you who can start right away.
+          </p>
+          <div className="flex flex-wrap gap-2.5 mt-5">
+            <Link
+              href="/browse"
+              className={`${BTN_BASE} ${BTN_SM} bg-[#c9a84c] border-[#c9a84c] text-[#3d2e08] hover:bg-[#d4b968] hover:border-[#d4b968]`}
+            >
+              Browse workers
+            </Link>
+            <Link
+              href="/employer/search"
+              className={`${BTN_BASE} ${BTN_SM} bg-transparent border-[#4a4234] text-[#faf8f4] hover:border-[#c9a84c]`}
+            >
+              Post a job
+            </Link>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2.5 lg:min-w-[200px]">
+          {GET_STARTED_STEPS.map((label, i) => {
+            const active = i === 0;
+            return (
+              <div
+                key={label}
+                className="flex items-center gap-2.5 bg-[#2c2620] rounded-lg px-3 py-2.5"
+              >
+                <span
+                  className={`flex items-center justify-center w-[22px] h-[22px] shrink-0 rounded-full text-[11px] font-medium ${
+                    active
+                      ? "bg-[#c9a84c] text-[#3d2e08]"
+                      : "bg-[#4a4234] text-[#c4bda9]"
+                  }`}
+                >
+                  {i + 1}
+                </span>
+                <span className="text-xs text-[#e8e3d8]">{label}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <TradeChips />
+    </div>
+  );
+}
+
+const POPULAR_TRADES = [
+  "Plumbers",
+  "Electricians",
+  "House help",
+  "Carpenters",
+  "Painters",
+];
+
+function TradeChips() {
+  return (
+    <div className="mt-3.5">
+      <div className="text-[11px] text-[#8a8a85]">Popular near you</div>
+      <div className="flex flex-wrap gap-2 mt-2">
+        {POPULAR_TRADES.map((trade) => (
+          <Link
+            key={trade}
+            href={`/browse?trade=${encodeURIComponent(trade)}`}
+            className="bg-white border-[0.5px] border-[#e5e0d5] rounded-[20px] px-3.5 py-1.5 text-xs text-[#2c2620] no-underline transition-colors hover:border-gold"
+          >
+            {trade}
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
@@ -913,12 +992,11 @@ function DashboardSkeleton() {
           <div
             // biome-ignore lint/suspicious/noArrayIndexKey: fixed skeleton row
             key={i}
-            className="relative bg-white border border-border rounded-xl px-[18px] py-4 overflow-hidden"
+            className="bg-white border-[0.5px] border-border rounded-xl p-4"
           >
-            <div className="absolute top-0 left-0 right-0 h-0.5 bg-border" />
-            <div className={`${SKEL} w-12 h-[26px]`} />
-            <div className={`${SKEL} w-[70%] h-3 mt-3`} />
-            <div className={`${SKEL} w-[55%] h-2.5 mt-2`} />
+            <div className={`${SKEL} w-8 h-8 rounded-lg`} />
+            <div className={`${SKEL} w-16 h-6 mt-3.5`} />
+            <div className={`${SKEL} w-[55%] h-3 mt-1.5`} />
           </div>
         ))}
       </div>

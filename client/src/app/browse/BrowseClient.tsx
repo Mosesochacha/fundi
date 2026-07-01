@@ -4,6 +4,7 @@ import { MapPin, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import LandingNav from "@/components/landing/LandingNav";
+import { useAuth } from "@/features/auth";
 import {
   type BrowseFilters,
   type BrowseWorker,
@@ -50,6 +51,7 @@ export default function BrowseClient({
   initialLocation,
 }: Props) {
   const router = useRouter();
+  const { isLoggedIn } = useAuth();
 
   const selectedTrades = useSearchStore((s) => s.selectedTrades);
   const location = useSearchStore((s) => s.location);
@@ -87,6 +89,7 @@ export default function BrowseClient({
     selectedTrades,
     location,
     availableNow,
+    verifiedOnly,
     minRating,
     minExp,
     sortBy,
@@ -147,6 +150,13 @@ export default function BrowseClient({
   };
 
   const handleView = (w: BrowseWorker) => router.push(`/worker/${w.username}`);
+
+  const handleMessage = (w: BrowseWorker) => {
+    const profile = `/worker/${w.username}`;
+    router.push(
+      isLoggedIn ? profile : `/login?next=${encodeURIComponent(profile)}`,
+    );
+  };
 
   const clearAll = () => {
     resetFilters();
@@ -258,7 +268,12 @@ export default function BrowseClient({
             <>
               <div className="grid grid-cols-[repeat(auto-fill,minmax(244px,1fr))] gap-5">
                 {workers.map((w) => (
-                  <WorkerCardGrid key={w.id} worker={w} onView={handleView} />
+                  <WorkerCardGrid
+                    key={w.id}
+                    worker={w}
+                    onView={handleView}
+                    onMessage={handleMessage}
+                  />
                 ))}
               </div>
 

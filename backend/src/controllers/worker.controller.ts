@@ -50,6 +50,7 @@ function shapeProfile(
     location: profile.location,
     country: profile.country ?? null,
     avatarUrl: profile.avatarUrl ?? null,
+    bannerUrl: profile.bannerUrl ?? null,
     currency: user?.currency ?? 'USD',
     currencySymbol: user?.currencySymbol ?? symbolForCurrency(user?.currency),
     isVerified: !!user?.isPhoneVerified,
@@ -131,7 +132,10 @@ class WorkerController {
       attributes: ['dailyRate', 'currency', 'currencySymbol', 'isPhoneVerified', 'accountType'],
       required: verified,
     };
-    if (Object.keys(userWhere).length) {
+    // Reflect.ownKeys (not Object.keys) so Symbol keys like Op.or — used by the
+    // rate filter below — are detected; Object.keys ignores them, which silently
+    // disabled min/max-rate filtering.
+    if (Reflect.ownKeys(userWhere).length) {
       userInclude.where = userWhere;
       userInclude.required = true;
     }
@@ -172,6 +176,7 @@ class WorkerController {
         location: plain.location,
         bio: plain.bio ?? '',
         avatarUrl: plain.avatarUrl ?? null,
+        bannerUrl: plain.bannerUrl ?? null,
         yearsExperience: plain.yearsExperience ?? 0,
         currency: user.currency ?? 'USD',
         currencySymbol: user.currencySymbol ?? symbolForCurrency(user.currency),

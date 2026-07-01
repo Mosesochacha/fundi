@@ -7,6 +7,7 @@ export interface BrowseWorker {
   location: string;
   bio: string;
   avatarUrl: string | null;
+  bannerUrl: string | null;
   yearsExperience: number;
   currency: string;
   dailyRate: number;

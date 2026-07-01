@@ -1,6 +1,13 @@
 "use client";
 
-import { ChevronDown, MapPin, Sparkles, Wrench, X } from "lucide-react";
+import {
+  ChevronDown,
+  MapPin,
+  ShieldCheck,
+  Sparkles,
+  Wrench,
+  X,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { SEARCH_DEFAULTS, useSearchStore } from "@/store/searchStore";
@@ -35,6 +42,7 @@ export default function FilterBar({ onAskAi }: Props) {
   const selectedTrades = useSearchStore((s) => s.selectedTrades);
   const location = useSearchStore((s) => s.location);
   const availableNow = useSearchStore((s) => s.availableNow);
+  const verifiedOnly = useSearchStore((s) => s.verifiedOnly);
   const minRating = useSearchStore((s) => s.minRating);
   const minExp = useSearchStore((s) => s.minExp);
   const sortBy = useSearchStore((s) => s.sortBy);
@@ -72,7 +80,12 @@ export default function FilterBar({ onAskAi }: Props) {
   const expActive = minExp > 0;
   const ratingActive = minRating > 0;
   const anyActive =
-    tradeActive || locActive || expActive || ratingActive || availableNow;
+    tradeActive ||
+    locActive ||
+    expActive ||
+    ratingActive ||
+    availableNow ||
+    verifiedOnly;
 
   const expLabel = EXP_OPTIONS.find((o) => o.value === minExp)?.label;
   const ratingLabel = RATING_OPTIONS.find((o) => o.value === minRating)?.label;
@@ -251,6 +264,25 @@ export default function FilterBar({ onAskAi }: Props) {
             />
             Available now
           </button>
+
+          <button
+            type="button"
+            className={cn(
+              "flex items-center gap-2 rounded-[11px] border px-4 py-2.5 text-sm font-semibold",
+              verifiedOnly
+                ? "border-gold-dark bg-gold-dark text-white"
+                : "border-border bg-white text-ink-2",
+            )}
+            onClick={() => setFilter("verifiedOnly", !verifiedOnly)}
+            aria-pressed={verifiedOnly}
+          >
+            <ShieldCheck
+              size={15}
+              aria-hidden
+              className={verifiedOnly ? "text-white" : "text-gold-dark"}
+            />
+            Verified only
+          </button>
         </div>
 
         <div className="flex w-full flex-wrap items-center justify-between gap-2.5 md:w-auto md:justify-start">
@@ -346,6 +378,19 @@ export default function FilterBar({ onAskAi }: Props) {
                 className={FB_CHIP_BTN}
                 onClick={() => setFilter("availableNow", false)}
                 aria-label="Remove availability filter"
+              >
+                <X size={11} aria-hidden />
+              </button>
+            </span>
+          )}
+          {verifiedOnly && (
+            <span className={FB_CHIP}>
+              Verified only
+              <button
+                type="button"
+                className={FB_CHIP_BTN}
+                onClick={() => setFilter("verifiedOnly", false)}
+                aria-label="Remove verified filter"
               >
                 <X size={11} aria-hidden />
               </button>

@@ -12,7 +12,8 @@
     "seed": "NODE_OPTIONS=--no-network-family-autoselection npx sequelize db:seed:all",
     "db:reset": "npm run migrate:undo:all && npm run migrate && npm run seed",
     "reindex:posts": "NODE_OPTIONS=--no-network-family-autoselection ts-node --transpile-only src/scripts/reindex-posts.ts",
-    "reindex:profiles": "NODE_OPTIONS=--no-network-family-autoselection ts-node --transpile-only src/scripts/reindex-profiles.ts"
+    "reindex:profiles": "NODE_OPTIONS=--no-network-family-autoselection ts-node --transpile-only src/scripts/reindex-profiles.ts",
+    "seed:workers": "NODE_OPTIONS=--no-network-family-autoselection ts-node --transpile-only src/scripts/seed-workers.ts"
   },
   "dependencies": {
     "@sentry/node": "^8.55.2",

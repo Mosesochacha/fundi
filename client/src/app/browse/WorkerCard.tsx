@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPin } from "lucide-react";
+import { MapPin, MessageSquare } from "lucide-react";
 import type { CSSProperties } from "react";
 import type { BrowseWorker } from "@/features/browse";
 import {
@@ -13,23 +13,35 @@ import {
 interface Props {
   worker: BrowseWorker;
   onView: (w: BrowseWorker) => void;
+  onMessage: (w: BrowseWorker) => void;
 }
 
 /**
  * Find-a-Fundi worker card. Gradient cover banner + availability pill, avatar
  * with verification check, name, trade label, location, tagline (bio) and a
- * rating · experience footer. Single "View profile" action.
+ * rating · experience footer. "View profile" (secondary) + "Message" (primary).
  */
-export function WorkerCardGrid({ worker, onView }: Props) {
+export function WorkerCardGrid({ worker, onView, onMessage }: Props) {
   const accent = tradeAccent(worker.trade);
   const available = worker.isAvailable;
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-[18px] border border-border bg-white shadow-[0_1px_2px_rgba(33,28,20,0.04)] transition-all duration-[220ms] hover:-translate-y-[3px] hover:border-ink-4 hover:shadow-[0_16px_36px_rgba(33,28,20,0.12)]">
       <div
-        className="relative h-20"
+        className="relative h-20 overflow-hidden"
         style={{ background: bannerGradient(worker.trade) } as CSSProperties}
       >
+        {worker.bannerUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          // biome-ignore lint/performance/noImgElement: cover URLs are arbitrary external hosts
+          <img
+            src={worker.bannerUrl}
+            alt=""
+            aria-hidden
+            loading="lazy"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        )}
         <span
           className={`absolute top-[11px] right-[11px] flex items-center gap-[5px] rounded-full bg-white/[0.92] px-2.5 py-1 text-[11px] font-semibold shadow-[0_1px_3px_rgba(33,28,20,0.08)] ${available ? "text-green-700" : "text-red-600"}`}
         >
@@ -134,13 +146,23 @@ export function WorkerCardGrid({ worker, onView }: Props) {
           </span>
         </div>
 
-        <button
-          type="button"
-          className="mt-3.5 inline-flex w-fit items-center gap-[7px] self-start whitespace-nowrap rounded-full border border-border bg-white px-[18px] py-[9px] text-sm font-semibold text-ink-2 transition-all duration-[180ms] hover:border-navy hover:bg-navy hover:text-white"
-          onClick={() => onView(worker)}
-        >
-          View profile <span aria-hidden>→</span>
-        </button>
+        <div className="mt-3.5 flex items-center gap-2">
+          <button
+            type="button"
+            className="inline-flex items-center gap-[7px] whitespace-nowrap rounded-full border border-border bg-white px-[15px] py-[9px] text-sm font-semibold text-ink-2 transition-all duration-[180ms] hover:border-ink-4 hover:text-ink"
+            onClick={() => onView(worker)}
+          >
+            View profile
+          </button>
+          <button
+            type="button"
+            className="inline-flex items-center gap-[7px] whitespace-nowrap rounded-full border border-navy bg-navy px-[18px] py-[9px] text-sm font-semibold text-white transition-all duration-[180ms] hover:border-gold-dark hover:bg-gold-dark"
+            onClick={() => onMessage(worker)}
+          >
+            <MessageSquare size={14} aria-hidden />
+            Message
+          </button>
+        </div>
       </div>
     </article>
   );

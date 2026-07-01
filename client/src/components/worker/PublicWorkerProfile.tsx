@@ -24,22 +24,36 @@ export default function PublicWorkerProfile({
       <LandingNav />
 
       <main className="mx-auto max-w-[860px] px-5 pb-24 pt-[96px] md:pt-[120px]">
-        <section className="rounded-2xl border border-border bg-white p-6 md:p-8">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-            {data.avatarUrl ? (
-              // biome-ignore lint/performance/noImgElement: avatar is a remote, variable host — plain img keeps this view server-renderable
+        <section className="overflow-hidden rounded-2xl border border-border bg-white">
+          <div className="relative h-36 bg-gradient-to-br from-navy-2 to-navy md:h-48">
+            {data.bannerUrl && (
+              // biome-ignore lint/performance/noImgElement: cover is a remote, variable host — plain img keeps this view server-renderable
               <img
-                src={data.avatarUrl}
-                alt={data.name}
-                className="h-20 w-20 shrink-0 rounded-full object-cover"
+                src={data.bannerUrl}
+                alt=""
+                aria-hidden
+                className="absolute inset-0 h-full w-full object-cover"
               />
-            ) : (
-              <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-navy text-2xl font-semibold text-white">
-                {data.initials}
-              </div>
             )}
+          </div>
 
-            <div className="min-w-0">
+          <div className="px-6 pb-6 md:px-8 md:pb-8">
+            <div className="-mt-12 flex items-end md:-mt-14">
+              {data.avatarUrl ? (
+                // biome-ignore lint/performance/noImgElement: avatar is a remote, variable host — plain img keeps this view server-renderable
+                <img
+                  src={data.avatarUrl}
+                  alt={data.name}
+                  className="h-24 w-24 shrink-0 rounded-full object-cover shadow-sm ring-4 ring-white md:h-28 md:w-28"
+                />
+              ) : (
+                <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-navy text-3xl font-semibold text-white ring-4 ring-white md:h-28 md:w-28">
+                  {data.initials}
+                </div>
+              )}
+            </div>
+
+            <div className="mt-4 min-w-0">
               <h1 className="font-serif text-[28px] font-medium leading-tight text-ink md:text-[34px]">
                 {data.name}
               </h1>
@@ -66,40 +80,40 @@ export default function PublicWorkerProfile({
                 </span>
               </p>
             </div>
-          </div>
 
-          <dl className="mt-6 grid grid-cols-2 gap-4 border-t border-border pt-5 sm:grid-cols-4">
-            <Stat
-              icon={<Star size={16} aria-hidden />}
-              label="Rating"
-              value={
-                data.reviewCount > 0
-                  ? `${data.rating.toFixed(1)} (${data.reviewCount})`
-                  : "New"
-              }
-            />
-            <Stat
-              icon={<Briefcase size={16} aria-hidden />}
-              label="Jobs done"
-              value={String(data.jobsDone)}
-            />
-            <Stat
-              label="Experience"
-              value={
-                data.yearsExperience > 0
-                  ? `${data.yearsExperience} yr${data.yearsExperience === 1 ? "" : "s"}`
-                  : "—"
-              }
-            />
-            <Stat
-              label="Day rate"
-              value={
-                hasRate
-                  ? `${data.currencySymbol} ${data.dailyRate.toLocaleString()}`
-                  : "On request"
-              }
-            />
-          </dl>
+            <dl className="mt-6 grid grid-cols-2 gap-4 border-t border-border pt-5 sm:grid-cols-4">
+              <Stat
+                icon={<Star size={16} aria-hidden />}
+                label="Rating"
+                value={
+                  data.reviewCount > 0
+                    ? `${data.rating.toFixed(1)} (${data.reviewCount})`
+                    : "New"
+                }
+              />
+              <Stat
+                icon={<Briefcase size={16} aria-hidden />}
+                label="Jobs done"
+                value={String(data.jobsDone)}
+              />
+              <Stat
+                label="Experience"
+                value={
+                  data.yearsExperience > 0
+                    ? `${data.yearsExperience} yr${data.yearsExperience === 1 ? "" : "s"}`
+                    : "—"
+                }
+              />
+              <Stat
+                label="Day rate"
+                value={
+                  hasRate
+                    ? `${data.currencySymbol} ${data.dailyRate.toLocaleString()}`
+                    : "On request"
+                }
+              />
+            </dl>
+          </div>
         </section>
 
         {data.about && (

@@ -15,6 +15,7 @@ export interface PublicWorkerData {
   location: string;
   country: string | null;
   avatarUrl: string | null;
+  bannerUrl: string | null;
   currency: string;
   currencySymbol: string;
   isVerified: boolean;

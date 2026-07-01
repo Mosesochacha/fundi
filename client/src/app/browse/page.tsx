@@ -14,7 +14,7 @@ export function generateMetadata(): Metadata {
 async function getInitialWorkers(): Promise<BrowseWorkersResponse | undefined> {
   try {
     const res = await fetch(
-      `${API_BASE}/browse/workers?available=false&verified=false&minRating=0&minRate=500&maxRate=10000&sort=best_match&page=1&limit=12`,
+      `${API_BASE}/browse/workers?available=false&verified=false&minRating=0&minRate=0&maxRate=0&sort=best_match&page=1&limit=12`,
       { cache: "no-store" },
     ).then((r) => r.json());
     return (res?.data as BrowseWorkersResponse) ?? undefined;
