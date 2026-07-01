@@ -282,7 +282,7 @@ export default function AccountPanel({
           <Field
             label="Currency"
             htmlFor="currency"
-            hint="Used to display your rates and earnings. Changes the symbol only."
+            hint="Used to display amounts across Tesilix. Changes the symbol only."
           >
             <CurrencySelect
               id="currency"

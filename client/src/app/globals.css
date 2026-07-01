@@ -4,11 +4,11 @@
   --color-gold: #c9a84c;
   --color-gold-dark: #a8872e;
   --color-gold-light: #fdf6e3;
-  --color-navy: #0d1b2a;
-  --color-navy-2: #1a2e42;
+  --color-navy: #221d16;
+  --color-navy-2: #3a3226;
   --color-cream: #faf8f4;
   --color-cream-2: #f2efe8;
-  --color-ink: #0e0e0d;
+  --color-ink: #2c2620;
   --color-ink-2: #4a4a47;
   --color-ink-3: #8a8a85;
   --color-ink-4: #c2bdb0;
@@ -30,7 +30,7 @@
     ),
     radial-gradient(
       ellipse 600px 400px at 100% 0%,
-      rgba(13, 27, 42, 0.04),
+      rgba(34, 29, 22, 0.04),
       transparent 55%
     ), var(--color-cream);
 }

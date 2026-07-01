@@ -114,8 +114,8 @@ export function initModel(sequelize: Sequelize): typeof User {
       currencySymbol: {
         type: DataTypes.STRING(8),
         allowNull: false,
-        defaultValue: 'KSh',
-        comment: 'Display symbol for `currency` (no FX conversion).',
+        defaultValue: '$',
+        comment: 'Display symbol for `currency` (kept in sync with `currency`; no FX conversion).',
       },
       status: {
         type: DataTypes.ENUM("active", "inactive", "suspended"),

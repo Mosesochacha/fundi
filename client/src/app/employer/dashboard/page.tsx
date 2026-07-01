@@ -129,10 +129,10 @@ export default function EmployerDashboardPage() {
       <div className="flex flex-col gap-4 text-ink-2">
         <div className="flex items-end justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="font-serif text-[26px] font-normal text-[#2c2620] leading-[1.15]">
+            <h1 className="font-serif text-[26px] font-normal text-ink leading-[1.15]">
               {greeting(now)}, {firstName}.
             </h1>
-            <p className="text-[13px] text-[#8a8a85] mt-1">
+            <p className="text-[13px] text-ink-3 mt-1">
               {summary(stats?.activeJobs ?? 0, stats?.pendingResponses ?? 0)}
             </p>
           </div>
@@ -573,8 +573,8 @@ function SuggestedFundisCard({
           sm
           icon={<Users size={36} />}
           title="No suggestions yet"
-          sub="Browse workers to get recommendations."
-          cta={{ label: "Browse workers", href: "/employer/search" }}
+          sub="Browse fundis to get recommendations."
+          cta={{ label: "Browse fundis", href: "/employer/search" }}
         />
       ) : (
         workers.map((w) => (
@@ -702,7 +702,7 @@ function SpendingCard({ items, total }: { items: SpendItem[]; total: number }) {
           sm
           icon={<TrendingUp size={36} />}
           title="No spending yet"
-          sub="No spending yet this month."
+          sub="Once you hire and pay a fundi, it'll show up here."
         />
       ) : (
         <>
@@ -872,14 +872,14 @@ function StatCard({
   label: string;
 }) {
   return (
-    <div className="bg-white border-[0.5px] border-[#e5e0d5] rounded-xl p-4">
-      <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#22201c] text-[#c9a84c]">
+    <div className="bg-white border-[0.5px] border-border rounded-xl p-4">
+      <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-navy text-gold">
         {icon}
       </span>
-      <div className="text-[24px] font-medium text-[#2c2620] leading-none mt-3.5">
+      <div className="text-[24px] font-medium text-ink leading-none mt-3.5">
         {number}
       </div>
-      <div className="text-xs text-[#8a8a85] mt-0.5">{label}</div>
+      <div className="text-xs text-ink-3 mt-0.5">{label}</div>
     </div>
   );
 }
@@ -898,30 +898,30 @@ const GET_STARTED_STEPS = [
 function GetStartedPanel() {
   return (
     <div>
-      <div className="flex flex-col lg:flex-row gap-8 bg-[#221d16] rounded-xl px-8 py-9">
+      <div className="flex flex-col lg:flex-row gap-8 bg-navy rounded-xl px-8 py-9">
         <div className="flex-1">
-          <div className="text-[11px] font-medium uppercase tracking-[0.6px] text-[#c9a84c]">
+          <div className="text-[11px] font-medium uppercase tracking-[0.6px] text-gold">
             Get started
           </div>
-          <h2 className="font-serif text-[22px] font-normal text-[#faf8f4] leading-[1.2] mt-2">
-            Post your first job in under two minutes
+          <h2 className="font-serif text-[22px] font-normal text-cream leading-[1.2] mt-2">
+            Find your first fundi in under two minutes
           </h2>
-          <p className="text-[13px] text-[#c4bda9] leading-relaxed max-w-[380px] mt-2">
-            Tell us what you need done. We match you with verified fundis near
-            you who can start right away.
+          <p className="text-[13px] text-ink-4 leading-relaxed max-w-[380px] mt-2">
+            Browse verified fundis near you, compare rates and reviews, then
+            send a hire request — they can start right away.
           </p>
           <div className="flex flex-wrap gap-2.5 mt-5">
             <Link
-              href="/browse"
-              className={`${BTN_BASE} ${BTN_SM} bg-[#c9a84c] border-[#c9a84c] text-[#3d2e08] hover:bg-[#d4b968] hover:border-[#d4b968]`}
+              href="/employer/search"
+              className={`${BTN_BASE} ${BTN_SM} bg-gold border-gold text-navy hover:bg-gold-dark hover:border-gold-dark`}
             >
-              Browse workers
+              Browse fundis
             </Link>
             <Link
-              href="/employer/search"
-              className={`${BTN_BASE} ${BTN_SM} bg-transparent border-[#4a4234] text-[#faf8f4] hover:border-[#c9a84c]`}
+              href="/employer/messages"
+              className={`${BTN_BASE} ${BTN_SM} bg-transparent border-navy-2 text-cream hover:border-gold`}
             >
-              Post a job
+              Go to messages
             </Link>
           </div>
         </div>
@@ -932,18 +932,16 @@ function GetStartedPanel() {
             return (
               <div
                 key={label}
-                className="flex items-center gap-2.5 bg-[#2c2620] rounded-lg px-3 py-2.5"
+                className="flex items-center gap-2.5 bg-ink rounded-lg px-3 py-2.5"
               >
                 <span
                   className={`flex items-center justify-center w-[22px] h-[22px] shrink-0 rounded-full text-[11px] font-medium ${
-                    active
-                      ? "bg-[#c9a84c] text-[#3d2e08]"
-                      : "bg-[#4a4234] text-[#c4bda9]"
+                    active ? "bg-gold text-navy" : "bg-navy-2 text-ink-4"
                   }`}
                 >
                   {i + 1}
                 </span>
-                <span className="text-xs text-[#e8e3d8]">{label}</span>
+                <span className="text-xs text-cream-2">{label}</span>
               </div>
             );
           })}
@@ -966,13 +964,13 @@ const POPULAR_TRADES = [
 function TradeChips() {
   return (
     <div className="mt-3.5">
-      <div className="text-[11px] text-[#8a8a85]">Popular near you</div>
+      <div className="text-[11px] text-ink-3">Popular near you</div>
       <div className="flex flex-wrap gap-2 mt-2">
         {POPULAR_TRADES.map((trade) => (
           <Link
             key={trade}
             href={`/browse?trade=${encodeURIComponent(trade)}`}
-            className="bg-white border-[0.5px] border-[#e5e0d5] rounded-[20px] px-3.5 py-1.5 text-xs text-[#2c2620] no-underline transition-colors hover:border-gold"
+            className="bg-white border-[0.5px] border-border rounded-[20px] px-3.5 py-1.5 text-xs text-ink no-underline transition-colors hover:border-gold"
           >
             {trade}
           </Link>

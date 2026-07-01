@@ -30,7 +30,7 @@ export const EL_ROW_ACTIONS = "flex flex-wrap gap-2 mt-2.5";
 export const EL_RATE = "text-sm font-medium text-gold-dark";
 
 export const EL_BTN =
-  "inline-flex items-center justify-center gap-1.5 font-medium text-sm px-3 py-1.5 rounded-lg border border-transparent cursor-pointer no-underline disabled:opacity-60 disabled:cursor-not-allowed";
+  "inline-flex items-center justify-center gap-1.5 font-medium text-sm px-3 py-1.5 rounded-md border border-transparent cursor-pointer no-underline disabled:opacity-60 disabled:cursor-not-allowed";
 export const EL_BTN_OUTLINE =
   "bg-white text-ink-2 border-border hover:border-gold hover:bg-gold-light hover:text-ink";
 export const EL_BTN_GOLD =

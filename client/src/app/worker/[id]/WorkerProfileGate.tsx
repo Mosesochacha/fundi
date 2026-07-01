@@ -5,6 +5,7 @@ import { useState } from "react";
 import HireModal from "@/app/employer/dashboard/HireModal";
 import type { DashboardRole } from "@/components/dashboard/navConfig";
 import Shell from "@/components/dashboard/Shell";
+import { Logo } from "@/components/Logo";
 import LandingFooter from "@/components/landing/LandingFooter";
 import LandingNav from "@/components/landing/LandingNav";
 import WorkerProfile from "@/components/worker/WorkerProfile";
@@ -41,7 +42,7 @@ export default function WorkerProfileGate({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { profile, isLoggedIn, role } = useAuth();
+  const { profile, isLoggedIn, status, role } = useAuth();
   const query = useGetProfile(isLoggedIn ? id : undefined);
   const { data: conversations } = useConversations();
 
@@ -51,23 +52,38 @@ export default function WorkerProfileGate({
     trade: string;
   } | null>(null);
 
+  // Until NextAuth resolves the session we don't yet know whether the viewer is
+  // signed in. Render the profile content (for SEO / no layout shift) under a
+  // neutral header — never the logged-out "Sign in / Sign up" nav, and never
+  // wire the actions to bounce through /login. Those only apply once we've
+  // *confirmed* the viewer is unauthenticated.
   if (!isLoggedIn) {
+    const resolved = status === "unauthenticated";
     const toLogin = () =>
       router.push(
         `/login?next=${encodeURIComponent(`/worker/${initial.username || id}`)}`,
       );
+    // While still loading, actions are inert (a click won't be lost to a login
+    // bounce); once resolved-as-logged-out they route to login and back.
+    const action = resolved ? toLogin : () => {};
     return (
       <div className="min-h-screen bg-cream text-ink font-sans">
-        <LandingNav />
+        {resolved ? (
+          <LandingNav />
+        ) : (
+          <header className="fixed inset-x-0 top-0 z-40 flex h-16 items-center border-b border-border bg-cream/90 px-5 backdrop-blur md:h-[72px]">
+            <Logo href="/" size="md" />
+          </header>
+        )}
         <main className="mx-auto max-w-[1080px] px-5 pb-24 pt-[96px] md:pt-[120px]">
           <WorkerProfile
             mode="public"
             initialData={initial}
-            onMessage={toLogin}
-            onHire={toLogin}
+            onMessage={action}
+            onHire={action}
           />
         </main>
-        <LandingFooter />
+        {resolved && <LandingFooter />}
       </div>
     );
   }

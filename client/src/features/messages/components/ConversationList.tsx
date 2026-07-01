@@ -31,7 +31,7 @@ export default function ConversationList({
   loading,
 }: Props) {
   return (
-    <div className="flex flex-col overflow-hidden bg-white border-r-[0.5px] border-border min-w-0 group-[.has-selection]:hidden lg:flex">
+    <div className="flex flex-col overflow-hidden bg-white border-r-[0.5px] border-border min-w-0 group-[.has-selection]:hidden lg:!flex">
       <div className="px-4 py-3.5 border-b-[0.5px] border-border shrink-0">
         <h2 className="text-sm font-medium text-ink m-0 mb-2.5">Messages</h2>
         <div className="relative flex items-center">
@@ -42,6 +42,8 @@ export default function ConversationList({
           <input
             className="w-full border-[0.5px] border-border rounded-lg bg-cream py-[7px] pl-[30px] pr-2.5 text-sm text-ink outline-none placeholder:text-ink-3 focus:border-gold"
             placeholder="Search conversations..."
+            aria-label="Search conversations"
+            type="search"
             value={search}
             onChange={(e) => onSearch(e.target.value)}
           />

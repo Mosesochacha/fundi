@@ -45,7 +45,13 @@ const WORKER_TRADES = [
   "Other",
 ];
 
-const STRENGTH_COLORS = ["#e5e0d5", "#dc2626", "#f59e0b", "#c9a84c", "#16a34a"];
+const STRENGTH_COLORS = [
+  "var(--color-border)",
+  "#dc2626",
+  "#f59e0b",
+  "var(--color-gold)",
+  "#16a34a",
+];
 const STRENGTH_LABELS = ["", "Weak", "Fair", "Good", "Strong"];
 
 const initialsOf = (n: string) =>
@@ -300,8 +306,11 @@ export default function RegisterPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="mb-4">
-                <span className={LABEL_CLASS}>First name</span>
+                <label className={LABEL_CLASS} htmlFor="reg-firstName">
+                  First name
+                </label>
                 <input
+                  id="reg-firstName"
                   className={inputClass("firstName")}
                   placeholder="John"
                   value={form.firstName}
@@ -313,8 +322,11 @@ export default function RegisterPage() {
                 )}
               </div>
               <div className="mb-4">
-                <span className={LABEL_CLASS}>Last name</span>
+                <label className={LABEL_CLASS} htmlFor="reg-lastName">
+                  Last name
+                </label>
                 <input
+                  id="reg-lastName"
                   className={inputClass("lastName")}
                   placeholder="Kamau"
                   value={form.lastName}
@@ -328,8 +340,11 @@ export default function RegisterPage() {
             </div>
 
             <div className="mb-4">
-              <span className={LABEL_CLASS}>Email address</span>
+              <label className={LABEL_CLASS} htmlFor="reg-email">
+                Email address
+              </label>
               <input
+                id="reg-email"
                 className={inputClass("email")}
                 type="email"
                 placeholder="john@email.com"
@@ -342,8 +357,11 @@ export default function RegisterPage() {
             </div>
 
             <div className="mb-4">
-              <span className={LABEL_CLASS}>Phone number</span>
+              <label className={LABEL_CLASS} htmlFor="reg-phone">
+                Phone number
+              </label>
               <input
+                id="reg-phone"
                 className={inputClass("phoneNumber")}
                 type="tel"
                 placeholder="Phone number with country code"
@@ -363,9 +381,12 @@ export default function RegisterPage() {
             </div>
 
             <div className="mb-4">
-              <span className={LABEL_CLASS}>Password</span>
+              <label className={LABEL_CLASS} htmlFor="reg-password">
+                Password
+              </label>
               <div className="relative">
                 <input
+                  id="reg-password"
                   className={cn(inputClass("password"), "pr-[42px]")}
                   type={showPw1 ? "text" : "password"}
                   placeholder="At least 8 characters"
@@ -389,7 +410,9 @@ export default function RegisterPage() {
                     className="h-[3px] flex-1 rounded-sm transition-colors duration-300"
                     style={{
                       background:
-                        i < score ? STRENGTH_COLORS[score] : "#e5e0d5",
+                        i < score
+                          ? STRENGTH_COLORS[score]
+                          : "var(--color-border)",
                     }}
                   />
                 ))}
@@ -406,9 +429,12 @@ export default function RegisterPage() {
             </div>
 
             <div className="mb-4">
-              <span className={LABEL_CLASS}>Confirm password</span>
+              <label className={LABEL_CLASS} htmlFor="reg-confirm-password">
+                Confirm password
+              </label>
               <div className="relative">
                 <input
+                  id="reg-confirm-password"
                   className={cn(inputClass("confirmPassword"), "pr-[42px]")}
                   type={showPw2 ? "text" : "password"}
                   placeholder="Repeat your password"
@@ -537,8 +563,11 @@ export default function RegisterPage() {
               We’ll show you fundis near you first
             </p>
             <div className="mb-4">
-              <span className={LABEL_CLASS}>Your location</span>
+              <label className={LABEL_CLASS} htmlFor="reg-location">
+                Your location
+              </label>
               <input
+                id="reg-location"
                 className={inputClass("location")}
                 placeholder="e.g. your city or area"
                 value={form.location}
@@ -604,8 +633,11 @@ export default function RegisterPage() {
               Help employers find you faster
             </p>
             <div className="mb-4">
-              <span className={LABEL_CLASS}>Your location</span>
+              <label className={LABEL_CLASS} htmlFor="reg-location">
+                Your location
+              </label>
               <input
+                id="reg-location"
                 className={inputClass("location")}
                 placeholder="e.g. your city or area"
                 value={form.location}
@@ -634,12 +666,15 @@ export default function RegisterPage() {
               {errors.trade && <div className={ERR_CLASS}>{errors.trade}</div>}
             </div>
             <div className="mb-4">
-              <span className={LABEL_CLASS}>Daily rate (optional)</span>
+              <label className={LABEL_CLASS} htmlFor="reg-daily-rate">
+                Daily rate (optional)
+              </label>
               <div className="flex gap-2">
                 <div className="w-[150px] shrink-0">
                   <CurrencySelect value={currency} onChange={setCurrency} />
                 </div>
                 <input
+                  id="reg-daily-rate"
                   className={cn(inputClass("dailyRate"), "flex-1")}
                   placeholder={`e.g. ${symbolOf(currency)} 2,500`}
                   value={form.dailyRate}

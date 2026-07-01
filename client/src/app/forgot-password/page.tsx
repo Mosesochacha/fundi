@@ -12,7 +12,13 @@ import {
 } from "@/features/auth";
 import { cn } from "@/lib/utils";
 
-const STRENGTH_COLORS = ["#e5e0d5", "#dc2626", "#f59e0b", "#c9a84c", "#16a34a"];
+const STRENGTH_COLORS = [
+  "var(--color-border)",
+  "#dc2626",
+  "#f59e0b",
+  "var(--color-gold)",
+  "#16a34a",
+];
 const STRENGTH_LABELS = ["", "Weak", "Fair", "Good", "Strong"];
 const OTP_IDS = ["otp-0", "otp-1", "otp-2", "otp-3"];
 const SEG_IDS = ["seg-1", "seg-2", "seg-3", "seg-4"];
@@ -385,7 +391,9 @@ export default function ForgotPasswordPage() {
                     className="h-[3px] flex-1 rounded-sm transition-colors duration-300"
                     style={{
                       background:
-                        i < score ? STRENGTH_COLORS[score] : "#e5e0d5",
+                        i < score
+                          ? STRENGTH_COLORS[score]
+                          : "var(--color-border)",
                     }}
                   />
                 ))}

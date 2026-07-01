@@ -28,7 +28,7 @@ export function Input({
       <input
         id={id}
         className={cn(
-          "w-full px-3.5 py-2.5 rounded-lg text-sm font-sans",
+          "w-full px-3.5 py-2.5 rounded-md text-sm font-sans",
           "border border-border bg-cream text-ink",
           "placeholder:text-ink-3 outline-none",
           "focus:border-gold focus:bg-white",

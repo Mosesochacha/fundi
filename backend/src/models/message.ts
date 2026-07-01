@@ -6,6 +6,8 @@ export class Message extends Model<InferAttributes<Message>, InferCreationAttrib
   declare senderId: string;
   declare content: string;
   declare type: CreationOptional<'text' | 'system'>;
+  declare attachmentUrl: CreationOptional<string | null>;
+  declare attachmentType: CreationOptional<string | null>;
   declare readAt: CreationOptional<Date | null>;
   declare createdAt: CreationOptional<Date>;
 
@@ -37,6 +39,8 @@ export function initModel(sequelize: Sequelize): typeof Message {
         allowNull: false,
         defaultValue: 'text',
       },
+      attachmentUrl: { type: DataTypes.TEXT, allowNull: true },
+      attachmentType: { type: DataTypes.STRING(20), allowNull: true },
       readAt: { type: DataTypes.DATE, allowNull: true },
       createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
     },

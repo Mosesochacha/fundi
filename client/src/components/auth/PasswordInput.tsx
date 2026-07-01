@@ -120,7 +120,7 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
                     background:
                       strength >= level && strengthInfo
                         ? strengthInfo.color
-                        : "#e5e0d5",
+                        : "var(--color-border)",
                   }}
                 />
               ))}

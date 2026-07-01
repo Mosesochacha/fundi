@@ -11,6 +11,7 @@ import { useJobAction } from "../hooks/useJobActions";
 import { useMarkRead, useSendMessage } from "../hooks/useMessageActions";
 import { useMessages } from "../hooks/useMessages";
 import type { JobAction } from "../services/jobs.service";
+import { messagesService } from "../services/messages.service";
 import type { Conversation, ConversationParticipant, Message } from "../types";
 import ChatPanel from "./ChatPanel";
 import ConversationList from "./ConversationList";
@@ -192,13 +193,16 @@ export default function MessagesView({
   }, [socket, qc]);
 
   const handleSend = useCallback(
-    async (content: string) => {
+    async (content: string, attachment?: { url: string; type: string }) => {
       if (!selectedId && !draft) return;
+      const extra = attachment
+        ? { attachmentUrl: attachment.url, attachmentType: attachment.type }
+        : {};
       try {
         const res = await sendMutation.mutateAsync(
           selectedId
-            ? { conversationId: selectedId, content }
-            : { recipientId: draft?.id, content },
+            ? { conversationId: selectedId, content, ...extra }
+            : { recipientId: draft?.id, content, ...extra },
         );
         const newConvId = res?.data?.data?.conversationId as string | undefined;
         const msg = res?.data?.data?.message as Message | undefined;
@@ -229,6 +233,18 @@ export default function MessagesView({
       } catch {}
     },
     [selectedId, draft, sendMutation, qc],
+  );
+
+  const handleSendImage = useCallback(
+    async (file: File) => {
+      if (!selectedId && !draft) return;
+      const res = await messagesService.uploadAttachment(file);
+      const url = res?.data?.data?.url as string | undefined;
+      const type = (res?.data?.data?.type as string | undefined) ?? "image";
+      if (!url) throw new Error("Upload failed");
+      await handleSend("", { url, type });
+    },
+    [selectedId, draft, handleSend],
   );
 
   const handleTypingChange = useCallback(
@@ -305,6 +321,7 @@ export default function MessagesView({
             othersTyping={selected ? othersTyping : false}
             loadingMessages={selectedId ? messagesQuery.isLoading : false}
             onSend={handleSend}
+            onSendImage={handleSendImage}
             onJobAction={handleJobAction}
             onTypingChange={handleTypingChange}
             onBack={handleBack}

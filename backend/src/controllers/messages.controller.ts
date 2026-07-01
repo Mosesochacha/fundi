@@ -6,6 +6,7 @@ import { sendSuccess, sendError, asyncHandler } from '../utils/helpers';
 import { HTTP_STATUS } from '../utils/constants';
 import { getIo, isUserOnline } from '../middleware/websocket';
 import { createNotification } from '../services/notification.service';
+import cloudinaryService from '../services/cloudinary.service';
 
 const SENDER_ATTRS = ['id', 'fullName', 'avatarUrl', 'username'];
 
@@ -52,7 +53,7 @@ class MessagesController {
           as: 'messages',
           limit: 1,
           order: [['createdAt', 'DESC']],
-          attributes: ['id', 'content', 'senderId', 'readAt', 'createdAt'],
+          attributes: ['id', 'content', 'senderId', 'readAt', 'createdAt', 'attachmentType'],
         },
       ],
       order: [['lastMessageAt', 'DESC NULLS LAST']],
@@ -79,7 +80,9 @@ class MessagesController {
           },
           lastMessage: lastMessage
             ? {
-                content: lastMessage.content,
+                content:
+                  lastMessage.content ||
+                  (lastMessage.attachmentType ? '📷 Photo' : ''),
                 createdAt: lastMessage.createdAt,
                 isRead: !!lastMessage.readAt,
                 senderId: lastMessage.senderId,
@@ -129,10 +132,11 @@ class MessagesController {
     const profileId = req.user?.profileId;
     if (!profileId) return sendError(res, HTTP_STATUS.UNAUTHORIZED, 'Unauthorized');
 
-    const { recipientId, content, conversationId: existingConvId } = req.body;
+    const { recipientId, content, conversationId: existingConvId, attachmentUrl, attachmentType } = req.body;
 
-    if (!content?.trim()) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Message content is required');
-    if (content.trim().length > 2000) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Message too long');
+    const text = (content ?? '').trim();
+    if (!text && !attachmentUrl) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Message content or attachment is required');
+    if (text.length > 2000) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Message too long');
 
     let conv: any;
 
@@ -159,7 +163,9 @@ class MessagesController {
     const message = await (db as any).Message.create({
       conversationId: conv.id,
       senderId: profileId,
-      content: content.trim(),
+      content: text,
+      attachmentUrl: attachmentUrl ?? null,
+      attachmentType: attachmentUrl ? (attachmentType ?? 'image') : null,
     });
 
     await conv.update({ lastMessageAt: new Date() });
@@ -182,12 +188,27 @@ class MessagesController {
         userId: recipientUserId,
         type: 'new_message',
         title: `${senderName} sent you a message`,
-        body: content.trim().slice(0, 120),
+        body: (text || '📷 Photo').slice(0, 120),
         data: { conversationId: conv.id, actorName: senderName },
       });
     }
 
     return sendSuccess(res, 'Message sent', { conversationId: conv.id, message: plain });
+  });
+
+  uploadAttachment = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const profileId = req.user?.profileId;
+    if (!profileId) return sendError(res, HTTP_STATUS.UNAUTHORIZED, 'Unauthorized');
+    if (!req.file) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'No file uploaded');
+
+    // Prefer Cloudinary; fall back to the locally-served file when it isn't
+    // configured (uploadImage deletes the temp file only on a successful upload).
+    let url = await cloudinaryService.uploadImage(req.file.path, 'messages', { width: 1600 });
+    if (!url) {
+      url = `${req.protocol}://${req.get('host')}/uploads/messages/${req.file.filename}`;
+    }
+
+    return sendSuccess(res, 'Attachment uploaded', { url, type: 'image' });
   });
 
   markRead = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {

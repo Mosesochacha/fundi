@@ -2,6 +2,7 @@
 
 import { AlertTriangle } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Select } from "@/components/ui";
 import { useToastContext } from "@/context/ToastContext";
 import {
   type AvailabilitySettings,
@@ -14,7 +15,6 @@ import {
 import { cn } from "@/lib/utils";
 import {
   apiError,
-  FIELD_INPUT,
   Field,
   Panel,
   PanelBody,
@@ -50,16 +50,21 @@ const PRIVACY_ROWS: {
   sub: string;
   /** Worker-only concept - hidden for employers. */
   workerOnly?: boolean;
+  /** Employer-specific copy, used when the viewer is an employer. */
+  employerTitle?: string;
+  employerSub?: string;
 }[] = [
   {
     key: "publicProfile",
     title: "Public profile",
     sub: "Your profile is visible to anyone browsing Tesilix",
+    workerOnly: true,
   },
   {
     key: "showPhone",
     title: "Show phone number",
     sub: "Phone number shared only after a job is confirmed",
+    employerSub: "Shared with a fundi only after you confirm a hire",
   },
   {
     key: "showRate",
@@ -71,11 +76,13 @@ const PRIVACY_ROWS: {
     key: "showOnline",
     title: "Show online status",
     sub: "Let employers see when you are active",
+    workerOnly: true,
   },
   {
     key: "allowDirectMessages",
     title: "Allow direct messages",
     sub: "Employers can message you without a job request",
+    employerSub: "Fundis can message you without an active hire",
   },
   {
     key: "appearInSearch",
@@ -182,49 +189,32 @@ export default function AvailabilityPrivacyPanel({
             <div className="pt-4 mt-4 border-t-[0.5px] border-border">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <Field label="Working hours from" htmlFor="hoursFrom">
-                  <select
+                  <Select
                     id="hoursFrom"
-                    className={FIELD_INPUT}
                     value={avail.workingHoursFrom}
-                    onChange={(e) => setA("workingHoursFrom", e.target.value)}
-                  >
-                    {FROM_OPTIONS.map((o) => (
-                      <option key={o.value} value={o.value}>
-                        {o.label}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(v) => setA("workingHoursFrom", v)}
+                    options={FROM_OPTIONS}
+                    className="rounded-[7px] py-[9px]"
+                  />
                 </Field>
                 <Field label="Working hours to" htmlFor="hoursTo">
-                  <select
+                  <Select
                     id="hoursTo"
-                    className={FIELD_INPUT}
                     value={avail.workingHoursTo}
-                    onChange={(e) => setA("workingHoursTo", e.target.value)}
-                  >
-                    {TO_OPTIONS.map((o) => (
-                      <option key={o.value} value={o.value}>
-                        {o.label}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(v) => setA("workingHoursTo", v)}
+                    options={TO_OPTIONS}
+                    className="rounded-[7px] py-[9px]"
+                  />
                 </Field>
               </div>
               <Field label="Max job distance" htmlFor="maxDistance">
-                <select
+                <Select
                   id="maxDistance"
-                  className={FIELD_INPUT}
                   value={avail.maxDistance}
-                  onChange={(e) =>
-                    setA("maxDistance", e.target.value as MaxDistance)
-                  }
-                >
-                  {DISTANCE_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(v) => setA("maxDistance", v as MaxDistance)}
+                  options={DISTANCE_OPTIONS}
+                  className="rounded-[7px] py-[9px]"
+                />
               </Field>
             </div>
           </div>
@@ -239,8 +229,14 @@ export default function AvailabilityPrivacyPanel({
           ).map((row) => (
             <ToggleRow
               key={row.key}
-              title={row.title}
-              sub={row.sub}
+              title={
+                !showAvailability && row.employerTitle
+                  ? row.employerTitle
+                  : row.title
+              }
+              sub={
+                !showAvailability && row.employerSub ? row.employerSub : row.sub
+              }
               checked={priv[row.key]}
               onChange={(next) => setPriv({ ...priv, [row.key]: next })}
             />

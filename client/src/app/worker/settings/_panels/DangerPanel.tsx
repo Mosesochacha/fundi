@@ -24,7 +24,11 @@ import {
 
 type Dialog = null | "pause" | "delete";
 
-export default function DangerPanel() {
+export default function DangerPanel({
+  role = "worker",
+}: {
+  role?: "worker" | "employer";
+}) {
   const { success, error: toastError } = useToastContext();
   const pause = usePauseAccount();
   const exportData = useExportData();
@@ -86,22 +90,24 @@ export default function DangerPanel() {
       danger
     >
       <PanelBody>
-        <div className="flex items-center justify-between gap-4 py-4 border-b-[0.5px] border-cream-2 first:pt-0 last:border-b-0 last:pb-0">
-          <div>
-            <div className="text-sm font-medium text-ink">Pause account</div>
-            <div className="text-[11px] text-ink-3 mt-[3px] leading-[1.5] max-w-[420px]">
-              Temporarily hide your profile from search and stop receiving
-              requests. Reactivate anytime.
+        {role === "worker" && (
+          <div className="flex items-center justify-between gap-4 py-4 border-b-[0.5px] border-cream-2 first:pt-0 last:border-b-0 last:pb-0">
+            <div>
+              <div className="text-sm font-medium text-ink">Pause account</div>
+              <div className="text-[11px] text-ink-3 mt-[3px] leading-[1.5] max-w-[420px]">
+                Temporarily hide your profile from search and stop receiving
+                requests. Reactivate anytime.
+              </div>
             </div>
+            <button
+              type="button"
+              className={btn(BTN_OUTLINE, true)}
+              onClick={() => setDialog("pause")}
+            >
+              Pause account
+            </button>
           </div>
-          <button
-            type="button"
-            className={btn(BTN_OUTLINE, true)}
-            onClick={() => setDialog("pause")}
-          >
-            Pause account
-          </button>
-        </div>
+        )}
 
         <div className="flex items-center justify-between gap-4 py-4 border-b-[0.5px] border-cream-2 first:pt-0 last:border-b-0 last:pb-0">
           <div>

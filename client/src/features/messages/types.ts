@@ -45,6 +45,8 @@ export interface Message {
   senderId: string;
   content: string;
   type: "text" | "system";
+  attachmentUrl?: string | null;
+  attachmentType?: string | null;
   createdAt: string;
   readAt?: string | null;
   sender?: { id: string; fullName: string; avatarUrl?: string | null };
