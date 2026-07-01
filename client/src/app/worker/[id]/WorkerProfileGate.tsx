@@ -5,7 +5,8 @@ import { useState } from "react";
 import HireModal from "@/app/employer/dashboard/HireModal";
 import type { DashboardRole } from "@/components/dashboard/navConfig";
 import Shell from "@/components/dashboard/Shell";
-import PublicWorkerProfile from "@/components/worker/PublicWorkerProfile";
+import LandingFooter from "@/components/landing/LandingFooter";
+import LandingNav from "@/components/landing/LandingNav";
 import WorkerProfile from "@/components/worker/WorkerProfile";
 import WorkerProfileSkeleton from "@/components/worker/WorkerProfileSkeleton";
 import type { WorkerProfileData } from "@/components/worker/workerProfileData";
@@ -23,11 +24,13 @@ const initialsOf = (n: string) =>
     .join("") || "U";
 
 /**
- * Decides which profile experience to render:
- *  • Logged-out visitors (and crawlers / SSR) → the public, minimal profile
- *    built from server-fetched `initial` data.
- *  • Signed-in viewers → the full interactive profile inside the dashboard Shell,
- *    fetched with their auth token (richer payload + Hire/Message actions).
+ * Renders the same rich worker profile to everyone — the experience is seamless
+ * across auth state:
+ *  • Logged-out visitors (and crawlers / SSR) → the full profile from
+ *    server-fetched `initial` data, in public chrome (nav + footer). The
+ *    Message/Hire actions redirect to login and return to this profile after.
+ *  • Signed-in viewers → the same profile inside the dashboard Shell, fetched
+ *    with their auth token, with live Message/Hire actions.
  */
 export default function WorkerProfileGate({
   id,
@@ -49,7 +52,24 @@ export default function WorkerProfileGate({
   } | null>(null);
 
   if (!isLoggedIn) {
-    return <PublicWorkerProfile data={initial} />;
+    const toLogin = () =>
+      router.push(
+        `/login?next=${encodeURIComponent(`/worker/${initial.username || id}`)}`,
+      );
+    return (
+      <div className="min-h-screen bg-cream text-ink font-sans">
+        <LandingNav />
+        <main className="mx-auto max-w-[1080px] px-5 pb-24 pt-[96px] md:pt-[120px]">
+          <WorkerProfile
+            mode="public"
+            initialData={initial}
+            onMessage={toLogin}
+            onHire={toLogin}
+          />
+        </main>
+        <LandingFooter />
+      </div>
+    );
   }
 
   const data = query.data as WorkerProfileData | undefined;

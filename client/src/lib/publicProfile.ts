@@ -1,9 +1,20 @@
+import type {
+  Certification,
+  EducationItem,
+  ExperienceItem,
+  PortfolioPhoto,
+  RatingBucket,
+  ReviewItem,
+} from "@/components/worker/workerProfileData";
 import { API_BASE } from "@/lib/apiBase";
+import { serverFetch } from "@/lib/serverFetch";
 
 /**
- * Minimal, public worker profile returned by `GET /worker/:id/profile` for
- * anonymous viewers (no auth header). Mirrors the backend's minimal `shapeProfile`
- * payload — used for SSR metadata, JSON-LD and the logged-out profile view.
+ * Public worker profile returned by `GET /worker/:id/profile`. The endpoint now
+ * returns the full showcase payload to anonymous viewers too (portfolio,
+ * experience, certs, education), so this is a superset of `WorkerProfileData` —
+ * the logged-out profile view renders the exact same rich component as the
+ * signed-in one. Used for SSR metadata, JSON-LD and the public profile view.
  */
 export interface PublicWorkerData {
   id: string;
@@ -27,6 +38,13 @@ export interface PublicWorkerData {
   dailyRate: number;
   about: string;
   services: string[];
+  serviceAreas: string[];
+  portfolio: PortfolioPhoto[];
+  experience: ExperienceItem[];
+  certifications: Certification[];
+  education: EducationItem[];
+  reviews: ReviewItem[];
+  ratingBreakdown: RatingBucket[];
 }
 
 /**
@@ -38,7 +56,7 @@ export async function getPublicWorker(
   id: string,
 ): Promise<PublicWorkerData | null> {
   try {
-    const res = await fetch(
+    const res = await serverFetch(
       `${API_BASE}/worker/${encodeURIComponent(id)}/profile`,
       { next: { revalidate: 3600 } },
     );

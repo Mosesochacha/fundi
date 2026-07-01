@@ -210,8 +210,11 @@ class WorkerController {
       getWorkerReviewStats(profile.id),
     ]);
     void recordProfileView(req, profile.id);
-    const full = !!req.user;
-    return sendSuccess(res, 'Worker profile', shapeProfile(profile, user, { stats, full }));
+    // Profiles are public showcases — portfolio, experience, certs and education
+    // are all meant to attract hirers, so return the full payload to anonymous
+    // viewers too. Only the interactive actions (message/hire) are auth-gated,
+    // and that gating lives in the client, not the data.
+    return sendSuccess(res, 'Worker profile', shapeProfile(profile, user, { stats, full: true }));
   });
 
   getMyProfile = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {

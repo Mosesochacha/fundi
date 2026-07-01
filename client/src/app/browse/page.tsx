@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { BrowseWorkersResponse } from "@/features/browse";
 import { API_BASE } from "@/lib/apiBase";
+import { serverFetch } from "@/lib/serverFetch";
 import BrowseClient from "./BrowseClient";
 
 export function generateMetadata(): Metadata {
@@ -13,7 +14,7 @@ export function generateMetadata(): Metadata {
 
 async function getInitialWorkers(): Promise<BrowseWorkersResponse | undefined> {
   try {
-    const res = await fetch(
+    const res = await serverFetch(
       `${API_BASE}/browse/workers?available=false&verified=false&minRating=0&minRate=0&maxRate=0&sort=best_match&page=1&limit=12`,
       { cache: "no-store" },
     ).then((r) => r.json());
