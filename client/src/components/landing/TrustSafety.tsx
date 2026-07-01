@@ -40,7 +40,10 @@ const trustItems: { title: string; desc: string; icon: ReactNode }[] = [
 
 export default function TrustSafety() {
   return (
-    <section id="trust" className="bg-cream-2 px-5 py-16 md:px-6 md:py-24">
+    <section
+      id="trust"
+      className="scroll-mt-20 bg-cream-2 px-5 py-16 md:px-6 md:py-24"
+    >
       <div className="max-w-[1080px] mx-auto">
         <div className={eyebrow}>Trust &amp; safety</div>
         <h2 className={secTitle}>

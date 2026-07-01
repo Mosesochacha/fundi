@@ -8,7 +8,7 @@ export const btnGold = `${btnLg} bg-gold text-navy border-gold hover:bg-gold-dar
 export const btnOutlineNavy = `${btnLg} border-navy/25 bg-transparent text-navy hover:bg-navy/[0.05]`;
 
 export const eyebrow =
-  "reveal text-[11px] tracking-[0.12em] uppercase text-gold-dark font-medium mb-4";
+  "reveal text-[11px] tracking-[0.12em] uppercase text-gold-deep font-medium mb-4";
 
 export const secTitle =
   "reveal font-serif text-[clamp(30px,4vw,50px)] font-normal tracking-[-0.025em] leading-[1.1] text-ink";

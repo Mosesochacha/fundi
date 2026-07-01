@@ -70,7 +70,7 @@ export default function WhyTesilix() {
   return (
     <section
       id="why"
-      className="relative bg-navy px-5 py-16 md:px-6 md:py-24 overflow-hidden"
+      className="relative scroll-mt-20 bg-navy px-5 py-16 md:px-6 md:py-24 overflow-hidden"
     >
       <div className="absolute top-1/2 -right-[200px] -translate-y-1/2 rounded-full border border-white/[0.04] w-[300px] h-[300px]" />
       <div className="absolute top-1/2 -right-[200px] -translate-y-1/2 rounded-full border border-white/[0.04] w-[500px] h-[500px]" />
@@ -84,7 +84,7 @@ export default function WhyTesilix() {
           <br />
           <em className="italic font-light text-gold">Start hiring right.</em>
         </h2>
-        <p className="reveal text-[15px] text-white/45 font-light leading-[1.7] max-w-[420px] mt-4">
+        <p className="reveal text-[15px] text-white/55 font-light leading-[1.7] max-w-[420px] mt-4">
           WhatsApp groups, brokers, and word of mouth leave you hoping for the
           best. Tesilix gives you certainty.
         </p>
@@ -100,7 +100,7 @@ export default function WhyTesilix() {
               <div className="font-serif text-[22px] font-normal text-white leading-tight mb-3">
                 {r.title}
               </div>
-              <div className="text-sm text-white/45 leading-[1.7] font-light">
+              <div className="text-sm text-white/55 leading-[1.7] font-light">
                 {r.desc}
               </div>
               <div className="absolute bottom-6 right-6 md:bottom-8 md:right-8 w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center">
