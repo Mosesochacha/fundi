@@ -1,5 +1,6 @@
 import type { BrowseWorker, BrowseWorkersResponse } from "@/features/browse";
 import { API_BASE } from "@/lib/apiBase";
+import { serverFetch } from "@/lib/serverFetch";
 
 export interface BrowseListing {
   workers: BrowseWorker[];
@@ -31,9 +32,10 @@ export async function getBrowseListing(opts: {
   if (opts.location) params.set("location", opts.location);
 
   try {
-    const res = await fetch(`${API_BASE}/browse/workers?${params.toString()}`, {
-      next: { revalidate: 3600 },
-    });
+    const res = await serverFetch(
+      `${API_BASE}/browse/workers?${params.toString()}`,
+      { next: { revalidate: 3600 } },
+    );
     if (!res.ok) return { workers: [], total: 0 };
     const json = await res.json();
     const data = json?.data as BrowseWorkersResponse | undefined;

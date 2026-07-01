@@ -8,6 +8,7 @@ import {
   TRADE_NAMES,
   tradeSlug,
 } from "@/lib/seo";
+import { serverFetch } from "@/lib/serverFetch";
 
 export const revalidate = 3600;
 
@@ -18,7 +19,7 @@ interface WorkerSlug {
 
 async function getWorkerSlugs(): Promise<WorkerSlug[]> {
   try {
-    const res = await fetch(`${API_BASE}/seo/worker-slugs`, {
+    const res = await serverFetch(`${API_BASE}/seo/worker-slugs`, {
       next: { revalidate: 3600 },
     });
     if (!res.ok) return [];
