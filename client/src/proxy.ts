@@ -55,24 +55,42 @@ export default auth((req) => {
   const role = session?.user?.role;
   const complete = !!session?.backendUser?.isProfileComplete;
 
-  const toLogin = () => {
+  // NextAuth's auth() wrapper rewrites req.nextUrl's origin to the AUTH_URL /
+  // NEXTAUTH_URL env var, so redirects built from nextUrl.clone() send users
+  // to whatever domain that env holds — not the site they're on. Rebuild the
+  // origin from the forwarded host headers so redirects always stay on the
+  // requesting domain.
+  const redirect = (mutate: (url: URL) => void) => {
     const url = nextUrl.clone();
-    url.pathname = "/login";
-    url.searchParams.set("next", path);
+    mutate(url);
+    const host =
+      req.headers.get("x-forwarded-host") ?? req.headers.get("host");
+    if (host) {
+      // url.host carries the port when the header has one (localhost:3000)
+      url.host = host;
+      url.protocol =
+        req.headers.get("x-forwarded-proto") ??
+        (host.startsWith("localhost") ? "http" : "https");
+    }
     return NextResponse.redirect(url);
   };
-  const toDashboard = () => {
-    const url = nextUrl.clone();
-    url.pathname = dashboardPathForRole(role);
-    url.search = "";
-    return NextResponse.redirect(url);
-  };
-  const toOnboarding = () => {
-    const url = nextUrl.clone();
-    url.pathname = "/onboarding";
-    url.search = "";
-    return NextResponse.redirect(url);
-  };
+
+  const toLogin = () =>
+    redirect((url) => {
+      url.pathname = "/login";
+      url.search = "";
+      url.searchParams.set("next", path);
+    });
+  const toDashboard = () =>
+    redirect((url) => {
+      url.pathname = dashboardPathForRole(role);
+      url.search = "";
+    });
+  const toOnboarding = () =>
+    redirect((url) => {
+      url.pathname = "/onboarding";
+      url.search = "";
+    });
 
   if (matches(path, "/onboarding")) {
     if (!session) return toLogin();
