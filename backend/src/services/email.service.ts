@@ -7,9 +7,24 @@ function getResend(): Resend {
   return resend;
 }
 
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'noreply@fundi.app';
-const FROM_DISPLAY = `Fundi <${FROM_EMAIL}>`;
-const APP_URL = process.env.APP_DOMAIN || 'https://fundi.mosesochacha.online';
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'noreply@tesilix.com';
+const FROM_DISPLAY = `Tesilix <${FROM_EMAIL}>`;
+const APP_URL = process.env.APP_DOMAIN || 'https://tesilix.com';
+// Hosted on the production frontend so the image resolves in email clients
+// regardless of which environment sent the mail.
+const LOGO_URL = 'https://tesilix.com/brand/lightlogo.png';
+
+// Brand tokens — mirror client/src/app/globals.css @theme
+const C = {
+  gold: '#c9a84c',
+  goldDark: '#a8872e',
+  goldLight: '#fdf6e3',
+  navy: '#221d16',
+  ink2: '#4a4a47',
+  ink3: '#8a8a85',
+  cream2: '#f2efe8',
+  border: '#e5e0d5',
+};
 
 class EmailService {
   private isConfigured(): boolean {
@@ -28,8 +43,12 @@ class EmailService {
     }
 
     const name = displayName || email.split('@')[0];
-    const subject = 'Your Fundi verification code';
-    const html = this.buildVerificationEmail(name, code, email);
+    const subject =
+      purpose === 'reset' ? 'Your Tesilix password reset code' : 'Your Tesilix verification code';
+    const html =
+      purpose === 'reset'
+        ? this.buildResetOtpEmail(name, code, email)
+        : this.buildVerificationEmail(name, code, email);
 
     try {
       const { error } = await getResend().emails.send({ from: FROM_DISPLAY, to: email, subject, html });
@@ -41,34 +60,6 @@ class EmailService {
       return true;
     } catch (err: any) {
       logger.error('[EmailService] Failed to send OTP email', { email, purpose, error: err?.message });
-      return false;
-    }
-  }
-
-  async sendPasswordResetEmail(email: string, token: string, displayName?: string): Promise<boolean> {
-    if (!this.isConfigured()) {
-      logger.warn('[EmailService] RESEND_API_KEY not set — reset email not sent', { email });
-      return false;
-    }
-
-    const name = displayName || email.split('@')[0];
-    const html = this.buildResetEmail(name, token, email);
-
-    try {
-      const { error } = await getResend().emails.send({
-        from: FROM_DISPLAY,
-        to: email,
-        subject: 'Reset your Fundi password',
-        html,
-      });
-      if (error) {
-        logger.error('[EmailService] Resend error (reset)', { email, error });
-        return false;
-      }
-      logger.info('[EmailService] Password reset email sent via Resend', { email });
-      return true;
-    } catch (err: any) {
-      logger.error('[EmailService] Failed to send reset email', { email, error: err?.message });
       return false;
     }
   }
@@ -86,7 +77,7 @@ class EmailService {
       const { error } = await getResend().emails.send({
         from: FROM_DISPLAY,
         to: email,
-        subject: 'Welcome to Fundi — your profile awaits',
+        subject: 'Welcome to Tesilix — your profile awaits',
         html,
       });
       if (error) {
@@ -105,16 +96,16 @@ class EmailService {
     return `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f5f5f4;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f4;padding:48px 16px;">
+<body style="margin:0;padding:0;background:${C.cream2};font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:${C.cream2};padding:48px 16px;">
     <tr><td align="center">
       <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
 
         <!-- Card -->
-        <tr><td style="background:#ffffff;border-radius:8px;padding:48px 48px 40px;border:1px solid #e7e5e4;">
+        <tr><td style="background:#ffffff;border-radius:8px;padding:48px 48px 40px;border:1px solid ${C.border};">
 
           <!-- Logo -->
-          <p style="margin:0 0 36px;font-size:20px;font-weight:800;color:#f97316;letter-spacing:-0.3px;">Fundi</p>
+          <img src="${LOGO_URL}" alt="Tesilix" height="30" style="height:30px;width:auto;display:block;margin:0 0 36px;border:0;">
 
           ${content}
 
@@ -122,8 +113,8 @@ class EmailService {
 
         <!-- Footer -->
         <tr><td style="padding:20px 0 0;text-align:center;">
-          <p style="margin:0;font-size:12px;color:#a8a29e;line-height:1.8;">
-            Sent to ${recipientEmail} &middot; <a href="mailto:${FROM_EMAIL}" style="color:#a8a29e;text-decoration:none;">${FROM_EMAIL}</a>
+          <p style="margin:0;font-size:12px;color:${C.ink3};line-height:1.8;">
+            Sent to ${recipientEmail} &middot; <a href="mailto:${FROM_EMAIL}" style="color:${C.ink3};text-decoration:none;">${FROM_EMAIL}</a>
           </p>
         </td></tr>
 
@@ -134,73 +125,76 @@ class EmailService {
 </html>`;
   }
 
+  private button(href: string, label: string): string {
+    return `<a href="${href}" style="display:inline-block;background:${C.gold};color:${C.navy};text-decoration:none;font-size:14px;font-weight:700;padding:13px 28px;border-radius:6px;">
+        ${label}
+      </a>`;
+  }
+
+  private otpBlock(code: string, caption: string): string {
+    return `<p style="margin:0 0 8px;font-size:42px;font-weight:800;letter-spacing:10px;color:${C.goldDark};font-family:'Courier New',monospace;">${code}</p>
+      <p style="margin:0 0 36px;font-size:12px;color:${C.ink3};letter-spacing:0.3px;text-transform:uppercase;">${caption}</p>`;
+  }
+
   private buildWelcomeEmail(name: string, email: string): string {
-    const setupUrl = `${APP_URL}/setup`;
+    const onboardingUrl = `${APP_URL}/onboarding`;
     const content = `
-      <p style="margin:0 0 8px;font-size:24px;font-weight:700;color:#1c1917;">Welcome, ${name}!</p>
-      <p style="margin:0 0 32px;font-size:15px;color:#78716c;line-height:1.7;">
-        Your Fundi account is verified and ready. Build your professional profile in under 2 minutes — our AI does the writing for you.
+      <p style="margin:0 0 8px;font-size:24px;font-weight:700;color:${C.navy};">Welcome, ${name}!</p>
+      <p style="margin:0 0 32px;font-size:15px;color:${C.ink2};line-height:1.7;">
+        Your Tesilix account is verified and ready. Build your professional profile in under 2 minutes — our AI does the writing for you.
       </p>
 
-      <a href="${setupUrl}" style="display:inline-block;background:#f97316;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:13px 28px;border-radius:6px;">
-        Build my profile now
-      </a>
+      ${this.button(onboardingUrl, 'Build my profile now')}
 
-      <hr style="border:none;border-top:1px solid #f5f5f4;margin:36px 0 24px;">
+      <hr style="border:none;border-top:1px solid ${C.goldLight};margin:36px 0 24px;">
 
-      <p style="margin:0;font-size:12px;color:#a8a29e;line-height:1.7;">
-        You're receiving this because you just verified your Fundi account. Questions? Reply to this email.
+      <p style="margin:0;font-size:12px;color:${C.ink3};line-height:1.7;">
+        You're receiving this because you just verified your Tesilix account. Questions? Reply to this email.
       </p>`;
     return this.wrap(content, email);
   }
 
   private buildVerificationEmail(name: string, code: string, email: string): string {
-    const verifyUrl = `${APP_URL}/verify-email?email=${encodeURIComponent(email)}`;
+    const verifyUrl = `${APP_URL}/verify-email`;
     const content = `
-      <p style="margin:0 0 8px;font-size:24px;font-weight:700;color:#1c1917;">Hi ${name},</p>
-      <p style="margin:0 0 32px;font-size:15px;color:#78716c;line-height:1.7;">
-        Enter this code to verify your Fundi account. It expires in 10 minutes.
+      <p style="margin:0 0 8px;font-size:24px;font-weight:700;color:${C.navy};">Hi ${name},</p>
+      <p style="margin:0 0 32px;font-size:15px;color:${C.ink2};line-height:1.7;">
+        Enter this code to verify your Tesilix account. It expires in 10 minutes.
       </p>
 
-      <p style="margin:0 0 8px;font-size:42px;font-weight:800;letter-spacing:10px;color:#f97316;font-family:'Courier New',monospace;">${code}</p>
-      <p style="margin:0 0 36px;font-size:12px;color:#a8a29e;letter-spacing:0.3px;text-transform:uppercase;">Verification code · expires in 10 min</p>
+      ${this.otpBlock(code, 'Verification code &middot; expires in 10 min')}
 
-      <a href="${verifyUrl}" style="display:inline-block;background:#f97316;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:13px 28px;border-radius:6px;">
-        Verify my email
-      </a>
+      ${this.button(verifyUrl, 'Verify my email')}
 
-      <hr style="border:none;border-top:1px solid #f5f5f4;margin:36px 0 24px;">
+      <hr style="border:none;border-top:1px solid ${C.goldLight};margin:36px 0 24px;">
 
-      <p style="margin:0 0 8px;font-size:12px;color:#a8a29e;line-height:1.7;">
-        This email was sent because someone created a Fundi account using this address.
-        <strong style="color:#78716c;">No one can access your account without also accessing this email.</strong>
+      <p style="margin:0 0 8px;font-size:12px;color:${C.ink3};line-height:1.7;">
+        This email was sent because someone created a Tesilix account using this address.
+        <strong style="color:${C.ink2};">No one can access your account without also accessing this email.</strong>
       </p>
-      <p style="margin:0;font-size:12px;color:#a8a29e;line-height:1.7;">
-        <strong style="color:#78716c;">If you are not attempting to verify your account</strong>, please consider changing your email password to ensure your account security.
+      <p style="margin:0;font-size:12px;color:${C.ink3};line-height:1.7;">
+        <strong style="color:${C.ink2};">If you are not attempting to verify your account</strong>, please consider changing your email password to ensure your account security.
       </p>`;
     return this.wrap(content, email);
   }
 
-  private buildResetEmail(name: string, token: string, email: string): string {
-    const resetUrl = `${APP_URL}/reset-password?token=${encodeURIComponent(token)}`;
+  private buildResetOtpEmail(name: string, code: string, email: string): string {
     const content = `
-      <p style="margin:0 0 8px;font-size:24px;font-weight:700;color:#1c1917;">Hi ${name},</p>
-      <p style="margin:0 0 32px;font-size:15px;color:#78716c;line-height:1.7;">
-        Click the button below to reset your Fundi password. This link expires in 15 minutes.
+      <p style="margin:0 0 8px;font-size:24px;font-weight:700;color:${C.navy};">Hi ${name},</p>
+      <p style="margin:0 0 32px;font-size:15px;color:${C.ink2};line-height:1.7;">
+        Enter this code on the password reset page to choose a new Tesilix password. It expires in 10 minutes.
       </p>
 
-      <a href="${resetUrl}" style="display:inline-block;background:#f97316;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:13px 28px;border-radius:6px;">
-        Reset my password
-      </a>
+      ${this.otpBlock(code, 'Password reset code &middot; expires in 10 min')}
 
-      <hr style="border:none;border-top:1px solid #f5f5f4;margin:36px 0 24px;">
+      <hr style="border:none;border-top:1px solid ${C.goldLight};margin:36px 0 24px;">
 
-      <p style="margin:0 0 8px;font-size:12px;color:#a8a29e;line-height:1.7;">
-        This email was sent because a password reset was requested for this Fundi account.
-        <strong style="color:#78716c;">No one can access your account without also accessing this email.</strong>
+      <p style="margin:0 0 8px;font-size:12px;color:${C.ink3};line-height:1.7;">
+        This email was sent because a password reset was requested for this Tesilix account.
+        <strong style="color:${C.ink2};">No one can access your account without also accessing this email.</strong>
       </p>
-      <p style="margin:0;font-size:12px;color:#a8a29e;line-height:1.7;">
-        <strong style="color:#78716c;">If you are not attempting to reset your password</strong>, please consider changing your email password to ensure your account security.
+      <p style="margin:0;font-size:12px;color:${C.ink3};line-height:1.7;">
+        <strong style="color:${C.ink2};">If you did not request a password reset</strong>, you can safely ignore this email — your password will not change.
       </p>`;
     return this.wrap(content, email);
   }
