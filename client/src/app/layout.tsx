@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Sans, Fraunces } from "next/font/google";
+import Script from "next/script";
 import LayoutShell from "@/components/LayoutShell";
 import PostHogProvider from "@/components/PostHogProvider";
 import Providers from "@/components/Providers";
@@ -56,6 +57,18 @@ export default function RootLayout({
         suppressHydrationWarning
         className={`${fraunces.variable} ${dmSans.variable} font-sans bg-cream text-ink antialiased`}
       >
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-CRBGRHPE6V"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-CRBGRHPE6V');
+          `}
+        </Script>
         <PostHogProvider>
           <ToastProvider>
             <Providers>
