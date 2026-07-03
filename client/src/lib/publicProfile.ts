@@ -48,9 +48,13 @@ export interface PublicWorkerData {
 }
 
 /**
- * Server-side fetch of the public profile (no auth → minimal payload).
+ * Server-side fetch of the public profile.
  * Revalidated hourly so profile edits surface without a redeploy. Returns null
  * on 404 / network error so callers can render notFound().
+ *
+ * The showcase collections are defaulted to empty arrays: an API that omits
+ * them (older deploy, minimal anonymous payload) must degrade to an empty
+ * section, never crash SSR with a 500 for every worker page.
  */
 export async function getPublicWorker(
   id: string,
@@ -62,7 +66,19 @@ export async function getPublicWorker(
     );
     if (!res.ok) return null;
     const json = await res.json();
-    return (json?.data as PublicWorkerData) ?? null;
+    const worker = json?.data as PublicWorkerData | undefined;
+    if (!worker) return null;
+    return {
+      ...worker,
+      services: worker.services ?? [],
+      serviceAreas: worker.serviceAreas ?? [],
+      portfolio: worker.portfolio ?? [],
+      experience: worker.experience ?? [],
+      certifications: worker.certifications ?? [],
+      education: worker.education ?? [],
+      reviews: worker.reviews ?? [],
+      ratingBreakdown: worker.ratingBreakdown ?? [],
+    };
   } catch {
     return null;
   }
