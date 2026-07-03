@@ -3,6 +3,7 @@
 import { Download } from "lucide-react";
 import { useState } from "react";
 import { useToastContext } from "@/context/ToastContext";
+import { useLogout } from "@/features/auth";
 import {
   useDeleteAccount,
   useExportData,
@@ -33,6 +34,7 @@ export default function DangerPanel({
   const pause = usePauseAccount();
   const exportData = useExportData();
   const del = useDeleteAccount();
+  const logout = useLogout();
 
   const [dialog, setDialog] = useState<Dialog>(null);
   const [deleteStep, setDeleteStep] = useState<1 | 2>(1);
@@ -76,7 +78,7 @@ export default function DangerPanel({
     try {
       await del.mutateAsync();
       success("Your account has been deleted");
-      if (typeof window !== "undefined") window.location.href = "/";
+      await logout({ callbackUrl: "/" });
     } catch (e) {
       toastError(apiError(e, "Could not delete your account"));
     }

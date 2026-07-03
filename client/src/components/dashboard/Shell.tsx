@@ -13,7 +13,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Logo, LogoMark } from "@/components/Logo";
-import Spinner from "@/components/ui/Spinner";
 import { useLogout } from "@/features/auth";
 import { NotificationBell } from "@/features/notifications";
 import { useSetAvailability } from "@/features/worker/availability";
@@ -54,6 +53,127 @@ function VerifiedBadge() {
   );
 }
 
+/**
+ * Avatar-triggered account dropdown (Profile / Settings / Logout). Rendered in
+ * both the desktop topbar (full trigger: avatar + name + role) and the mobile
+ * header (avatar only) so logout is always reachable.
+ */
+function AccountMenu({
+  role,
+  user,
+  showVerified,
+  variant,
+  onLogout,
+}: {
+  role: DashboardRole;
+  user: ShellUser;
+  showVerified: boolean;
+  variant: "desktop" | "mobile";
+  onLogout: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent | TouchEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("touchstart", onDown);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("touchstart", onDown);
+    };
+  }, [open]);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        className={cn(
+          "flex items-center cursor-pointer",
+          variant === "desktop"
+            ? "gap-2 rounded-full px-1.5 py-1 transition-colors hover:bg-cream"
+            : "p-0",
+        )}
+        onClick={() => setOpen((o) => !o)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label="Account menu"
+      >
+        <span
+          className={cn(
+            "rounded-full bg-gold-light text-gold-dark font-semibold flex items-center justify-center shrink-0",
+            variant === "desktop"
+              ? "w-[34px] h-[34px] text-[11px]"
+              : "w-8 h-8 text-sm",
+          )}
+        >
+          {user.initials}
+        </span>
+        {variant === "desktop" && (
+          <>
+            <span className="flex flex-col leading-tight text-left">
+              <span className="text-sm font-medium text-ink">{user.name}</span>
+              <span className="text-[11px] text-ink-3">
+                {ROLE_LABELS[role]}
+              </span>
+            </span>
+            {showVerified && <VerifiedBadge />}
+            <ChevronDown size={14} className="text-ink-3 shrink-0" />
+          </>
+        )}
+      </button>
+      {open && (
+        <div className="absolute top-[calc(100%+6px)] right-0 min-w-[168px] bg-white border border-border rounded-lg shadow-[0_8px_24px_rgba(0,0,0,0.08)] p-1.5 z-[60]">
+          {variant === "mobile" && (
+            <div className="px-2.5 pt-2 pb-1.5 border-b border-border mb-1">
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm font-medium text-ink truncate">
+                  {user.name}
+                </span>
+                {showVerified && <VerifiedBadge />}
+              </div>
+              <span className="text-[11px] text-ink-3">
+                {ROLE_LABELS[role]}
+              </span>
+            </div>
+          )}
+          {role === "worker" && (
+            <Link
+              href={`/${role}/profile`}
+              className="flex items-center gap-2 w-full text-sm text-ink-2 no-underline px-2.5 py-2 rounded-md hover:bg-cream-2 hover:text-ink"
+              onClick={() => setOpen(false)}
+            >
+              <User size={15} /> Profile
+            </Link>
+          )}
+          <Link
+            href={`/${role}/settings`}
+            className="flex items-center gap-2 w-full text-sm text-ink-2 no-underline px-2.5 py-2 rounded-md hover:bg-cream-2 hover:text-ink"
+            onClick={() => setOpen(false)}
+          >
+            <Settings size={15} /> Settings
+          </Link>
+          <button
+            type="button"
+            className="flex items-center gap-2 w-full text-sm text-ink-2 px-2.5 py-2 rounded-md hover:bg-cream-2 hover:text-ink cursor-pointer"
+            onClick={() => {
+              setOpen(false);
+              onLogout();
+            }}
+          >
+            <LogOut size={15} /> Logout
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Shell({
   children,
   role,
@@ -81,30 +201,16 @@ export default function Shell({
   const setAvailability = useSetAvailability();
   const logout = useLogout();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [available, setAvailable] = useState(!!user.isAvailable);
   const [savingAvail, setSavingAvail] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = () => {
     if (loggingOut) return;
-    setMenuOpen(false);
     setDrawerOpen(false);
     setLoggingOut(true);
     void logout({ callbackUrl: "/" });
   };
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    const onDown = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", onDown);
-    return () => document.removeEventListener("mousedown", onDown);
-  }, [menuOpen]);
 
   const isActive = (href: string) =>
     activePath === href || activePath.startsWith(`${href}/`);
@@ -245,9 +351,13 @@ export default function Shell({
             <LogoMark size={34} variant="navy" />
           </Link>
           <div className="flex items-center gap-2.5">
-            <span className="w-8 h-8 rounded-full bg-gold-light text-gold-dark text-sm font-semibold flex items-center justify-center">
-              {user.initials}
-            </span>
+            <AccountMenu
+              role={role}
+              user={user}
+              showVerified={showVerified}
+              variant="mobile"
+              onLogout={handleLogout}
+            />
             <button
               type="button"
               className="text-ink-2 flex p-2 cursor-pointer"
@@ -304,57 +414,13 @@ export default function Shell({
           <span className="text-sm text-ink-2 font-medium">{pageTitle}</span>
           <div className="flex items-center gap-3">
             <NotificationBell variant="dash" />
-            <div className="relative" ref={menuRef}>
-              <button
-                type="button"
-                className="flex items-center gap-2 rounded-full px-1.5 py-1 cursor-pointer transition-colors hover:bg-cream"
-                onClick={() => setMenuOpen((o) => !o)}
-                aria-haspopup="menu"
-                aria-expanded={menuOpen}
-                aria-label="Account menu"
-              >
-                <span className="w-[34px] h-[34px] rounded-full bg-gold-light text-gold-dark text-[11px] font-semibold flex items-center justify-center shrink-0">
-                  {user.initials}
-                </span>
-                <span className="flex flex-col leading-tight text-left">
-                  <span className="text-sm font-medium text-ink">
-                    {user.name}
-                  </span>
-                  <span className="text-[11px] text-ink-3">
-                    {ROLE_LABELS[role]}
-                  </span>
-                </span>
-                {showVerified && <VerifiedBadge />}
-                <ChevronDown size={14} className="text-ink-3 shrink-0" />
-              </button>
-              {menuOpen && (
-                <div className="absolute top-[calc(100%+6px)] right-0 min-w-[168px] bg-white border border-border rounded-lg shadow-[0_8px_24px_rgba(0,0,0,0.08)] p-1.5 z-[60]">
-                  {role === "worker" && (
-                    <Link
-                      href={`/${role}/profile`}
-                      className="flex items-center gap-2 w-full text-sm text-ink-2 no-underline px-2.5 py-2 rounded-md hover:bg-cream-2 hover:text-ink"
-                      onClick={() => setMenuOpen(false)}
-                    >
-                      <User size={15} /> Profile
-                    </Link>
-                  )}
-                  <Link
-                    href={`/${role}/settings`}
-                    className="flex items-center gap-2 w-full text-sm text-ink-2 no-underline px-2.5 py-2 rounded-md hover:bg-cream-2 hover:text-ink"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    <Settings size={15} /> Settings
-                  </Link>
-                  <button
-                    type="button"
-                    className="flex items-center gap-2 w-full text-sm text-ink-2 px-2.5 py-2 rounded-md hover:bg-cream-2 hover:text-ink cursor-pointer"
-                    onClick={handleLogout}
-                  >
-                    <LogOut size={15} /> Logout
-                  </button>
-                </div>
-              )}
-            </div>
+            <AccountMenu
+              role={role}
+              user={user}
+              showVerified={showVerified}
+              variant="desktop"
+              onLogout={handleLogout}
+            />
           </div>
         </header>
 
@@ -397,18 +463,6 @@ export default function Shell({
         })}
         <NotificationBell variant="bottom" />
       </nav>
-
-      {loggingOut && (
-        <div className="fixed inset-0 z-[100] grid place-items-center bg-cream">
-          <div className="flex flex-col items-center gap-5">
-            <Logo size="lg" />
-            <div className="flex items-center gap-2.5 text-ink-2">
-              <Spinner className="h-4 w-4" />
-              <span className="text-sm">Signing you out…</span>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
