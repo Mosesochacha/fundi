@@ -1,6 +1,8 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { getSession, signOut } from "next-auth/react";
 import { API_BASE } from "@/lib/apiBase";
+import { isLoggingOut } from "@/lib/logoutState";
+import { replaceAndRefresh } from "@/lib/navigation";
 
 /**
  * Single HTTP client for every feature service.
@@ -25,6 +27,15 @@ let inFlight: Promise<string | undefined> | null = null;
 export function clearAccessTokenCache(): void {
   cachedToken = { value: undefined, expiresAt: 0 };
   inFlight = null;
+}
+
+/**
+ * Cache-only read of the access token — never triggers a session fetch (a
+ * session read during logout would re-issue the just-cleared cookie). Used by
+ * logout to authorize the fire-and-forget backend revocation.
+ */
+export function peekAccessToken(): string | undefined {
+  return cachedToken.value;
 }
 
 async function getAccessToken(force = false): Promise<string | undefined> {
@@ -67,8 +78,10 @@ client.interceptors.response.use(
         original.headers.set("Authorization", `Bearer ${token}`);
         return client(original);
       }
-      await signOut({ redirect: false });
-      if (typeof window !== "undefined") window.location.replace("/login");
+      if (!isLoggingOut()) {
+        await signOut({ redirect: false });
+        replaceAndRefresh("/login");
+      }
     }
 
     return Promise.reject(error);
