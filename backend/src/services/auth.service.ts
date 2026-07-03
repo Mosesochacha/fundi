@@ -276,7 +276,7 @@ class AuthService {
         const passwordHash = await bcrypt.hash(uuidv4(), 12);
         user = await db.User.create(
           {
-            firstName: googleUser.firstName || 'Fundi',
+            firstName: googleUser.firstName || email.split('@')[0],
             lastName: googleUser.lastName || 'User',
             email,
             passwordHash,

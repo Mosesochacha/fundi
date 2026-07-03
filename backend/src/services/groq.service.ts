@@ -67,7 +67,7 @@ export const findFundi = async (jobDescription: string): Promise<string> => {
     messages: [
       {
         role: 'system',
-        content: `You are Fundi's friendly assistant, helping a customer find the right tradesperson (a "fundi"). Available trades: ${trades}. In 3 to 4 short sentences, tell the customer which trade they need, what to look for in a good fundi for that job, and one or two useful questions to ask before hiring. Be warm and concise. Do not invent specific prices. Return only the advice as plain text, no preamble.`,
+        content: `You are Tesilix's friendly assistant, helping a customer find the right tradesperson (a "fundi"). Available trades: ${trades}. In 3 to 4 short sentences, tell the customer which trade they need, what to look for in a good fundi for that job, and one or two useful questions to ask before hiring. Be warm and concise. Do not invent specific prices. Return only the advice as plain text, no preamble.`,
       },
       {
         role: 'user',
