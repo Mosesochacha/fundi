@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { io, type Socket } from "socket.io-client";
+import type { Socket } from "socket.io-client";
 
 const SOCKET_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "") ||
@@ -21,18 +21,31 @@ export function useSocket() {
   useEffect(() => {
     if (!isLoggedIn || !userId) return;
 
-    if (!socket) {
-      socket = io(SOCKET_URL, {
-        transports: ["websocket"],
-        withCredentials: true,
-        auth: { token: accessToken },
-      });
-      socket.on("connect", () => socket?.emit("join", userId));
-    }
     refCount += 1;
-    setCurrent(socket);
+    let active = true;
+
+    // socket.io-client is imported lazily so it stays out of the shared
+    // bundle; useSocket itself gets pulled into eager chunks via next-auth.
+    (async () => {
+      if (!socket) {
+        const { io } = await import("socket.io-client");
+        // Re-check: another mount may have connected while we awaited, or
+        // every mount may have unmounted (refCount drained) during the await.
+        if (!socket) {
+          if (refCount <= 0) return;
+          socket = io(SOCKET_URL, {
+            transports: ["websocket"],
+            withCredentials: true,
+            auth: { token: accessToken },
+          });
+          socket.on("connect", () => socket?.emit("join", userId));
+        }
+      }
+      if (active) setCurrent(socket);
+    })();
 
     return () => {
+      active = false;
       refCount -= 1;
       if (refCount <= 0) {
         socket?.disconnect();

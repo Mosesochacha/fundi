@@ -1,9 +1,14 @@
-import path from "path";
+import path from "node:path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   turbopack: {
     root: path.resolve(__dirname),
+  },
+  // Inline the (small, ~18KB) global stylesheet into the HTML instead of a
+  // render-blocking <link> — trades cross-page CSS caching for faster FCP/LCP.
+  experimental: {
+    inlineCss: true,
   },
   // Allow next/image to optimize worker avatars/portfolio photos. The API host
   // serves uploads; confirm/lock this down to the production media host before

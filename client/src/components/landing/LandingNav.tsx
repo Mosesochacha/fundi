@@ -1,14 +1,21 @@
 "use client";
 
 import { ChevronDown, Menu, X } from "lucide-react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/features/auth";
-import { NotificationBell } from "@/features/notifications";
 import { dashboardPathForRole } from "@/lib/authRedirect";
 import { cn } from "@/lib/utils";
+
+// Only renders for logged-in visitors; loading it lazily keeps the
+// notifications feature (and its socket.io dependency) off the landing bundle.
+const NotificationBell = dynamic(
+  () => import("@/features/notifications/components/NotificationBell"),
+  { ssr: false },
+);
 
 const NAV_LINKS = [
   { label: "How it works", href: "/#how" },

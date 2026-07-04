@@ -1,9 +1,13 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAuth } from "@/features/auth";
-import SocketInit from "./SocketInit";
+
+// Keeps socket.io-client out of the shared bundle — landing/auth/browse pages
+// return before rendering it and should never pay for it.
+const SocketInit = dynamic(() => import("./SocketInit"), { ssr: false });
 
 const AUTH_PATHS = [
   "/login",
