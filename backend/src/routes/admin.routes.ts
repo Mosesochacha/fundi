@@ -1,5 +1,6 @@
 import { Router } from "express";
 import requireRole from "../middleware/requireRole";
+import { adminValidators } from "../middleware/adminValidators";
 import dashboard from "../controllers/admin/dashboard.controller";
 import users from "../controllers/admin/users.controller";
 import workers from "../controllers/admin/workers.controller";
@@ -20,10 +21,10 @@ router.get("/admin/badges", dashboard.badges);
 
 router.get("/admin/users", users.list);
 router.get("/admin/users/:id", users.detail);
-router.patch("/admin/users/:id/suspend", users.suspend);
-router.patch("/admin/users/:id/unsuspend", users.unsuspend);
-router.patch("/admin/users/:id/ban", users.ban);
-router.delete("/admin/users/:id", users.remove);
+router.patch("/admin/users/:id/suspend", adminValidators.suspend, users.suspend);
+router.patch("/admin/users/:id/unsuspend", adminValidators.unsuspend, users.unsuspend);
+router.patch("/admin/users/:id/ban", adminValidators.ban, users.ban);
+router.delete("/admin/users/:id", adminValidators.idOnly, users.remove);
 
 router.get("/admin/workers", workers.list);
 router.get("/admin/workers/:id", workers.detail);
@@ -55,8 +56,8 @@ router.post("/admin/reports/:id/notes", reports.addNote);
 
 router.get("/admin/payments", finance.payments);
 router.get("/admin/payouts", finance.payouts);
-router.patch("/admin/payouts/:id/paid", finance.markPayoutPaid);
-router.patch("/admin/payouts/:id/reject", finance.rejectPayout);
+router.patch("/admin/payouts/:id/paid", adminValidators.idOnly, finance.markPayoutPaid);
+router.patch("/admin/payouts/:id/reject", adminValidators.idOnly, finance.rejectPayout);
 router.post("/admin/payouts/process-all", finance.processAllPending);
 
 router.get("/admin/settings", settings.getSettings);

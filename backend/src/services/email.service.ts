@@ -92,6 +92,36 @@ class EmailService {
     }
   }
 
+  async sendEmailChangeNotice(oldEmail: string, newEmail: string, displayName?: string): Promise<boolean> {
+    if (!this.isConfigured()) {
+      logger.warn('[EmailService] RESEND_API_KEY not set — change notice not sent', { oldEmail });
+      return false;
+    }
+    const name = displayName || oldEmail.split('@')[0];
+    const [local, domain] = String(newEmail).split('@');
+    const maskedNew = domain ? `${local.slice(0, 1)}***@${domain}` : newEmail;
+    const content = `
+      <p style="margin:0 0 16px">Hi ${name},</p>
+      <p style="margin:0 0 16px">We received a request to change the email address on your Tesilix account to <strong>${maskedNew}</strong>. A confirmation code was sent to that new address — the change will not take effect until it is confirmed.</p>
+      <p style="margin:0 0 16px">If you did not request this, your account may be compromised. Please change your password immediately and contact support.</p>`;
+    try {
+      const { error } = await getResend().emails.send({
+        from: FROM_DISPLAY,
+        to: oldEmail,
+        subject: 'Security notice: a change to your Tesilix email was requested',
+        html: this.wrap(content, oldEmail),
+      });
+      if (error) {
+        logger.error('[EmailService] Resend error (change notice)', { oldEmail, error });
+        return false;
+      }
+      return true;
+    } catch (err: any) {
+      logger.error('[EmailService] Failed to send change notice', { oldEmail, error: err?.message });
+      return false;
+    }
+  }
+
   private wrap(content: string, recipientEmail: string): string {
     return `<!DOCTYPE html>
 <html lang="en">

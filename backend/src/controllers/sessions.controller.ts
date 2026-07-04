@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { Op } from 'sequelize';
 import { AuthenticatedRequest } from '../middleware/verifyJWT';
 import db from '../models';
-import { sendSuccess, sendError, asyncHandler } from '../utils/helpers';
+import { sendSuccess, sendError, asyncHandler, hashString } from '../utils/helpers';
 import { HTTP_STATUS } from '../utils/constants';
 
 class SessionsController {
@@ -30,14 +30,16 @@ class SessionsController {
   });
 
   revokeAllOtherSessions = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-    const currentJti = (req as any).jti;
+    const currentRefresh = (req as any).cookies?.lot_r1;
+    const currentHash = currentRefresh ? hashString(currentRefresh) : null;
+
     await db.RefreshToken.update(
       { isRevoked: true },
       {
         where: {
           userId: req.user!.id,
           isRevoked: false,
-          ...(currentJti ? { id: { [Op.ne]: currentJti } } : {}),
+          ...(currentHash ? { tokenHash: { [Op.ne]: currentHash } } : {}),
         },
       }
     );

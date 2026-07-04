@@ -169,11 +169,29 @@ class AdminUsersController {
   });
 
   remove = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-    const user = await Db.User.findByPk(req.params.id);
+    const user = await Db.User.findByPk(req.params.id, {
+      include: [{ model: Db.Profile, as: "profile", attributes: ["username"] }],
+    });
     if (!user) return sendError(res, HTTP_STATUS.NOT_FOUND, "User not found");
     if (user.role === "admin") {
       return sendError(res, HTTP_STATUS.FORBIDDEN, "Cannot delete an admin account");
     }
+
+    const confirmation = req.body?.confirmation ?? req.body?.confirmUsername;
+    const expected = user.profile?.username ?? null;
+    const confirmed = expected
+      ? confirmation === expected
+      : req.body?.confirm === true;
+    if (!confirmed) {
+      return sendError(
+        res,
+        HTTP_STATUS.BAD_REQUEST,
+        expected
+          ? `Confirm deletion by sending "confirmation": "${expected}"`
+          : 'Confirm deletion by sending "confirm": true',
+      );
+    }
+
     await logAdminAction(req, {
       action: "user_deleted",
       resourceType: "user",

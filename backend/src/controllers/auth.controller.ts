@@ -14,6 +14,7 @@ import {
 import db from '../models';
 import logger from '../utils/logger';
 import emailService from '../services/email.service';
+import { requestEmailChange, confirmEmailChange } from '../services/emailChange.service';
 
 const REFRESH_COOKIE = 'lot_r1';
 
@@ -377,10 +378,25 @@ class AuthController {
     const bcrypt = require('bcryptjs');
     const valid = await bcrypt.compare(currentPassword, user.passwordHash);
     if (!valid) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Current password is incorrect');
-    const existing = await db.User.findOne({ where: { email: newEmail.toLowerCase().trim() } });
+    const normalizedNew = newEmail.toLowerCase().trim();
+    if (normalizedNew === user.email) {
+      return sendError(res, HTTP_STATUS.BAD_REQUEST, 'This is already your email address');
+    }
+    const existing = await db.User.findOne({ where: { email: normalizedNew } });
     if (existing) return sendError(res, HTTP_STATUS.CONFLICT, 'This email is already in use');
-    await user.update({ email: newEmail.toLowerCase().trim() });
-    return sendSuccess(res, 'Email updated successfully');
+
+    await requestEmailChange(userId, user.email, normalizedNew, user.firstName ?? undefined);
+    return sendSuccess(res, 'We sent a confirmation code to your new email. Enter it to complete the change.');
+  });
+
+  confirmEmailChange = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const userId = req.user?.id;
+    if (!userId) return sendError(res, HTTP_STATUS.UNAUTHORIZED, 'Unauthorized');
+    const otp = req.body.otp ?? req.body.code;
+    if (!otp) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'The confirmation code is required');
+    const result = await confirmEmailChange(userId, String(otp));
+    if (!result.success) return sendError(res, HTTP_STATUS.BAD_REQUEST, result.message);
+    return sendSuccess(res, result.message, { email: result.email });
   });
 
   deleteAccount = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {

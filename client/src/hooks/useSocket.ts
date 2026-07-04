@@ -15,6 +15,7 @@ export function useSocket() {
   const { data: session, status } = useSession();
   const isLoggedIn = status === "authenticated";
   const userId = session?.user?.id;
+  const accessToken = session?.accessToken;
   const [current, setCurrent] = useState<Socket | null>(socket);
 
   useEffect(() => {
@@ -24,6 +25,7 @@ export function useSocket() {
       socket = io(SOCKET_URL, {
         transports: ["websocket"],
         withCredentials: true,
+        auth: { token: accessToken },
       });
       socket.on("connect", () => socket?.emit("join", userId));
     }
@@ -39,7 +41,7 @@ export function useSocket() {
       }
       setCurrent(null);
     };
-  }, [isLoggedIn, userId]);
+  }, [isLoggedIn, userId, accessToken]);
 
   return current;
 }

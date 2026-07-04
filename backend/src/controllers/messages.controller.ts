@@ -216,6 +216,12 @@ class MessagesController {
     if (!profileId) return sendError(res, HTTP_STATUS.UNAUTHORIZED, 'Unauthorized');
     const { conversationId } = req.params;
 
+    const conv: any = await (db as any).Conversation.findByPk(conversationId);
+    if (!conv) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Conversation not found');
+    if (conv.participant1Id !== profileId && conv.participant2Id !== profileId) {
+      return sendError(res, HTTP_STATUS.FORBIDDEN, 'Not a participant');
+    }
+
     await (db as any).Message.update(
       { readAt: new Date() },
       { where: { conversationId, senderId: { [Op.ne]: profileId }, readAt: null } }

@@ -60,8 +60,12 @@ export function setAuthCookie(
   const isProduction = process.env.NODE_ENV === "production";
   const isSecure = req?.secure || req?.headers["x-forwarded-proto"] === "https" || isProduction;
 
-  const sameSite = crossSite ? (isSecure ? "none" : "lax") : "lax";
+  let sameSite = crossSite ? (isSecure ? "none" : "lax") : "lax";
   const secure = crossSite ? isSecure : isProduction;
+
+  if (name === "lot_r1" && !crossSite) {
+    sameSite = "strict";
+  }
 
   res.cookie(name, token, {
     httpOnly: true,

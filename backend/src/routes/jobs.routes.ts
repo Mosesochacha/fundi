@@ -1,9 +1,10 @@
 import { Router } from 'express';
 import JobsController from '../controllers/jobs.controller';
+import { jobCreationRateLimit } from '../middleware/rateLimiter';
 
 const router = Router();
 
-router.post('/jobs', JobsController.createJobRequest);
+router.post('/jobs', jobCreationRateLimit, JobsController.createJobRequest);
 router.get('/jobs/:id', JobsController.getJob);
 router.post('/jobs/:id/accept', JobsController.acceptJob);
 router.post('/jobs/:id/decline', JobsController.declineJob);

@@ -178,21 +178,6 @@ class AuthService {
         throw new Error("Invalid credentials");
       }
 
-      if (!user.emailVerified) {
-        logger.warn('Login failed: email not verified', { userId: user.id, ipAddress });
-        throw new Error("Email not verified");
-      }
-
-      if (!user.isActive) {
-        logger.warn('Login failed: account deactivated', { userId: user.id, ipAddress });
-        throw new Error("Account is deactivated");
-      }
-
-      if (user.status === 'suspended') {
-        logger.warn('Login failed: account suspended', { userId: user.id, ipAddress });
-        throw new Error("Your account has been suspended. Contact support.");
-      }
-
       if (user.lockedUntil && user.lockedUntil > new Date()) {
         const minutesLeft = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000);
         throw new Error(`Account locked. Try again in ${minutesLeft} minute${minutesLeft === 1 ? '' : 's'}.`);
@@ -209,6 +194,21 @@ class AuthService {
         await user.update(update);
         logger.warn('Login failed: invalid password', { userId: user.id, ipAddress });
         throw new Error("Invalid credentials");
+      }
+
+      if (!user.emailVerified) {
+        logger.warn('Login failed: email not verified', { userId: user.id, ipAddress });
+        throw new Error("Email not verified");
+      }
+
+      if (!user.isActive) {
+        logger.warn('Login failed: account deactivated', { userId: user.id, ipAddress });
+        throw new Error("Account is deactivated");
+      }
+
+      if (user.status === 'suspended') {
+        logger.warn('Login failed: account suspended', { userId: user.id, ipAddress });
+        throw new Error("Your account has been suspended. Contact support.");
       }
 
       if (user.loginAttempts > 0 || user.lockedUntil) {
