@@ -55,14 +55,16 @@ export default async function LandingPage() {
     <div className="bg-cream text-ink font-sans overflow-x-hidden">
       <JsonLd data={websiteSchema} />
       <LandingNav />
-      <Hero />
-      <TrustedMarquee />
-      <HowItWorks />
-      <WhyTesilix />
-      <GlobalSection />
-      <FoundingMembers />
-      <TrustSafety />
-      <LandingCta />
+      <main>
+        <Hero />
+        <TrustedMarquee />
+        <HowItWorks />
+        <WhyTesilix />
+        <GlobalSection />
+        <FoundingMembers />
+        <TrustSafety />
+        <LandingCta />
+      </main>
       <LandingFooter />
     </div>
   );

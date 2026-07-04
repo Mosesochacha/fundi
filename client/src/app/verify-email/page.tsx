@@ -163,7 +163,7 @@ export default function VerifyEmailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-cream text-ink font-sans flex flex-col items-center justify-center px-4 pt-10 pb-14">
+    <main className="min-h-screen bg-cream text-ink font-sans flex flex-col items-center justify-center px-4 pt-10 pb-14">
       <div className="text-center mb-8">
         <Logo href="/" size="lg" />
         <div className="text-sm text-ink-3 mt-1.5">
@@ -338,6 +338,6 @@ export default function VerifyEmailPage() {
           Terms
         </Link>
       </div>
-    </div>
+    </main>
   );
 }
