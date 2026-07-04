@@ -2,11 +2,11 @@ import Link from "next/link";
 import { btnGold, btnOutlineNavy } from "./landingStyles";
 
 const ctaAvatars: { initials: string; className: string }[] = [
-  { initials: "JK", className: "bg-gold-light text-gold-dark" },
+  { initials: "JK", className: "bg-gold-light text-gold-deep" },
   { initials: "MO", className: "bg-navy/10 text-navy" },
   { initials: "AN", className: "bg-cream-2 text-ink-2" },
-  { initials: "FN", className: "bg-gold/20 text-gold-dark" },
-  { initials: "BM", className: "bg-gold-light text-gold-dark" },
+  { initials: "FN", className: "bg-gold/20 text-gold-deep" },
+  { initials: "BM", className: "bg-gold-light text-gold-deep" },
 ];
 
 export default function LandingCta() {

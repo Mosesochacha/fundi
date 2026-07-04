@@ -31,8 +31,8 @@ export default function FoundingMembers() {
               key={b.title}
               className="bg-white border border-border rounded-xl px-6 py-7"
             >
-              <div className="inline-flex items-center gap-1.5 text-[11px] font-medium tracking-[0.04em] uppercase text-gold-dark bg-gold-light border border-gold/30 rounded-full px-3 py-1 mb-[18px]">
-                <span className="text-gold">★</span> Founding
+              <div className="inline-flex items-center gap-1.5 text-[11px] font-medium tracking-[0.04em] uppercase text-gold-deep bg-gold-light border border-gold/30 rounded-full px-3 py-1 mb-[18px]">
+                <span className="text-gold-deep">★</span> Founding
               </div>
               <div className="font-serif text-xl font-normal text-ink mb-2.5">
                 {b.title}

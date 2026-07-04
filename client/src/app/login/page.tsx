@@ -171,7 +171,7 @@ export default function LoginPage() {
   const locked = lockSecondsLeft > 0;
 
   return (
-    <div className="min-h-screen bg-cream text-ink font-sans flex flex-col items-center justify-center px-4 pt-10 pb-14">
+    <main className="min-h-screen bg-cream text-ink font-sans flex flex-col items-center justify-center px-4 pt-10 pb-14">
       <div className="text-center mb-6">
         <Logo href="/" size="md" />
         <div className="text-sm text-ink-3 mt-0.5">
@@ -362,6 +362,6 @@ export default function LoginPage() {
           Terms
         </Link>
       </div>
-    </div>
+    </main>
   );
 }

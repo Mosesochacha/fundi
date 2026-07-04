@@ -176,7 +176,7 @@ export default function OnboardingPage() {
     "w-full py-3 rounded-lg border-0 text-sm font-semibold font-sans bg-gold text-navy cursor-pointer transition-all hover:bg-gold-dark disabled:bg-border disabled:text-ink-3 disabled:cursor-not-allowed";
 
   return (
-    <div className="min-h-screen bg-cream text-ink font-sans flex flex-col items-center px-4 pt-[clamp(32px,7vh,72px)] pb-14">
+    <main className="min-h-screen bg-cream text-ink font-sans flex flex-col items-center px-4 pt-[clamp(32px,7vh,72px)] pb-14">
       <div className="text-center mb-[22px]">
         <Logo size="md" />
       </div>
@@ -526,6 +526,6 @@ export default function OnboardingPage() {
           Terms
         </Link>
       </div>
-    </div>
+    </main>
   );
 }

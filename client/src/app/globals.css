@@ -2,7 +2,8 @@
 
 @theme {
   --color-gold: #c9a84c;
-  --color-gold-dark: #a8872e;
+  /* 3.4:1 on cream-2 — clears WCAG AA for large text and UI icons */
+  --color-gold-dark: #9c7d29;
   --color-gold-light: #fdf6e3;
   --color-navy: #221d16;
   --color-navy-2: #3a3226;
@@ -10,12 +11,13 @@
   --color-cream-2: #f2efe8;
   --color-ink: #2c2620;
   --color-ink-2: #4a4a47;
-  --color-ink-3: #8a8a85;
+  /* 4.67:1 on cream-2 — muted text must still clear AA at body/label sizes */
+  --color-ink-3: #6b6b66;
   --color-ink-4: #c2bdb0;
   --color-border: #e5e0d5;
 
   /* Dark gold for small text on light backgrounds — gold-dark fails AA at
-     label sizes (2.96:1 on cream); this hits 5.3:1. */
+     label sizes (3.68:1 on cream); this hits 5.7:1. */
   --color-gold-deep: #7a5f18;
 }
 
