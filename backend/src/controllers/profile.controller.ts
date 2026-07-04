@@ -9,10 +9,36 @@ import typesenseService from '../services/typesense.service';
 
 const AUTHOR_ATTRS = ['id', 'fullName', 'profession', 'location', 'avatarUrl', 'username'];
 
+const PUBLIC_PROFILE_ATTRS = [
+  'id', 'username', 'fullName', 'profession', 'location', 'bio', 'tagline',
+  'avatarUrl', 'bannerUrl', 'theme', 'services', 'workPhotos', 'education',
+  'experience', 'portfolio', 'certifications', 'serviceAreas', 'isAvailable',
+  'country', 'yearsExperience', 'views', 'phone', 'whatsapp', 'createdAt',
+  'displayNameFormat', 'profileLayout', 'allowComments', 'allowFollowers',
+  'allowDirectMessages', 'showRate', 'showOnline',
+  'profilePublic', 'showPhone', 'showYearsExperience', 'showProfileViews',
+];
+
+function shapePublicProfile(p: any) {
+  const out = { ...p };
+  if (!out.showPhone) {
+    out.phone = null;
+    out.whatsapp = null;
+  }
+  if (!out.showYearsExperience) out.yearsExperience = null;
+  if (!out.showProfileViews) out.views = null;
+  delete out.profilePublic;
+  delete out.showPhone;
+  delete out.showYearsExperience;
+  delete out.showProfileViews;
+  return out;
+}
+
 class ProfileController {
   getProfile = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const profile: any = await db.Profile.findOne({
       where: { username: req.params.username },
+      attributes: PUBLIC_PROFILE_ATTRS,
       include: [
         ...(req.user
           ? [{ model: db.Follow, as: 'followers', where: { followerId: req.user.profileId }, required: false, attributes: ['id'] }]
@@ -21,6 +47,11 @@ class ProfileController {
     });
 
     if (!profile) return sendError(res, HTTP_STATUS.NOT_FOUND, 'Profile not found');
+
+    const isOwner = req.user?.profileId && req.user.profileId === profile.id;
+    if (!profile.profilePublic && !isOwner) {
+      return sendError(res, HTTP_STATUS.NOT_FOUND, 'Profile not found');
+    }
 
     const [followersCount, followingCount, postsCount] = await Promise.all([
       db.Follow.count({ where: { followingId: profile.id } }),
@@ -48,13 +79,16 @@ class ProfileController {
       ]);
     }
 
-    const p = profile.get({ plain: true });
+    const raw = profile.get({ plain: true });
+    const isFollowing = req.user ? (raw.followers?.length ?? 0) > 0 : false;
+    delete raw.followers;
+    const p = shapePublicProfile(raw);
     return sendSuccess(res, 'Profile retrieved', {
       ...p,
       followersCount,
       followingCount,
       postsCount,
-      isFollowing: req.user ? (p.followers?.length ?? 0) > 0 : false,
+      isFollowing,
     });
   });
 

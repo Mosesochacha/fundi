@@ -4,6 +4,7 @@ import { AuthenticatedRequest } from '../middleware/verifyJWT';
 import db from '../models';
 import AuthService from '../services/auth.service';
 import OTPService from '../services/otp.service';
+import { requestEmailChange, confirmEmailChange } from '../services/emailChange.service';
 import { getFileUrl } from '../middleware/upload';
 import { sendSuccess, sendError, asyncHandler, isValidEmail } from '../utils/helpers';
 import { HTTP_STATUS, normalizeCurrency } from '../utils/constants';
@@ -202,14 +203,25 @@ class WorkerSettingsController {
     if (!isValidEmail(email)) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'Please provide a valid email address');
     const user = await db.User.findByPk(req.user!.id);
     if (!user) return sendError(res, HTTP_STATUS.NOT_FOUND, 'User not found');
-    if (email !== user.email) {
-      const existing = await db.User.findOne({ where: { email } });
-      if (existing && existing.id !== user.id) {
-        return sendError(res, HTTP_STATUS.CONFLICT, 'Email already in use');
-      }
-      await user.update({ email, emailVerified: false });
+    if (email === user.email) {
+      return sendSuccess(res, 'Email unchanged', { email, emailVerified: user.emailVerified });
     }
-    return sendSuccess(res, 'Email updated', { email, emailVerified: user.emailVerified });
+    const existing = await db.User.findOne({ where: { email } });
+    if (existing && existing.id !== user.id) {
+      return sendError(res, HTTP_STATUS.CONFLICT, 'Email already in use');
+    }
+    await requestEmailChange(user.id, user.email, email, user.firstName ?? undefined);
+    return sendSuccess(res, 'We sent a confirmation code to your new email. Enter it to complete the change.', {
+      pending: true,
+    });
+  });
+
+  confirmEmailChange = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const otp = req.body.otp ?? req.body.code;
+    if (!otp) return sendError(res, HTTP_STATUS.BAD_REQUEST, 'The confirmation code is required');
+    const result = await confirmEmailChange(req.user!.id, String(otp));
+    if (!result.success) return sendError(res, HTTP_STATUS.BAD_REQUEST, result.message);
+    return sendSuccess(res, result.message, { email: result.email, emailVerified: true });
   });
 
   verifyEmail = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {

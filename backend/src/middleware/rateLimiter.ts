@@ -9,6 +9,7 @@ interface RateLimitOptions {
   message?: string;
   skipSuccessfulRequests?: boolean;
   skipFailedRequests?: boolean;
+  failClosed?: boolean;
 }
 
 export const createRateLimiter = (options: RateLimitOptions) => {
@@ -47,6 +48,13 @@ export const createRateLimiter = (options: RateLimitOptions) => {
 
       next();
     } catch (error) {
+      if (options.failClosed) {
+        return sendError(
+          res,
+          HTTP_STATUS.TOO_MANY_REQUESTS,
+          options.message || 'Service is temporarily unavailable, please try again shortly.'
+        );
+      }
       next();
     }
   };
@@ -56,12 +64,21 @@ export const authRateLimit = createRateLimiter({
   windowMs: 15 * 60 * 1000,
   maxRequests: 10,
   message: 'Too many authentication attempts, please try again later.',
+  failClosed: true,
 });
 
 export const passwordResetRateLimit = createRateLimiter({
   windowMs: 60 * 60 * 1000,
   maxRequests: 3,
   message: 'Too many password reset requests. Please wait an hour before trying again.',
+  failClosed: true,
+});
+
+export const loginRateLimit = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  maxRequests: 10,
+  message: 'Too many login attempts from this device. Please try again later.',
+  failClosed: true,
 });
 
 export const apiRateLimit = createRateLimiter({
@@ -104,4 +121,16 @@ export const tipRateLimit = createRateLimiter({
   windowMs: 60 * 1000,
   maxRequests: 5,
   message: 'Too many tips sent, please wait before sending another.',
+});
+
+export const messageRateLimit = createRateLimiter({
+  windowMs: 60 * 1000,
+  maxRequests: 30,
+  message: 'You are sending messages too quickly. Please slow down.',
+});
+
+export const jobCreationRateLimit = createRateLimiter({
+  windowMs: 60 * 60 * 1000,
+  maxRequests: 30,
+  message: 'Too many job requests created. Please try again later.',
 });

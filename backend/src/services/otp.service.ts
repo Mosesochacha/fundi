@@ -65,7 +65,7 @@ class OTPService {
       return true;
     } catch (error) {
       logError(error, 'OTP Rate Limit Check');
-      return true;
+      return false;
     }
   }
 
@@ -87,7 +87,7 @@ class OTPService {
         };
       }
 
-      const code = this._generateOTPCode(purpose === 'reset' ? 4 : 6);
+      const code = this._generateOTPCode(6);
       const otpData: OTPData = {
         code,
         email: email.toLowerCase(),

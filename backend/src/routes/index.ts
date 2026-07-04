@@ -23,11 +23,8 @@ import adminRoutes from './admin.routes';
 import geoRoutes from './geo.routes';
 import seoRoutes from './seo.routes';
 import verifyJWT from '../middleware/verifyJWT';
-import { csrfProtection } from '../middleware/csrfProtection';
 
 const router = Router();
-
-router.use(csrfProtection);
 
 router.use(authRoutes);
 router.use(profileRoutes);

@@ -45,6 +45,8 @@ app.use(
   express.static(uploadsRoot, {
     setHeaders: (res, filePath) => {
       res.setHeader("X-Content-Type-Options", "nosniff");
+      res.setHeader("X-Frame-Options", "DENY");
+      res.setHeader("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'");
       const ext = path.extname(filePath).toLowerCase();
       
       if (inlineExtensions.has(ext)) {
@@ -63,6 +65,8 @@ app.use(
   express.static(path.join(process.cwd(), "public"), {
     setHeaders: (res) => {
       res.setHeader("X-Content-Type-Options", "nosniff");
+      res.setHeader("X-Frame-Options", "DENY");
+      res.setHeader("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'");
     },
   })
 );

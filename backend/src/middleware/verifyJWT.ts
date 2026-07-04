@@ -56,7 +56,7 @@ const verifyJWT: RequestHandler = async (
       return;
     }
 
-    const { id, role, username } = decoded;
+    const { id, username } = decoded;
 
     const user = await db.User.findByPk(id);
     if (!user) {
@@ -92,7 +92,8 @@ const verifyJWT: RequestHandler = async (
     const profile = await db.Profile.findOne({ where: { userId: id } });
     req.user = {
       id,
-      role,
+      role: user.role,
+      accountType: user.accountType ?? null,
       username,
       isOnboarded: user.isOnboarded || false,
       profileId: profile?.id ?? null,
@@ -154,7 +155,7 @@ export const optionalVerifyJWT: RequestHandler = async (
       return next();
     }
 
-    const { id, role, username } = decoded;
+    const { id, username } = decoded;
 
     const user = await db.User.findByPk(id);
     if (!user || !user.isActive || user.status === "suspended") {
@@ -164,7 +165,8 @@ export const optionalVerifyJWT: RequestHandler = async (
     const profile = await db.Profile.findOne({ where: { userId: id } });
     req.user = {
       id,
-      role,
+      role: user.role,
+      accountType: user.accountType ?? null,
       username,
       isOnboarded: user.isOnboarded || false,
       profileId: profile?.id ?? null,
