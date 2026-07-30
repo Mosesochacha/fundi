@@ -316,7 +316,13 @@ function generate(count: number, takenUsernames: Set<string>): Generated[] {
 
     // experience: 1-2 roles
     const startY = 2026 - yrs;
-    const experience = [
+    const experience: {
+      title: string;
+      company: string;
+      startYear: number;
+      endYear: number | null;
+      description: string;
+    }[] = [
       {
         title: `${trade.name}`,
         company: "Independent / Self-employed",
