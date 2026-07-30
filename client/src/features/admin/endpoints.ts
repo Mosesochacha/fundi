@@ -56,6 +56,9 @@ export const adminEndpoints = {
   rejectPayout: (id: string) => patch(`/admin/payouts/${id}/reject`),
   processAllPayouts: () => post(`/admin/payouts/process-all`),
 
+  sendEmailBlast: (body: { subject: string; body: string }) =>
+    post(`/admin/email-blasts`, body),
+
   updateSettings: (body: unknown) => patch(`/admin/settings`, body),
   updateEmailTemplate: (
     id: string,

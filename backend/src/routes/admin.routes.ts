@@ -18,6 +18,7 @@ router.use(requireRole("admin"));
 router.get("/admin/dashboard", dashboard.dashboard);
 router.get("/admin/health", dashboard.health);
 router.get("/admin/badges", dashboard.badges);
+router.post("/admin/email-blasts", dashboard.sendBroadcast);
 
 router.get("/admin/users", users.list);
 router.get("/admin/users/:id", users.detail);

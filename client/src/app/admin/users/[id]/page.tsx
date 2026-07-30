@@ -1,6 +1,7 @@
 "use client";
 
 import { Star } from "lucide-react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { type ReactNode, useState } from "react";
 import {
@@ -20,139 +21,13 @@ import { Avatar, Badge, Button } from "@/components/ui";
 import { useToastContext } from "@/context/ToastContext";
 import {
   type AdminMutateReq,
+  type AdminRelatedJob,
   type AdminUser,
   adminEndpoints,
   initialsOf,
   useAdminAction,
   useAdminUser,
 } from "@/features/admin";
-
-interface TimelineEvent {
-  id: string;
-  text: string;
-  when: string;
-  dot: string;
-}
-
-const TIMELINE: TimelineEvent[] = [
-  {
-    id: "t1",
-    text: "Logged in from Nairobi, KE",
-    when: "2 hours ago",
-    dot: "bg-blue-500",
-  },
-  {
-    id: "t2",
-    text: "Completed a job — Kitchen plumbing",
-    when: "Yesterday",
-    dot: "bg-green-500",
-  },
-  {
-    id: "t3",
-    text: "Received a 5-star review",
-    when: "2 days ago",
-    dot: "bg-gold",
-  },
-  {
-    id: "t4",
-    text: "Sent 3 messages to an employer",
-    when: "3 days ago",
-    dot: "bg-purple-500",
-  },
-  {
-    id: "t5",
-    text: "Updated profile photo",
-    when: "5 days ago",
-    dot: "bg-blue-500",
-  },
-  {
-    id: "t6",
-    text: "Logged in from Mombasa, KE",
-    when: "1 week ago",
-    dot: "bg-blue-500",
-  },
-  {
-    id: "t7",
-    text: "Withdrew a payout request",
-    when: "2 weeks ago",
-    dot: "bg-red-500",
-  },
-  { id: "t8", text: "Account created", when: "Joined", dot: "bg-ink-3" },
-];
-
-interface JobRow {
-  id: string;
-  title: string;
-  date: string;
-  status: "completed" | "active" | "cancelled" | "pending";
-  amount: number;
-}
-
-const JOBS: JobRow[] = [
-  {
-    id: "j1",
-    title: "Kitchen plumbing repair",
-    date: "2026-06-18",
-    status: "completed",
-    amount: 12500,
-  },
-  {
-    id: "j2",
-    title: "Bathroom tiling",
-    date: "2026-06-10",
-    status: "completed",
-    amount: 28000,
-  },
-  {
-    id: "j3",
-    title: "Office electrical wiring",
-    date: "2026-05-29",
-    status: "active",
-    amount: 45000,
-  },
-  {
-    id: "j4",
-    title: "Garden landscaping",
-    date: "2026-05-14",
-    status: "cancelled",
-    amount: 18000,
-  },
-  {
-    id: "j5",
-    title: "Roof leak inspection",
-    date: "2026-04-30",
-    status: "completed",
-    amount: 6000,
-  },
-];
-
-interface ReportRow {
-  id: string;
-  severity: "high" | "medium" | "low";
-  title: string;
-  date: string;
-  status: "open" | "in_review" | "resolved";
-}
-
-const REPORTS_AGAINST: ReportRow[] = [
-  {
-    id: "r1",
-    severity: "medium",
-    title: "Inappropriate review content",
-    date: "2026-06-02",
-    status: "resolved",
-  },
-];
-
-const REPORTS_FILED: ReportRow[] = [
-  {
-    id: "r2",
-    severity: "low",
-    title: "Payment dispute with employer",
-    date: "2026-05-20",
-    status: "open",
-  },
-];
 
 type DangerAction = {
   key: string;
@@ -201,8 +76,9 @@ const DANGER_ACTIONS: DangerAction[] = [
   },
 ];
 
-const jobColumns: Column<JobRow>[] = [
+const jobColumns: Column<AdminRelatedJob>[] = [
   { key: "title", header: "Job", render: (j) => j.title },
+  { key: "counterparty", header: "With", render: (j) => j.counterparty },
   {
     key: "date",
     header: "Date",
@@ -239,13 +115,14 @@ function Stars({ rating }: { rating: number }) {
   );
 }
 
-function ReportList({ rows }: { rows: ReportRow[] }) {
-  if (rows.length === 0) {
+function ReportList({ rows }: { rows: AdminUser["reportsAgainst"] }) {
+  const safeRows = rows ?? [];
+  if (safeRows.length === 0) {
     return <p className="text-sm text-ink-3">None.</p>;
   }
   return (
     <div className="flex flex-col gap-2.5">
-      {rows.map((r) => (
+      {safeRows.map((r) => (
         <div key={r.id} className="flex items-center gap-2.5">
           <SeverityDot severity={r.severity} />
           <div className="min-w-0 flex-1">
@@ -434,26 +311,30 @@ export default function AdminUserDetailPage() {
 
           <DetailCard title="Activity timeline">
             <div className="flex flex-col gap-3.5">
-              {TIMELINE.map((ev) => (
-                <div key={ev.id} className="flex items-start gap-3">
-                  <span
-                    className={`mt-1.5 shrink-0 w-2 h-2 rounded-full ${ev.dot}`}
-                  />
-                  <div className="flex-1 flex items-baseline justify-between gap-3">
-                    <span className="text-sm text-ink-2">{ev.text}</span>
-                    <span className="text-[11px] text-ink-3 shrink-0">
-                      {ev.when}
-                    </span>
+              {(u.timeline ?? []).length === 0 ? (
+                <p className="text-sm text-ink-3">No activity yet.</p>
+              ) : (
+                u.timeline?.map((ev) => (
+                  <div key={ev.id} className="flex items-start gap-3">
+                    <span
+                      className={`mt-1.5 shrink-0 w-2 h-2 rounded-full ${ev.dot}`}
+                    />
+                    <div className="flex-1 flex items-baseline justify-between gap-3">
+                      <span className="text-sm text-ink-2">{ev.text}</span>
+                      <span className="text-[11px] text-ink-3 shrink-0">
+                        {ev.when}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </DetailCard>
 
           <DetailCard title={isWorker ? "Jobs done" : "Jobs posted"}>
             <DataTable
               columns={jobColumns}
-              rows={JOBS}
+              rows={u.jobsHistory ?? []}
               rowKey={(j) => j.id}
               emptyMessage="No jobs yet."
             />
@@ -482,30 +363,32 @@ export default function AdminUserDetailPage() {
             <div className="flex items-center justify-between py-1">
               <span className="text-sm text-ink-3">Average rating</span>
               <span className="flex items-center gap-2 text-sm text-ink-2">
-                <Stars rating={4.7} />
-                4.7
+                <Stars rating={u.reviewStats?.averageReceived ?? 0} />
+                {(u.reviewStats?.averageReceived ?? 0).toFixed(1)}
               </span>
             </div>
-            <InfoRow label="Reviews received" value={32} />
-            <InfoRow label="Reviews given" value={8} />
-            <button
-              type="button"
-              onClick={() => success("Opening review history…")}
-              className="inline-block mt-2 text-sm text-gold-dark no-underline hover:underline cursor-pointer"
+            <InfoRow
+              label="Reviews received"
+              value={u.reviewStats?.received ?? 0}
+            />
+            <InfoRow label="Reviews given" value={u.reviewStats?.given ?? 0} />
+            <Link
+              href="/admin/reviews"
+              className="inline-block mt-2 text-sm text-gold-dark no-underline hover:underline"
             >
               View full review history
-            </button>
+            </Link>
           </DetailCard>
 
           <DetailCard title="Reports">
             <p className="text-xs font-semibold text-ink-3 uppercase tracking-wider mb-2">
               Against this user
             </p>
-            <ReportList rows={REPORTS_AGAINST} />
+            <ReportList rows={u.reportsAgainst} />
             <p className="text-xs font-semibold text-ink-3 uppercase tracking-wider mt-4 mb-2">
               Filed by this user
             </p>
-            <ReportList rows={REPORTS_FILED} />
+            <ReportList rows={u.reportsFiled} />
           </DetailCard>
 
           <DetailCard title="Danger zone" danger>

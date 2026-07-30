@@ -79,6 +79,24 @@ export interface AuthTokens {
 }
 
 class AuthService {
+  async recordLoginHistory(
+    userId: string,
+    ipAddress: string = '',
+    userAgent: string = '',
+    status: 'success' | 'failed' = 'success'
+  ) {
+    try {
+      await db.LoginHistory.create({
+        userId,
+        ipAddress,
+        userAgent,
+        status,
+      });
+    } catch (historyErr: any) {
+      logger.warn('Failed to record login history', { userId, error: historyErr.message });
+    }
+  }
+
   /**
    * Register a new user
    */
@@ -192,21 +210,25 @@ class AuthService {
           logger.warn('Account locked after 5 failed attempts', { userId: user.id, ipAddress });
         }
         await user.update(update);
+        await this.recordLoginHistory(user.id, ipAddress, userAgent, 'failed');
         logger.warn('Login failed: invalid password', { userId: user.id, ipAddress });
         throw new Error("Invalid credentials");
       }
 
       if (!user.emailVerified) {
+        await this.recordLoginHistory(user.id, ipAddress, userAgent, 'failed');
         logger.warn('Login failed: email not verified', { userId: user.id, ipAddress });
         throw new Error("Email not verified");
       }
 
       if (!user.isActive) {
+        await this.recordLoginHistory(user.id, ipAddress, userAgent, 'failed');
         logger.warn('Login failed: account deactivated', { userId: user.id, ipAddress });
         throw new Error("Account is deactivated");
       }
 
       if (user.status === 'suspended') {
+        await this.recordLoginHistory(user.id, ipAddress, userAgent, 'failed');
         logger.warn('Login failed: account suspended', { userId: user.id, ipAddress });
         throw new Error("Your account has been suspended. Contact support.");
       }
@@ -219,16 +241,7 @@ class AuthService {
 
       await user.update({ lastLoginAt: new Date() });
 
-      try {
-        await db.LoginHistory.create({
-          userId: user.id,
-          ipAddress,
-          userAgent,
-          status: 'success',
-        });
-      } catch (historyErr: any) {
-        logger.warn('Failed to record login history', { error: historyErr.message });
-      }
+      await this.recordLoginHistory(user.id, ipAddress, userAgent, 'success');
 
       logger.info('Login successful', { userId: user.id, ipAddress });
 
@@ -320,6 +333,7 @@ class AuthService {
 
     const tokens = await this.generateTokens(user, ipAddress, userAgent);
     await user.update({ lastLoginAt: new Date() });
+    await this.recordLoginHistory(user.id, ipAddress, userAgent, 'success');
     const profile = await db.Profile.findOne({ where: { userId: user.id } });
 
     return {

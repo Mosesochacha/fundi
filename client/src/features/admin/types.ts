@@ -25,6 +25,11 @@ export interface AdminUser {
   about?: string;
   dailyRate?: number;
   currency: string;
+  timeline?: TimelineEvent[];
+  jobsHistory?: AdminRelatedJob[];
+  reportsAgainst?: AdminCompactReport[];
+  reportsFiled?: AdminCompactReport[];
+  reviewStats?: AdminReviewStats;
 }
 
 export interface AdminWorker extends AdminUser {
@@ -43,6 +48,9 @@ export interface AdminWorker extends AdminUser {
   idDocUrl?: string;
   selfieUrl?: string;
   nameMatch?: boolean;
+  jobHistory?: AdminRelatedJob[];
+  reviews?: AdminRelatedReview[];
+  reports?: AdminCompactReport[];
 }
 
 export interface AdminEmployer extends AdminUser {
@@ -50,6 +58,83 @@ export interface AdminEmployer extends AdminUser {
   totalHires: number;
   totalSpent: number;
   avgRatingGiven: number;
+  account?: {
+    firstName: string;
+    lastName: string;
+    emailVerified: boolean;
+    phoneVerified: boolean;
+    profileComplete: boolean;
+    onboarded: boolean;
+    onboardingCompletedAt: string | null;
+    isActive: boolean;
+    status: string;
+    bannedAt: string | null;
+    suspendedUntil: string | null;
+    suspensionReason: string | null;
+    termsAccepted: boolean;
+    termsAcceptedAt: string | null;
+    lastLoginAt: string | null;
+    createdAt: string;
+    updatedAt: string;
+  };
+  profile?: {
+    id: string;
+    username: string;
+    fullName: string;
+    profession: string;
+    location: string;
+    bio: string | null;
+    tagline: string | null;
+    phone: string | null;
+    avatarUrl: string | null;
+    bannerUrl: string | null;
+    services: string[];
+    serviceAreas: string[];
+    country: string;
+    timezone: string;
+    language: string;
+    profilePublic: boolean;
+    showPhone: boolean;
+    showEmail: boolean;
+    allowDirectMessages: boolean;
+    allowFollowers: boolean;
+    views: number;
+    createdAt: string;
+    updatedAt: string;
+  } | null;
+  activityStats?: {
+    totalLogins: number;
+    successfulLogins: number;
+    failedLogins: number;
+    profileViews: number;
+    posts: number;
+    followers: number;
+    following: number;
+    lastLoginAt: string | null;
+    lastLoginIp: string | null;
+    lastLoginDevice: string | null;
+  };
+  jobStats?: {
+    totalRequests: number;
+    pending: number;
+    active: number;
+    completed: number;
+    cancelled: number;
+    createdLast30Days: number;
+  };
+  recentLogins?: {
+    id: string;
+    ipAddress: string | null;
+    userAgent: string | null;
+    city: string | null;
+    country: string | null;
+    status: "success" | "failed";
+    createdAt: string;
+  }[];
+  hires?: AdminRelatedJob[];
+  reviewsGiven?: AdminRelatedReview[];
+  reportsAgainst?: AdminCompactReport[];
+  reportsFiled?: AdminCompactReport[];
 }
 
 export type JobStatus = "pending" | "active" | "completed" | "cancelled";
@@ -73,6 +158,7 @@ export interface AdminJob {
   workerRating?: number;
   workerTrade?: string;
   review?: { rating: number; text: string } | null;
+  conversationId?: string;
 }
 
 export type ReviewVisibility = "visible" | "hidden" | "removed";
@@ -170,6 +256,56 @@ export interface Paginated<T> {
   totalPages: number;
 }
 
+export interface AdminPaymentsData extends Paginated<AdminPayment> {
+  stats: {
+    totalProcessed: number;
+    platformFees: number;
+    refunded: number;
+    pending: number;
+  };
+}
+
+export interface AdminRelatedJob {
+  id: string;
+  title: string;
+  counterparty: string;
+  date: string;
+  status: JobStatus;
+  amount: number;
+  rating: number | null;
+  trade: string;
+  role: UserRole;
+}
+
+export interface AdminRelatedReview {
+  id: string;
+  person: string;
+  rating: number;
+  text: string;
+  date: string;
+}
+
+export interface AdminCompactReport {
+  id: string;
+  severity: ReportSeverity;
+  title: string;
+  date: string;
+  status: ReportStatus;
+}
+
+export interface TimelineEvent {
+  id: string;
+  text: string;
+  when: string;
+  dot: string;
+}
+
+export interface AdminReviewStats {
+  averageReceived: number;
+  received: number;
+  given: number;
+}
+
 export interface DashboardStat {
   key: string;
   label: string;
@@ -232,6 +368,18 @@ export interface DashboardData {
     pendingPayouts: number;
   };
   health: HealthService[];
+  activeUsers?: {
+    today: number;
+    weekly: number;
+    monthly: number;
+    inactive30Days: number;
+    totalUsers: number;
+    byRole: {
+      workers: number;
+      employers: number;
+    };
+    series: { date: string; count: number }[];
+  };
 }
 
 export interface AdminBadges {

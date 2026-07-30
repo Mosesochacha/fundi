@@ -2,7 +2,10 @@ import { Response } from "express";
 import { Op } from "sequelize";
 import { AuthenticatedRequest } from "../../middleware/verifyJWT";
 import db from "../../models";
-import { asyncHandler, sendSuccess } from "../../utils/helpers";
+import { asyncHandler, sendError, sendSuccess } from "../../utils/helpers";
+import { HTTP_STATUS } from "../../utils/constants";
+import { logAdminAction } from "../../services/audit.service";
+import emailService from "../../services/email.service";
 import { timeAgo } from "../../utils/adminShape";
 
 const initialsOf = (n: string) =>
@@ -22,19 +25,116 @@ const startOfMonth = () => {
   const d = new Date();
   return new Date(d.getFullYear(), d.getMonth(), 1);
 };
+const startOfDay = (date: Date) => {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+const addDays = (date: Date, days: number) => {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+};
+const dayKey = (date: Date | string) => new Date(date).toISOString().slice(0, 10);
 
-const HEALTH = [
-  { key: "api", label: "API server", state: "operational" as const },
-  { key: "db", label: "Database", state: "operational" as const },
-  { key: "socket", label: "Messaging (Socket.io)", state: "operational" as const },
-  { key: "email", label: "Email service", state: "operational" as const },
-  { key: "cloudinary", label: "Image uploads (Cloudinary)", state: "operational" as const },
-  { key: "typesense", label: "Search (Typesense)", state: "operational" as const },
-];
+type HealthState = "operational" | "degraded" | "down";
+
+async function buildHealth() {
+  let dbState: HealthState = "operational";
+  try {
+    await (db as any).sequelize.authenticate();
+  } catch {
+    dbState = "down";
+  }
+
+  const configured = (value: string | undefined | null): HealthState =>
+    value ? "operational" : "degraded";
+
+  return [
+    { key: "api", label: "API server", state: "operational" as HealthState },
+    { key: "db", label: "Database", state: dbState },
+    { key: "socket", label: "Messaging (Socket.io)", state: "operational" as HealthState },
+    { key: "email", label: "Email service", state: configured(process.env.RESEND_API_KEY) },
+    { key: "cloudinary", label: "Image uploads (Cloudinary)", state: configured(process.env.CLOUDINARY_CLOUD_NAME) },
+    { key: "typesense", label: "Search (Typesense)", state: configured(process.env.TYPESENSE_HOST) },
+  ];
+}
+
+async function buildActiveUsersAnalytics() {
+  const Db = db as any;
+  const now = new Date();
+  const today = startOfDay(now);
+  const sevenDaysAgo = addDays(today, -6);
+  const thirtyDaysAgo = addDays(today, -29);
+
+  const [totalUsers, loginRows] = await Promise.all([
+    Db.User.count(),
+    Db.LoginHistory.findAll({
+      where: {
+        status: "success",
+        createdAt: { [Op.gte]: thirtyDaysAgo },
+      },
+      attributes: ["userId", "createdAt"],
+      include: [
+        {
+          model: Db.User,
+          as: "user",
+          required: false,
+          attributes: ["accountType"],
+        },
+      ],
+      raw: true,
+      nest: true,
+    }).catch(() => []),
+  ]);
+
+  const dailySets = new Map<string, Set<string>>();
+  const weeklyUsers = new Set<string>();
+  const monthlyUsers = new Set<string>();
+  const todayUsers = new Set<string>();
+  const workerUsers = new Set<string>();
+  const employerUsers = new Set<string>();
+
+  for (let i = 13; i >= 0; i -= 1) {
+    dailySets.set(dayKey(addDays(today, -i)), new Set<string>());
+  }
+
+  for (const row of loginRows as any[]) {
+    const createdAt = new Date(row.createdAt);
+    const key = dayKey(createdAt);
+    const userId = row.userId;
+    monthlyUsers.add(userId);
+    if (createdAt >= sevenDaysAgo) weeklyUsers.add(userId);
+    if (createdAt >= today) todayUsers.add(userId);
+    dailySets.get(key)?.add(userId);
+
+    const accountType = row.user?.accountType;
+    if (accountType === "worker") workerUsers.add(userId);
+    if (accountType === "employer") employerUsers.add(userId);
+  }
+
+  const series = Array.from(dailySets.entries()).map(([date, users]) => ({
+    date,
+    count: users.size,
+  }));
+
+  return {
+    today: todayUsers.size,
+    weekly: weeklyUsers.size,
+    monthly: monthlyUsers.size,
+    inactive30Days: Math.max(0, totalUsers - monthlyUsers.size),
+    totalUsers,
+    byRole: {
+      workers: workerUsers.size,
+      employers: employerUsers.size,
+    },
+    series,
+  };
+}
 
 class AdminDashboardController {
   health = asyncHandler(async (_req: AuthenticatedRequest, res: Response) => {
-    return sendSuccess(res, "Platform health", HEALTH);
+    return sendSuccess(res, "Platform health", await buildHealth());
   });
 
   dashboard = asyncHandler(async (_req: AuthenticatedRequest, res: Response) => {
@@ -51,6 +151,7 @@ class AdminDashboardController {
       jobsToday,
       pendingVerification,
       pendingPayouts,
+      activeUsers,
     ] = await Promise.all([
       Db.User.count(),
       Db.Profile.count({ where: { idVerificationStatus: "verified" } }),
@@ -60,6 +161,7 @@ class AdminDashboardController {
       Db.JobRequest.count({ where: { createdAt: { [Op.gte]: today } } }),
       Db.Profile.count({ where: { idVerificationStatus: "pending" } }),
       Db.Payout.count({ where: { status: "pending" } }),
+      buildActiveUsersAnalytics(),
     ]);
 
     const monthPayments = await Db.Payment.findAll({
@@ -74,6 +176,7 @@ class AdminDashboardController {
 
     const stats = [
       { key: "users", label: "Total users", number: String(totalUsers), sub: "all registered accounts", trend: `↑ ${newToday} today`, trendUp: true, accent: "gold" },
+      { key: "active", label: "Active users", number: String(activeUsers.weekly), sub: "unique logins in 7 days", trend: `${activeUsers.today} today`, trendUp: true, accent: "green" },
       { key: "workers", label: "Active workers", number: String(verifiedWorkers), sub: "verified fundis", trend: "", trendUp: true, accent: "blue" },
       { key: "jobs", label: "Total jobs", number: String(completedJobs), sub: "all-time completed", trend: "", trendUp: true, accent: "green" },
       { key: "reports", label: "Open reports", number: String(openReports), sub: "needs attention now", trend: openReports ? `↑ ${openReports} open` : "", trendUp: false, accent: "red" },
@@ -154,7 +257,8 @@ class AdminDashboardController {
       reports,
       newUsers,
       quick: { pendingVerification, openReports, pendingPayouts },
-      health: HEALTH,
+      health: await buildHealth(),
+      activeUsers,
     });
   });
 
@@ -165,6 +269,43 @@ class AdminDashboardController {
       Db.Payout.count({ where: { status: "pending" } }),
     ]);
     return sendSuccess(res, "Admin badges", { openReports, pendingPayouts });
+  });
+
+  sendBroadcast = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const subject = String(req.body?.subject || "").trim();
+    const body = String(req.body?.body || "").trim();
+    if (!subject || !body) {
+      return sendError(res, HTTP_STATUS.BAD_REQUEST, "subject and body are required");
+    }
+
+    const Db = db as any;
+    const users = await Db.User.findAll({
+      where: { status: "active", emailVerified: true },
+      attributes: ["id", "email", "firstName", "lastName"],
+      order: [["createdAt", "ASC"]],
+      raw: true,
+    });
+    let sent = 0;
+    for (const user of users) {
+      const ok = await emailService.sendAdminBroadcast(
+        user.email,
+        subject,
+        body,
+        [user.firstName, user.lastName].filter(Boolean).join(" ").trim(),
+      );
+      if (ok) sent += 1;
+    }
+
+    await logAdminAction(req, {
+      action: "email_broadcast_sent",
+      resourceType: "settings",
+      changes: { recipients: users.length, sent, subject },
+    });
+
+    return sendSuccess(res, "Email broadcast processed", {
+      recipients: users.length,
+      sent,
+    });
   });
 }
 

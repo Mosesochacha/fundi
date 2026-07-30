@@ -5,7 +5,14 @@ import db from "../../models";
 import { asyncHandler, sendError, sendSuccess } from "../../utils/helpers";
 import { HTTP_STATUS } from "../../utils/constants";
 import { logAdminAction } from "../../services/audit.service";
-import { paginated, parseListParams, shapeEmployer } from "../../utils/adminShape";
+import {
+  paginated,
+  parseListParams,
+  shapeCompactReport,
+  shapeEmployer,
+  shapeRelatedJob,
+  shapeRelatedReview,
+} from "../../utils/adminShape";
 
 const Db = db as any;
 
@@ -105,16 +112,169 @@ class AdminEmployersController {
     if (!user || user.accountType !== "employer")
       return sendError(res, HTTP_STATUS.NOT_FOUND, "Employer not found");
 
-    const [jobAggs, spend] = await Promise.all([
+    const profileId = user.profile?.id;
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+    const [
+      jobAggs,
+      spend,
+      hireRows,
+      reviewRows,
+      reportsAgainst,
+      reportsFiled,
+      totalLogins,
+      successfulLogins,
+      recentLogins,
+      profileViews,
+      postCount,
+      followerCount,
+      followingCount,
+      jobRowsForStats,
+    ] = await Promise.all([
       user.profile ? employerJobAggs([user.profile.id]) : Promise.resolve({}),
       employerSpend([user.id]),
+      user.profile
+        ? Db.JobRequest.findAll({
+            where: { employerId: user.profile.id },
+            include: [{ model: Db.Profile, as: "worker", required: false, attributes: ["id", "fullName", "profession"] }],
+            order: [["createdAt", "DESC"]],
+            limit: 10,
+          })
+        : Promise.resolve([]),
+      user.profile
+        ? Db.JobRequest.findAll({
+            where: { employerId: user.profile.id, reviewRating: { [Op.ne]: null } },
+            include: [{ model: Db.Profile, as: "worker", required: false, attributes: ["id", "fullName", "profession"] }],
+            order: [["reviewedAt", "DESC"]],
+            limit: 5,
+          })
+        : Promise.resolve([]),
+      Db.UserReport.findAll({
+        where: { reportedUserId: user.id },
+        order: [["createdAt", "DESC"]],
+        limit: 5,
+        raw: true,
+      }),
+      Db.UserReport.findAll({
+        where: { filedById: user.id },
+        order: [["createdAt", "DESC"]],
+        limit: 5,
+        raw: true,
+      }),
+      Db.LoginHistory.count({ where: { userId: user.id } }).catch(() => 0),
+      Db.LoginHistory.count({ where: { userId: user.id, status: "success" } }).catch(() => 0),
+      Db.LoginHistory.findAll({
+        where: { userId: user.id },
+        order: [["createdAt", "DESC"]],
+        limit: 6,
+        raw: true,
+        attributes: ["id", "ipAddress", "userAgent", "city", "country", "status", "createdAt"],
+      }).catch(() => []),
+      profileId
+        ? Db.ProfileView.count({ where: { profileId } }).catch(() => user.profile?.views ?? 0)
+        : Promise.resolve(0),
+      profileId ? Db.Post.count({ where: { authorId: profileId } }).catch(() => 0) : Promise.resolve(0),
+      profileId ? Db.Follow.count({ where: { followingId: profileId } }).catch(() => 0) : Promise.resolve(0),
+      profileId ? Db.Follow.count({ where: { followerId: profileId } }).catch(() => 0) : Promise.resolve(0),
+      profileId
+        ? Db.JobRequest.findAll({
+            where: { employerId: profileId },
+            attributes: ["status", "createdAt", "updatedAt"],
+            raw: true,
+          }).catch(() => [])
+        : Promise.resolve([]),
     ]);
+
+    const jobStats = (jobRowsForStats as any[]).reduce(
+      (acc, job) => {
+        acc.totalRequests += 1;
+        if (job.status === "pending") acc.pending += 1;
+        else if (job.status === "accepted") acc.active += 1;
+        else if (job.status === "completed") acc.completed += 1;
+        else if (job.status === "cancelled" || job.status === "declined") acc.cancelled += 1;
+        if (new Date(job.createdAt) >= thirtyDaysAgo) acc.createdLast30Days += 1;
+        return acc;
+      },
+      { totalRequests: 0, pending: 0, active: 0, completed: 0, cancelled: 0, createdLast30Days: 0 },
+    );
+
     const shaped = shapeEmployer(
       user,
       user.profile,
-      extrasFrom(user.profile ? (jobAggs as any)[user.profile.id] : undefined, spend[user.id]),
+      {
+        ...extrasFrom(user.profile ? (jobAggs as any)[user.profile.id] : undefined, spend[user.id]),
+        totalLogins,
+        lastActive: recentLogins?.[0]?.createdAt ?? user.lastLoginAt ?? user.updatedAt,
+        device: recentLogins?.[0]?.userAgent ?? "—",
+      },
     );
-    return sendSuccess(res, "Employer detail", shaped);
+    return sendSuccess(res, "Employer detail", {
+      ...shaped,
+      account: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        emailVerified: !!user.emailVerified,
+        phoneVerified: !!user.isPhoneVerified,
+        profileComplete: !!user.isProfileComplete,
+        onboarded: !!user.isOnboarded,
+        onboardingCompletedAt: user.onboardingCompletedAt,
+        isActive: !!user.isActive,
+        status: user.status,
+        bannedAt: user.bannedAt,
+        suspendedUntil: user.suspendedUntil,
+        suspensionReason: user.suspensionReason,
+        termsAccepted: !!user.termsAccepted,
+        termsAcceptedAt: user.termsAcceptedAt,
+        lastLoginAt: user.lastLoginAt,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      },
+      profile: user.profile
+        ? {
+            id: user.profile.id,
+            username: user.profile.username,
+            fullName: user.profile.fullName,
+            profession: user.profile.profession,
+            location: user.profile.location,
+            bio: user.profile.bio,
+            tagline: user.profile.tagline,
+            phone: user.profile.phone,
+            avatarUrl: user.profile.avatarUrl,
+            bannerUrl: user.profile.bannerUrl,
+            services: Array.isArray(user.profile.services) ? user.profile.services : [],
+            serviceAreas: Array.isArray(user.profile.serviceAreas) ? user.profile.serviceAreas : [],
+            country: user.profile.country,
+            timezone: user.profile.timezone,
+            language: user.profile.language,
+            profilePublic: !!user.profile.profilePublic,
+            showPhone: !!user.profile.showPhone,
+            showEmail: !!user.profile.showEmail,
+            allowDirectMessages: !!user.profile.allowDirectMessages,
+            allowFollowers: !!user.profile.allowFollowers,
+            views: user.profile.views ?? 0,
+            createdAt: user.profile.createdAt,
+            updatedAt: user.profile.updatedAt,
+          }
+        : null,
+      activityStats: {
+        totalLogins,
+        successfulLogins,
+        failedLogins: Math.max(0, totalLogins - successfulLogins),
+        profileViews,
+        posts: postCount,
+        followers: followerCount,
+        following: followingCount,
+        lastLoginAt: recentLogins?.find((l: any) => l.status === "success")?.createdAt ?? user.lastLoginAt ?? null,
+        lastLoginIp: recentLogins?.find((l: any) => l.status === "success")?.ipAddress ?? null,
+        lastLoginDevice: recentLogins?.find((l: any) => l.status === "success")?.userAgent ?? null,
+      },
+      jobStats,
+      recentLogins,
+      hires: hireRows.map((j: any) => shapeRelatedJob(j, j.worker, "worker")),
+      reviewsGiven: reviewRows.map((j: any) => shapeRelatedReview(j, j.worker)),
+      reportsAgainst: reportsAgainst.map(shapeCompactReport),
+      reportsFiled: reportsFiled.map(shapeCompactReport),
+    });
   });
 
   suspend = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {

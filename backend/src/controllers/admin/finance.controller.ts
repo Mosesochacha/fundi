@@ -42,7 +42,8 @@ class AdminFinanceController {
       ];
     }
 
-    const { count, rows } = await Db.Payment.findAndCountAll({
+    const [{ count, rows }, totalProcessed, platformFees, refunded, pending] = await Promise.all([
+      Db.Payment.findAndCountAll({
       where,
       include: [
         userInclude("employerUser"),
@@ -54,12 +55,24 @@ class AdminFinanceController {
       limit: p.pageSize,
       distinct: true,
       subQuery: false,
-    });
+      }),
+      Db.Payment.sum("amount", { where: { status: "completed" } }),
+      Db.Payment.sum("fee", { where: { status: "completed" } }),
+      Db.Payment.sum("amount", { where: { status: "refunded" } }),
+      Db.Payment.sum("amount", { where: { status: "pending" } }),
+    ]);
 
     const shaped = rows.map((x: any) =>
       shapePayment(x, nameOf(x.employerUser), nameOf(x.workerUser), x.job?.title),
     );
-    return sendSuccess(res, "Payments", paginated(shaped, count, p.page, p.pageSize));
+    return sendSuccess(res, "Payments", paginated(shaped, count, p.page, p.pageSize, {
+      stats: {
+        totalProcessed: totalProcessed || 0,
+        platformFees: platformFees || 0,
+        refunded: refunded || 0,
+        pending: pending || 0,
+      },
+    }));
   });
 
   payouts = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {

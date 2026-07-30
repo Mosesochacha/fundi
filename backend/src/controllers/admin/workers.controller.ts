@@ -5,7 +5,14 @@ import db from "../../models";
 import { asyncHandler, sendError, sendSuccess } from "../../utils/helpers";
 import { HTTP_STATUS } from "../../utils/constants";
 import { logAdminAction } from "../../services/audit.service";
-import { paginated, parseListParams, shapeWorker } from "../../utils/adminShape";
+import {
+  paginated,
+  parseListParams,
+  shapeCompactReport,
+  shapeRelatedJob,
+  shapeRelatedReview,
+  shapeWorker,
+} from "../../utils/adminShape";
 
 const Db = db as any;
 
@@ -107,8 +114,33 @@ class AdminWorkersController {
       return sendError(res, HTTP_STATUS.NOT_FOUND, "Worker not found");
 
     const aggs = await workerAggregates([user.profile.id]);
+    const [jobRows, reviewRows, reportRows] = await Promise.all([
+      Db.JobRequest.findAll({
+        where: { workerId: user.profile.id },
+        include: [{ model: Db.Profile, as: "employer", required: false, attributes: ["id", "fullName", "profession"] }],
+        order: [["createdAt", "DESC"]],
+        limit: 10,
+      }),
+      Db.JobRequest.findAll({
+        where: { workerId: user.profile.id, reviewRating: { [Op.ne]: null }, reviewRemoved: false },
+        include: [{ model: Db.Profile, as: "employer", required: false, attributes: ["id", "fullName"] }],
+        order: [["reviewedAt", "DESC"]],
+        limit: 5,
+      }),
+      Db.UserReport.findAll({
+        where: { reportedUserId: user.id },
+        order: [["createdAt", "DESC"]],
+        limit: 5,
+        raw: true,
+      }),
+    ]);
     const shaped = shapeWorker(user, user.profile, extrasFrom(aggs[user.profile.id]));
-    return sendSuccess(res, "Worker detail", shaped);
+    return sendSuccess(res, "Worker detail", {
+      ...shaped,
+      jobHistory: jobRows.map((j: any) => shapeRelatedJob(j, j.employer, "employer")),
+      reviews: reviewRows.map((j: any) => shapeRelatedReview(j, j.employer)),
+      reports: reportRows.map(shapeCompactReport),
+    });
   });
 
   verify = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {

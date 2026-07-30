@@ -510,6 +510,7 @@ class AuthController {
 
     const tokens = await AuthService.generateTokens(user, req.ip || '', req.get('user-agent') || '');
     await user.update({ lastLoginAt: new Date() });
+    await AuthService.recordLoginHistory(user.id, req.ip || '', req.get('user-agent') || '', 'success');
     setAuthCookie(res, 'lot_r1', tokens.refreshToken, req);
 
     const profile = await db.Profile.findOne({ where: { userId: user.id } });

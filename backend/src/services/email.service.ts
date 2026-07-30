@@ -122,6 +122,43 @@ class EmailService {
     }
   }
 
+  async sendAdminBroadcast(email: string, subject: string, body: string, displayName?: string): Promise<boolean> {
+    if (!this.isConfigured()) {
+      logger.warn('[EmailService] RESEND_API_KEY not set — admin broadcast not sent', { email });
+      return false;
+    }
+
+    const escapeHtml = (value: string) =>
+      value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    const name = escapeHtml(displayName || email.split('@')[0]);
+    const escapedBody = escapeHtml(body).replace(/\n/g, '<br>');
+    const content = `
+      <p style="margin:0 0 16px">Hi ${name},</p>
+      <p style="margin:0 0 16px">${escapedBody}</p>`;
+
+    try {
+      const { error } = await getResend().emails.send({
+        from: FROM_DISPLAY,
+        to: email,
+        subject,
+        html: this.wrap(content, email),
+      });
+      if (error) {
+        logger.error('[EmailService] Resend error (admin broadcast)', { email, error });
+        return false;
+      }
+      return true;
+    } catch (err: any) {
+      logger.error('[EmailService] Failed to send admin broadcast', { email, error: err?.message });
+      return false;
+    }
+  }
+
   private wrap(content: string, recipientEmail: string): string {
     return `<!DOCTYPE html>
 <html lang="en">

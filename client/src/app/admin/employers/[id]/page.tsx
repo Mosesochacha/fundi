@@ -9,6 +9,7 @@ import {
   ConfirmModal,
   DetailCard,
   formatDate,
+  formatDateTime,
   InfoRow,
   money,
   SeverityDot,
@@ -18,103 +19,21 @@ import { Avatar, Button } from "@/components/ui";
 import { useToastContext } from "@/context/ToastContext";
 import {
   type AccountStatus,
+  type AdminCompactReport,
   adminEndpoints,
   initialsOf,
   useAdminAction,
   useAdminEmployer,
 } from "@/features/admin";
 
-interface HireRow {
-  id: string;
-  worker: string;
-  jobType: string;
-  date: string;
-  status: AccountStatus | "completed" | "cancelled" | "active";
-  amount: number;
-}
-
-const mockHires: HireRow[] = [
-  {
-    id: "h1",
-    worker: "James Mwangi",
-    jobType: "Plumbing repair",
-    date: "2026-06-12",
-    status: "completed",
-    amount: 8500,
-  },
-  {
-    id: "h2",
-    worker: "Grace Achieng",
-    jobType: "House cleaning",
-    date: "2026-05-28",
-    status: "completed",
-    amount: 4200,
-  },
-  {
-    id: "h3",
-    worker: "Peter Otieno",
-    jobType: "Electrical wiring",
-    date: "2026-05-14",
-    status: "completed",
-    amount: 15600,
-  },
-  {
-    id: "h4",
-    worker: "Mary Wanjiru",
-    jobType: "Painting",
-    date: "2026-04-30",
-    status: "cancelled",
-    amount: 0,
-  },
-  {
-    id: "h5",
-    worker: "Daniel Kiptoo",
-    jobType: "Carpentry",
-    date: "2026-04-09",
-    status: "completed",
-    amount: 22000,
-  },
-  {
-    id: "h6",
-    worker: "Faith Nduta",
-    jobType: "Garden landscaping",
-    date: "2026-03-21",
-    status: "active",
-    amount: 11800,
-  },
-];
-
-interface MockReview {
-  id: string;
-  worker: string;
-  rating: number;
-  text: string;
-  date: string;
-}
-
-const mockReviews: MockReview[] = [
-  {
-    id: "r1",
-    worker: "James Mwangi",
-    rating: 5,
-    text: "Excellent work, arrived on time and fixed everything cleanly. Would hire again.",
-    date: "2026-06-13",
-  },
-  {
-    id: "r2",
-    worker: "Peter Otieno",
-    rating: 4,
-    text: "Solid electrical job. Slightly over the estimate but quality was high.",
-    date: "2026-05-15",
-  },
-  {
-    id: "r3",
-    worker: "Daniel Kiptoo",
-    rating: 5,
-    text: "Beautiful carpentry — the cabinets look custom-made. Very professional.",
-    date: "2026-04-11",
-  },
-];
+const yesNo = (value?: boolean | null) => (value ? "Yes" : "No");
+const optionalDate = (value?: string | null) =>
+  value ? formatDateTime(value) : "—";
+const deviceLabel = (value?: string | null) => {
+  if (!value) return "—";
+  if (value.length <= 90) return value;
+  return `${value.slice(0, 87)}...`;
+};
 
 function Stars({ rating }: { rating: number }) {
   return (
@@ -132,6 +51,24 @@ function Stars({ rating }: { rating: number }) {
         />
       ))}
     </span>
+  );
+}
+
+function ReportList({ rows }: { rows?: AdminCompactReport[] }) {
+  if (!rows?.length) return <p className="text-sm text-ink-3">None.</p>;
+  return (
+    <div className="flex flex-col gap-2.5">
+      {rows.map((r) => (
+        <div key={r.id} className="flex items-start gap-2.5">
+          <SeverityDot severity={r.severity} />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm text-ink truncate">{r.title}</p>
+            <p className="text-[11px] text-ink-3">{formatDate(r.date)}</p>
+          </div>
+          <StatusBadge status={r.status} />
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -236,14 +173,106 @@ export default function AdminEmployerDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-4">
         <div className="flex flex-col gap-4">
           <DetailCard title="Profile information">
-            <InfoRow label="Location" value={employer.location} />
+            <InfoRow
+              label="Full name"
+              value={employer.profile?.fullName ?? employer.name}
+            />
+            <InfoRow
+              label="Username"
+              value={
+                employer.profile?.username
+                  ? `@${employer.profile.username}`
+                  : "—"
+              }
+            />
+            <InfoRow
+              label="Profession"
+              value={employer.profile?.profession ?? "—"}
+            />
+            <InfoRow
+              label="Location"
+              value={employer.profile?.location ?? employer.location}
+            />
+            <InfoRow label="Country" value={employer.profile?.country ?? "—"} />
+            <InfoRow
+              label="Timezone"
+              value={employer.profile?.timezone ?? "—"}
+            />
             <InfoRow label="Email" value={employer.email} />
             <InfoRow label="Phone" value={employer.phone} />
+            <InfoRow label="Tagline" value={employer.profile?.tagline ?? "—"} />
             <InfoRow
               label="About"
-              value={employer.about ?? "No description provided."}
+              value={
+                employer.profile?.bio ??
+                employer.about ??
+                "No description provided."
+              }
+            />
+            <InfoRow
+              label="Service areas"
+              value={
+                employer.profile?.serviceAreas?.length
+                  ? employer.profile.serviceAreas.join(", ")
+                  : "—"
+              }
             />
             <InfoRow label="Member since" value={formatDate(employer.joined)} />
+          </DetailCard>
+
+          <DetailCard title="Recent login activity">
+            <div className="overflow-x-auto -mx-4 -mb-4">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-[10px] uppercase tracking-wider text-ink-3">
+                    <th className="text-left font-semibold py-2 px-4">Time</th>
+                    <th className="text-left font-semibold py-2 px-4">
+                      Status
+                    </th>
+                    <th className="text-left font-semibold py-2 px-4">IP</th>
+                    <th className="text-left font-semibold py-2 px-4">
+                      Device
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-cream-2">
+                  {(employer.recentLogins ?? []).map((login) => (
+                    <tr key={login.id}>
+                      <td className="py-2.5 px-4 text-ink-2 whitespace-nowrap">
+                        {formatDateTime(login.createdAt)}
+                      </td>
+                      <td className="py-2.5 px-4">
+                        <span
+                          className={
+                            login.status === "success"
+                              ? "inline-flex rounded-[20px] bg-green-50 px-2 py-0.5 text-[11px] font-semibold text-green-700"
+                              : "inline-flex rounded-[20px] bg-red-50 px-2 py-0.5 text-[11px] font-semibold text-red-700"
+                          }
+                        >
+                          {login.status === "success" ? "Success" : "Failed"}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-4 text-ink-2 whitespace-nowrap">
+                        {login.ipAddress ?? "—"}
+                      </td>
+                      <td className="py-2.5 px-4 text-ink-2 min-w-[260px]">
+                        {deviceLabel(login.userAgent)}
+                      </td>
+                    </tr>
+                  ))}
+                  {(employer.recentLogins ?? []).length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={4}
+                        className="py-6 px-4 text-center text-ink-3"
+                      >
+                        No login records yet.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </DetailCard>
 
           <DetailCard title="Hiring history">
@@ -267,13 +296,13 @@ export default function AdminEmployerDetailPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-cream-2">
-                  {mockHires.map((h) => (
+                  {(employer.hires ?? []).map((h) => (
                     <tr key={h.id}>
                       <td className="py-2.5 px-4 text-ink font-medium whitespace-nowrap">
-                        {h.worker}
+                        {h.counterparty}
                       </td>
                       <td className="py-2.5 px-4 text-ink-2 whitespace-nowrap">
-                        {h.jobType}
+                        {h.title}
                       </td>
                       <td className="py-2.5 px-4 text-ink-2 whitespace-nowrap">
                         {formatDate(h.date)}
@@ -286,6 +315,16 @@ export default function AdminEmployerDetailPage() {
                       </td>
                     </tr>
                   ))}
+                  {(employer.hires ?? []).length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={5}
+                        className="py-6 px-4 text-center text-ink-3"
+                      >
+                        No hires yet.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -293,23 +332,27 @@ export default function AdminEmployerDetailPage() {
 
           <DetailCard title="Reviews given">
             <div className="flex flex-col gap-3">
-              {mockReviews.map((r) => (
-                <div
-                  key={r.id}
-                  className="border-b border-cream-2 last:border-0 pb-3 last:pb-0"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-sm font-medium text-ink">
-                      {r.worker}
-                    </span>
-                    <Stars rating={r.rating} />
+              {(employer.reviewsGiven ?? []).length === 0 ? (
+                <p className="text-sm text-ink-3">No reviews given yet.</p>
+              ) : (
+                employer.reviewsGiven?.map((r) => (
+                  <div
+                    key={r.id}
+                    className="border-b border-cream-2 last:border-0 pb-3 last:pb-0"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-medium text-ink">
+                        {r.person}
+                      </span>
+                      <Stars rating={r.rating} />
+                    </div>
+                    <p className="text-sm text-ink-2 mt-1">{r.text}</p>
+                    <p className="text-[11px] text-ink-3 mt-1">
+                      {formatDate(r.date)}
+                    </p>
                   </div>
-                  <p className="text-sm text-ink-2 mt-1">{r.text}</p>
-                  <p className="text-[11px] text-ink-3 mt-1">
-                    {formatDate(r.date)}
-                  </p>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </DetailCard>
         </div>
@@ -317,6 +360,22 @@ export default function AdminEmployerDetailPage() {
         <div className="flex flex-col gap-4">
           <DetailCard title="Stats">
             <InfoRow label="Total hires" value={employer.totalHires} />
+            <InfoRow
+              label="Job requests"
+              value={employer.jobStats?.totalRequests ?? employer.jobs}
+            />
+            <InfoRow
+              label="Active jobs"
+              value={employer.jobStats?.active ?? 0}
+            />
+            <InfoRow
+              label="Pending jobs"
+              value={employer.jobStats?.pending ?? 0}
+            />
+            <InfoRow
+              label="Requests in 30 days"
+              value={employer.jobStats?.createdLast30Days ?? 0}
+            />
             <InfoRow
               label="Total spent"
               value={money(employer.totalSpent, employer.currency)}
@@ -330,22 +389,93 @@ export default function AdminEmployerDetailPage() {
                 </span>
               }
             />
+            <InfoRow
+              label="Profile views"
+              value={
+                employer.activityStats?.profileViews ??
+                employer.profile?.views ??
+                0
+              }
+            />
+            <InfoRow label="Posts" value={employer.activityStats?.posts ?? 0} />
+            <InfoRow
+              label="Followers"
+              value={employer.activityStats?.followers ?? 0}
+            />
+          </DetailCard>
+
+          <DetailCard title="Account status">
+            <InfoRow
+              label="Email verified"
+              value={yesNo(
+                employer.account?.emailVerified ?? employer.emailVerified,
+              )}
+            />
+            <InfoRow
+              label="Phone verified"
+              value={yesNo(
+                employer.account?.phoneVerified ?? employer.phoneVerified,
+              )}
+            />
+            <InfoRow
+              label="Profile complete"
+              value={yesNo(
+                employer.account?.profileComplete ?? employer.profileComplete,
+              )}
+            />
+            <InfoRow
+              label="Onboarded"
+              value={yesNo(employer.account?.onboarded)}
+            />
+            <InfoRow
+              label="Terms accepted"
+              value={yesNo(employer.account?.termsAccepted)}
+            />
+            <InfoRow
+              label="Last login"
+              value={optionalDate(employer.account?.lastLoginAt)}
+            />
+            <InfoRow
+              label="Updated"
+              value={optionalDate(employer.account?.updatedAt)}
+            />
+            <InfoRow
+              label="Suspension reason"
+              value={employer.account?.suspensionReason ?? "—"}
+            />
+          </DetailCard>
+
+          <DetailCard title="Activity summary">
+            <InfoRow
+              label="Total login attempts"
+              value={
+                employer.activityStats?.totalLogins ?? employer.totalLogins
+              }
+            />
+            <InfoRow
+              label="Successful logins"
+              value={employer.activityStats?.successfulLogins ?? 0}
+            />
+            <InfoRow
+              label="Failed logins"
+              value={employer.activityStats?.failedLogins ?? 0}
+            />
+            <InfoRow
+              label="Last login IP"
+              value={employer.activityStats?.lastLoginIp ?? "—"}
+            />
+            <InfoRow
+              label="Last device"
+              value={deviceLabel(employer.activityStats?.lastLoginDevice)}
+            />
           </DetailCard>
 
           <DetailCard title="Reported by others">
-            <p className="text-sm text-ink-3">None.</p>
+            <ReportList rows={employer.reportsAgainst} />
           </DetailCard>
 
           <DetailCard title="Reports they filed">
-            <div className="flex items-start gap-2.5">
-              <SeverityDot severity="low" />
-              <div className="min-w-0">
-                <p className="text-sm text-ink">No-show on scheduled job</p>
-                <div className="mt-1">
-                  <StatusBadge status="resolved" />
-                </div>
-              </div>
-            </div>
+            <ReportList rows={employer.reportsFiled} />
           </DetailCard>
         </div>
       </div>

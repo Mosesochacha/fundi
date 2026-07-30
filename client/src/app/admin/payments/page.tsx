@@ -27,13 +27,6 @@ const PILLS = [
   { label: "Failed", value: "failed" },
 ];
 
-const STATS: { label: string; value: string; accent: string }[] = [
-  { label: "Total processed", value: money(4_280_000), accent: "bg-gold" },
-  { label: "Platform fees", value: money(214_000), accent: "bg-green-400" },
-  { label: "Refunded", value: money(86_500), accent: "bg-red-500" },
-  { label: "Pending", value: money(132_000), accent: "bg-blue-500" },
-];
-
 export default function AdminPaymentsPage() {
   const [search, setSearch] = useState("");
   const [pill, setPill] = useState("");
@@ -50,6 +43,28 @@ export default function AdminPaymentsPage() {
     page,
   };
   const { data, isLoading } = useAdminPayments(params);
+  const stats = [
+    {
+      label: "Total processed",
+      value: money(data?.stats.totalProcessed ?? 0),
+      accent: "bg-gold",
+    },
+    {
+      label: "Platform fees",
+      value: money(data?.stats.platformFees ?? 0),
+      accent: "bg-green-400",
+    },
+    {
+      label: "Refunded",
+      value: money(data?.stats.refunded ?? 0),
+      accent: "bg-red-500",
+    },
+    {
+      label: "Pending",
+      value: money(data?.stats.pending ?? 0),
+      accent: "bg-blue-500",
+    },
+  ];
 
   const columns: Column<AdminPayment>[] = [
     {
@@ -123,7 +138,7 @@ export default function AdminPaymentsPage() {
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
-        {STATS.map((s) => (
+        {stats.map((s) => (
           <div
             key={s.label}
             className="bg-white border border-border rounded-xl p-4 relative overflow-hidden"

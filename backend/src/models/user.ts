@@ -24,6 +24,7 @@ export class User extends Model {
   declare isActive: boolean;
   declare termsAccepted: boolean;
   declare termsAcceptedAt: Date | null;
+  declare lastLoginAt: Date | null;
   declare loginAttempts: number;
   declare lockedUntil: Date | null;
   declare bannedAt: Date | null;
@@ -159,6 +160,10 @@ export function initModel(sequelize: Sequelize): typeof User {
         type: DataTypes.DATE,
         allowNull: true,
         comment: 'Timestamp when the user accepted the Terms & Conditions and Privacy Policy'
+      },
+      lastLoginAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
       },
       organizationId: {
         type: DataTypes.UUID,

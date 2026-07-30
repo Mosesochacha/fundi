@@ -227,12 +227,11 @@ export default function AdminJobDetailPage() {
           </DetailCard>
 
           <DetailCard title="Messages">
-            <Button
-              variant="outline"
-              onClick={() => success("Opening conversation thread (mock).")}
-            >
-              View conversation thread
-            </Button>
+            {job.conversationId ? (
+              <InfoRow label="Conversation" value={job.conversationId} />
+            ) : (
+              <p className="text-sm text-ink-3">No linked conversation.</p>
+            )}
           </DetailCard>
 
           <DetailCard title="Review">
