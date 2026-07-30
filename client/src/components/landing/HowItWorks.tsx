@@ -1,76 +1,104 @@
-import type { ReactNode } from "react";
-import { eyebrow, secTitle } from "./landingStyles";
+import type { CSSProperties } from "react";
+import {
+  eyebrowText,
+  lede,
+  secTitle,
+  sectionInner,
+  sectionShell,
+} from "./landingStyles";
 
-const STEPS: { num: string; icon: ReactNode; title: string; desc: string }[] = [
+const STEPS: { num: string; title: string; desc: string; aside: string }[] = [
   {
     num: "01",
-    icon: (
-      <>
-        <circle cx="11" cy="11" r="8" />
-        <path d="m21 21-4.35-4.35" />
-      </>
-    ),
-    title: "Search your trade",
-    desc: "Tell us what you need - plumber, electrician, carpenter. Filter by location, rating, and availability. Find the right person in seconds.",
+    title: "Search by trade, place and week",
+    desc: "Start where a referral would start — the job, the neighbourhood, the timing. What comes back is a searchable pool of profiles instead of three forwarded phone numbers.",
+    aside: "No sign-up to look",
   },
   {
     num: "02",
-    icon: (
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-    ),
-    title: "Connect & confirm",
-    desc: "Message directly, agree on price and time. No middlemen, no hidden fees. Every worker shows verified ratings from real past jobs.",
+    title: "Read the work before you read the pitch",
+    desc: "Every profile leads with photographs of completed jobs, alongside rates, experience, availability and reviews attached to real hires. You shortlist on evidence.",
+    aside: "Photo-led profiles",
   },
   {
     num: "03",
-    icon: (
-      <>
-        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-        <polyline points="22 4 12 14.01 9 11.01" />
-      </>
-    ),
-    title: "Job done. Leave a review.",
-    desc: "Rate the worker after the job. Your review helps the next employer and rewards great workers with more opportunities.",
+    title: "Message the worker. Nobody else.",
+    desc: "Agree the scope and the price directly. When the job is finished the review attaches to that worker's profile, so good work compounds into the next hire.",
+    aside: "Zero commission",
   },
 ];
 
+const d = (ms: number) => ({ "--d": `${ms}ms` }) as CSSProperties;
+
 export default function HowItWorks() {
   return (
-    <section
-      id="how"
-      className="scroll-mt-20 bg-cream-2 px-5 py-16 md:px-6 md:py-24"
-    >
-      <div className="max-w-[1080px] mx-auto">
-        <div className={eyebrow}>How it works</div>
-        <h2 className={secTitle}>
-          Three steps to
-          <br />
-          <em className="italic font-light text-gold-dark">a job done right</em>
-        </h2>
-        <div className="reveal grid grid-cols-1 md:grid-cols-3 gap-px mt-14 bg-border border border-border rounded-xl overflow-hidden">
-          {STEPS.map((step) => (
-            <div key={step.num} className="bg-cream px-6 py-8 md:px-8 md:py-10">
-              <div className="font-serif text-5xl font-light text-gold-dark leading-none mb-5">
-                {step.num}
-              </div>
-              <div className="w-10 h-10 rounded-lg bg-gold-light border border-gold/20 flex items-center justify-center mb-4">
-                <svg
-                  viewBox="0 0 24 24"
-                  className="w-5 h-5 stroke-gold-dark fill-none [stroke-width:1.5]"
-                  aria-hidden="true"
-                >
-                  {step.icon}
-                </svg>
-              </div>
-              <div className="text-base font-medium text-ink mb-2">
-                {step.title}
-              </div>
-              <div className="text-sm text-ink-2 leading-[1.65] font-light">
-                {step.desc}
-              </div>
+    <section id="how" className={`scroll-mt-20 bg-cream ${sectionShell}`}>
+      <div className={sectionInner}>
+        <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)] md:items-end md:gap-16">
+          <div data-rise>
+            <div className="flex items-center gap-3.5">
+              <span className="h-1.5 w-1.5 rotate-45 bg-gold" />
+              <span className={eyebrowText}>How it works</span>
             </div>
-          ))}
+            <h2 className={`mt-6 ${secTitle}`}>
+              Three steps, and
+              <br />
+              nobody in between.
+            </h2>
+          </div>
+          <p
+            className={`max-w-[46ch] ${lede} text-[15px]`}
+            data-rise
+            style={d(90)}
+          >
+            The informal labour market runs on forwarded contacts and vague
+            promises. This is the same path, with the proof moved to the front.
+          </p>
         </div>
+
+        <ol className="mt-16 md:mt-20">
+          {STEPS.map((step, i) => (
+            <li key={step.num} className="group relative">
+              <span
+                className="block h-px w-full bg-border"
+                data-draw
+                style={d(i * 90)}
+              />
+              <div
+                className="grid grid-cols-[52px_minmax(0,1fr)] gap-x-5 gap-y-3 py-8 transition-colors duration-500 md:grid-cols-[110px_minmax(0,0.44fr)_minmax(0,0.56fr)] md:gap-x-10 md:py-12"
+                data-rise
+                style={d(i * 90 + 60)}
+              >
+                {/* gold (3.4:1) rather than ink-4 (~1.9:1): this is real text at
+                    large size, so it has to clear the WCAG AA large-text floor */}
+                <span className="font-serif text-[34px] leading-none font-light tabular-nums text-gold transition-colors duration-500 group-hover:text-gold-dark md:text-[64px]">
+                  {step.num}
+                </span>
+
+                <h3 className="self-center font-serif text-[21px] leading-[1.15] font-normal text-ink md:self-start md:text-[27px]">
+                  {step.title}
+                </h3>
+
+                <div className="col-start-2 md:col-start-3">
+                  <p className="max-w-[54ch] text-[15px] leading-[1.7] text-ink-2">
+                    {step.desc}
+                  </p>
+                  <span className="mt-4 inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-gold-deep">
+                    <span className="h-px w-6 bg-gold transition-[width] duration-500 group-hover:w-10" />
+                    {step.aside}
+                  </span>
+                </div>
+              </div>
+            </li>
+          ))}
+          <li>
+            <span
+              className="block h-px w-full bg-border"
+              data-draw
+              style={d(270)}
+            />
+          </li>
+        </ol>
       </div>
     </section>
   );

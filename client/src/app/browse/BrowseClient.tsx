@@ -1,9 +1,9 @@
 "use client";
 
-import { MapPin, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import LandingNav from "@/components/landing/LandingNav";
+import { btnGold, display } from "@/components/landing/landingStyles";
 import { useAuth } from "@/features/auth";
 import {
   type BrowseFilters,
@@ -13,7 +13,6 @@ import {
 } from "@/features/browse";
 import { cn } from "@/lib/utils";
 import { useSearchStore } from "@/store/searchStore";
-import AskAiModal from "./AskAiModal";
 import FilterBar from "./FilterBar";
 import { WorkerCardGrid } from "./WorkerCard";
 
@@ -41,8 +40,19 @@ function pageList(current: number, total: number): (number | "…")[] {
   return pages;
 }
 
+const d = (ms: number) => ({ "--d": `${ms}ms` }) as CSSProperties;
+
+const pad = (n: number) => String(n).padStart(2, "0");
+
+/** Search field: a ruled cell, hairline-separated from its neighbours. */
+const FIELD_CELL = "flex flex-col gap-1 bg-white px-4 py-3 md:px-5 md:py-3.5";
+const FIELD_LABEL =
+  "text-[10px] font-bold uppercase tracking-[0.16em] text-ink-3";
+const FIELD_INPUT =
+  "w-full border-none bg-transparent p-0 text-[15px] text-ink outline-none placeholder:text-ink-4";
+
 const PAGER_EDGE =
-  "flex h-[38px] items-center gap-1.5 rounded-[10px] border border-border bg-white px-4 text-sm font-semibold text-ink-2 transition-colors duration-150 enabled:hover:border-gold-dark enabled:hover:text-ink disabled:cursor-not-allowed disabled:text-ink-4";
+  "group inline-flex items-center gap-2 bg-transparent text-[11px] font-bold uppercase tracking-[0.14em] text-navy transition-colors duration-300 enabled:cursor-pointer enabled:hover:text-gold-deep disabled:text-ink-4";
 
 export default function BrowseClient({
   initialData,
@@ -70,7 +80,6 @@ export default function BrowseClient({
   const [nameInput, setNameInput] = useState("");
   const [locInput, setLocInput] = useState("");
   const [nameQuery, setNameQuery] = useState("");
-  const [aiOpen, setAiOpen] = useState(false);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: run-once seed
   useEffect(() => {
@@ -126,12 +135,19 @@ export default function BrowseClient({
     ],
   );
 
-  const { data, isLoading, isFetching } = useBrowseWorkers(filters, {
+  const { data, isLoading, isPlaceholderData } = useBrowseWorkers(filters, {
     initialData: page === 1 ? initialData : undefined,
   });
 
+  /* `isFetching` is true on the client's first render and false during SSR,
+     which desynchronises hydration. `isPlaceholderData` is false on both and
+     is the signal we actually want: the grid is showing the previous page
+     while the next one loads. */
+  const busy = isPlaceholderData;
+
   const allWorkers = data?.workers ?? [];
   const totalPages = data?.totalPages ?? 1;
+  const total = data?.total ?? 0;
 
   const workers = useMemo(() => {
     if (!nameQuery.trim()) return allWorkers;
@@ -171,106 +187,194 @@ export default function BrowseClient({
       window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const showPagination = !nameQuery.trim() && totalPages > 1;
+  const searching = Boolean(nameQuery.trim());
+  const showPagination = !searching && totalPages > 1;
+  const firstOnPage = (page - 1) * PAGE_SIZE + 1;
 
   return (
-    <div
-      className={cn(
-        "min-h-screen bg-cream text-ink font-sans overflow-x-hidden",
-        fontClass,
-      )}
-    >
+    <div className={cn("min-h-screen bg-cream font-sans text-ink", fontClass)}>
       <LandingNav />
 
-      <main className="pb-[90px]">
-        <header className="mx-auto max-w-[1240px] px-5 pt-[82px] md:px-10 md:pt-[116px]">
-          <p className="m-0 text-sm font-semibold uppercase tracking-[0.18em] text-ink-3">
-            Discover skilled professionals
-          </p>
-          <h1 className="mt-3.5 font-serif text-[34px] font-medium leading-[1.06] tracking-[-0.02em] text-ink md:text-[clamp(40px,7vw,66px)] md:leading-[0.98]">
-            Find your{" "}
-            <em className="font-serif italic text-gold-dark">fundi.</em>
-          </h1>
-          <p className="mt-3 max-w-[560px] text-[15px] leading-[1.55] text-ink-2 md:mt-[18px] md:text-[17px]">
-            Browse vetted tradespeople worldwide - every profile ID-verified,
-            skill-assessed, and reviewed by real customers.
-          </p>
+      <main className="pb-24">
+        {/* ── Register head ──────────────────────────────────────── */}
+        <header className="bg-paper relative overflow-hidden border-b border-border px-5 pt-24 pb-10 md:px-8 md:pt-32 md:pb-12">
+          <div className="mx-auto w-full max-w-[1180px]">
+            <div className="reveal flex items-center gap-3.5" style={d(0)}>
+              <span
+                aria-hidden="true"
+                className="h-1.5 w-1.5 rotate-45 bg-gold"
+              />
+              <span className="text-[11px] font-bold tracking-[0.2em] text-gold-deep uppercase">
+                The worker register
+              </span>
+              <span aria-hidden="true" className="h-px flex-1 bg-border" />
+            </div>
 
-          <div className="mt-[22px] flex flex-wrap items-stretch rounded-[18px] border border-border bg-white p-2 shadow-[0_2px_10px_rgba(33,28,20,0.05)] md:mt-[30px] md:flex-nowrap">
-            <div className="flex flex-[1_1_100%] items-center gap-3 px-[18px] text-ink-3 md:flex-1">
-              <Search size={19} aria-hidden />
-              <input
-                type="text"
-                value={nameInput}
-                onChange={(e) => setNameInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                placeholder="Search by name, skill, or profession…"
-                aria-label="Search by name, skill or profession"
-                className="flex-1 border-none bg-transparent py-[15px] text-[15.5px] text-ink outline-none placeholder:text-ink-4"
-              />
+            <div className="mt-7">
+              <h1
+                className={`reveal ${display} text-[clamp(38px,5.2vw,64px)] leading-[1.02]`}
+                style={d(70)}
+              >
+                Find your{" "}
+                <em className="font-serif italic text-gold-dark">fundi</em>.
+              </h1>
             </div>
-            <span className="my-2 hidden w-px bg-border md:block" aria-hidden />
-            <div className="flex flex-[1_1_100%] items-center gap-3 px-[18px] text-ink-3 md:flex-[0_0_280px]">
-              <MapPin size={17} aria-hidden />
-              <input
-                type="text"
-                value={locInput}
-                onChange={(e) => setLocInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                placeholder="City or location"
-                aria-label="City or location"
-                className="flex-1 border-none bg-transparent py-[15px] text-[15.5px] text-ink outline-none placeholder:text-ink-4"
-              />
-            </div>
-            <button
-              type="button"
-              className="flex-[1_1_100%] rounded-xl border-none bg-gold-dark py-[13px] text-[15px] font-semibold text-white transition-colors duration-[180ms] hover:bg-gold md:flex-none md:px-9 md:py-0"
-              onClick={handleSearch}
+
+            {/* Ruled search line — hairlines come from the grid gap */}
+            <form
+              className="reveal mt-9 grid gap-px overflow-hidden rounded-[3px] border border-border bg-border sm:grid-cols-[minmax(0,1.25fr)_minmax(0,0.85fr)_auto]"
+              style={d(210)}
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSearch();
+              }}
             >
-              Search
-            </button>
+              <div className={FIELD_CELL}>
+                <label className={FIELD_LABEL} htmlFor="browse-q">
+                  Trade or name
+                </label>
+                <input
+                  id="browse-q"
+                  type="text"
+                  value={nameInput}
+                  onChange={(e) => setNameInput(e.target.value)}
+                  placeholder="Carpenter, welder, Amina…"
+                  className={FIELD_INPUT}
+                />
+              </div>
+              <div className={FIELD_CELL}>
+                <label className={FIELD_LABEL} htmlFor="browse-loc">
+                  Where
+                </label>
+                <input
+                  id="browse-loc"
+                  type="text"
+                  value={locInput}
+                  onChange={(e) => setLocInput(e.target.value)}
+                  placeholder="City or neighbourhood"
+                  className={FIELD_INPUT}
+                />
+              </div>
+              <button
+                type="submit"
+                className={cn(btnGold, "h-full w-full rounded-none px-10")}
+              >
+                Search
+                <span className="transition-transform duration-300 group-hover:translate-x-1">
+                  →
+                </span>
+              </button>
+            </form>
           </div>
         </header>
 
-        <FilterBar onAskAi={() => setAiOpen(true)} />
+        <FilterBar />
 
+        {/* ── The plates ─────────────────────────────────────────── */}
         <section
-          className="mx-auto max-w-[1240px] px-5 pt-[26px] md:px-10"
-          aria-busy={isFetching}
+          className="mx-auto w-full max-w-[1180px] px-5 pt-8 md:px-8 md:pt-10"
+          aria-busy={busy}
         >
+          <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 border-b border-border pb-3">
+            <p className="text-[11px] font-bold tracking-[0.14em] text-ink-3 uppercase">
+              {isLoading ? (
+                "Drawing the register…"
+              ) : searching ? (
+                <>
+                  <span className="tabular-nums text-navy">
+                    {pad(workers.length)}
+                  </span>{" "}
+                  matching{" "}
+                  <span className="text-[12px] normal-case text-navy">
+                    “{nameQuery.trim()}”
+                  </span>{" "}
+                  on this page
+                </>
+              ) : total > 0 ? (
+                <>
+                  Plates{" "}
+                  <span className="tabular-nums text-navy">
+                    {pad(firstOnPage)}–{pad(firstOnPage + workers.length - 1)}
+                  </span>{" "}
+                  of{" "}
+                  <span className="tabular-nums text-navy">
+                    {total.toLocaleString()}
+                  </span>
+                </>
+              ) : (
+                "No plates"
+              )}
+            </p>
+            {!isLoading && !searching && totalPages > 1 && (
+              <p className="text-[11px] font-bold tracking-[0.14em] text-ink-3 uppercase tabular-nums">
+                Page {pad(page)} / {pad(totalPages)}
+              </p>
+            )}
+          </div>
+
           {isLoading ? (
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(244px,1fr))] gap-5">
-              {Array.from({ length: 8 }).map((_, i) => (
+            <div className="mt-7 grid gap-x-6 gap-y-9 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => (
                 <div
                   // biome-ignore lint/suspicious/noArrayIndexKey: fixed skeleton tiles
                   key={i}
-                  className="h-[280px] animate-shimmer rounded-[18px]"
-                />
+                  className="overflow-hidden rounded-[4px] border border-border bg-white"
+                >
+                  <div className="relative aspect-[4/3] border-b border-border bg-cream">
+                    <div className="plate-grid absolute inset-0 opacity-60" />
+                    <div className="animate-shimmer absolute inset-0 opacity-70" />
+                  </div>
+                  <div className="space-y-3 p-4">
+                    <div className="animate-shimmer h-3 w-1/3 rounded-[2px]" />
+                    <div className="animate-shimmer h-5 w-2/3 rounded-[2px]" />
+                    <div className="animate-shimmer h-3 w-full rounded-[2px]" />
+                    <div className="animate-shimmer h-8 w-full rounded-[2px]" />
+                  </div>
+                </div>
               ))}
             </div>
           ) : workers.length === 0 ? (
-            <div className="rounded-[18px] border border-dashed border-border bg-white px-6 py-[72px] text-center">
-              <p className="m-0 font-serif text-2xl font-medium text-ink">
-                No fundis match those filters
-              </p>
-              <p className="mb-5 mt-2.5 text-[15px] text-ink-3">
-                Try widening your trade, location or rating filters.
-              </p>
-              <button
-                type="button"
-                className="rounded-full border-none bg-navy px-6 py-3 text-sm font-semibold text-white transition-colors duration-[180ms] hover:bg-gold-dark"
-                onClick={clearAll}
-              >
-                Clear all filters
-              </button>
+            <div className="relative mt-7 overflow-hidden rounded-[3px] border border-border bg-white px-6 py-20 text-center">
+              <div
+                className="plate-grid absolute inset-0 opacity-70"
+                aria-hidden="true"
+              />
+              <div className="relative">
+                <span
+                  aria-hidden="true"
+                  className="mx-auto mb-6 block h-2 w-2 rotate-45 bg-gold"
+                />
+                <p className="font-serif text-[26px] leading-tight font-light text-ink">
+                  Nothing filed under those filters.
+                </p>
+                <p className="mx-auto mt-3 max-w-[42ch] text-[14px] leading-[1.7] text-ink-2">
+                  The register is still filling up. Widen the trade, the place
+                  or the rating and the plates will come back.
+                </p>
+                <button
+                  type="button"
+                  className={cn(btnGold, "mt-8")}
+                  onClick={clearAll}
+                >
+                  Clear all filters
+                </button>
+              </div>
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(244px,1fr))] gap-5">
-                {workers.map((w) => (
+              <div
+                key={`${page}-${sortBy}`}
+                className={cn(
+                  "mt-7 grid gap-x-6 gap-y-9 transition-opacity duration-300 sm:grid-cols-2 lg:grid-cols-3",
+                  busy && "opacity-55",
+                )}
+              >
+                {workers.map((w, i) => (
                   <WorkerCardGrid
                     key={w.id}
                     worker={w}
+                    plateNo={searching ? i + 1 : firstOnPage + i}
+                    delay={Math.min(i, 8) * 45}
                     onView={handleView}
                     onMessage={handleMessage}
                   />
@@ -279,7 +383,7 @@ export default function BrowseClient({
 
               {showPagination && (
                 <nav
-                  className="mt-[38px] flex items-center justify-center gap-1.5"
+                  className="mt-14 flex items-center justify-between gap-4 border-t border-border pt-6"
                   aria-label="Pagination"
                 >
                   <button
@@ -288,41 +392,51 @@ export default function BrowseClient({
                     onClick={() => goToPage(page - 1)}
                     disabled={page <= 1}
                   >
-                    ← Prev
+                    <span className="transition-transform duration-300 group-hover:-translate-x-1">
+                      ←
+                    </span>
+                    Previous
                   </button>
-                  {pageList(page, totalPages).map((p, i) =>
-                    p === "…" ? (
-                      <span
-                        // biome-ignore lint/suspicious/noArrayIndexKey: ellipsis gaps have no stable id
-                        key={`gap-${i}`}
-                        className="w-6 text-center text-ink-4"
-                      >
-                        …
-                      </span>
-                    ) : (
-                      <button
-                        key={p}
-                        type="button"
-                        className={cn(
-                          "h-[38px] w-[38px] rounded-[10px] border text-sm font-semibold transition-colors duration-150",
-                          p === page
-                            ? "border-navy bg-navy font-bold text-white"
-                            : "border-border bg-white text-ink-2 hover:border-gold-dark hover:text-ink",
-                        )}
-                        onClick={() => goToPage(p)}
-                        aria-current={p === page ? "page" : undefined}
-                      >
-                        {p}
-                      </button>
-                    ),
-                  )}
+
+                  <div className="flex items-center gap-1">
+                    {pageList(page, totalPages).map((p, i) =>
+                      p === "…" ? (
+                        <span
+                          // biome-ignore lint/suspicious/noArrayIndexKey: ellipsis gaps have no stable id
+                          key={`gap-${i}`}
+                          className="w-5 text-center text-[13px] text-ink-4"
+                        >
+                          ·
+                        </span>
+                      ) : (
+                        <button
+                          key={p}
+                          type="button"
+                          className={cn(
+                            "h-9 min-w-9 cursor-pointer border-b-2 bg-transparent px-2 text-[13px] font-semibold tabular-nums transition-colors duration-300",
+                            p === page
+                              ? "border-gold-dark text-navy"
+                              : "border-transparent text-ink-3 hover:border-border hover:text-navy",
+                          )}
+                          onClick={() => goToPage(p)}
+                          aria-current={p === page ? "page" : undefined}
+                        >
+                          {pad(p)}
+                        </button>
+                      ),
+                    )}
+                  </div>
+
                   <button
                     type="button"
                     className={PAGER_EDGE}
                     onClick={() => goToPage(page + 1)}
                     disabled={page >= totalPages}
                   >
-                    Next →
+                    Next
+                    <span className="transition-transform duration-300 group-hover:translate-x-1">
+                      →
+                    </span>
                   </button>
                 </nav>
               )}
@@ -330,8 +444,6 @@ export default function BrowseClient({
           )}
         </section>
       </main>
-
-      <AskAiModal open={aiOpen} onClose={() => setAiOpen(false)} />
     </div>
   );
 }

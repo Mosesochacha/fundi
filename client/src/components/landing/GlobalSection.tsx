@@ -1,86 +1,143 @@
+import Link from "next/link";
 import type { CSSProperties } from "react";
+import {
+  eyebrowText,
+  lede,
+  linkTravel,
+  linkTravelRule,
+  secTitle,
+  sectionInner,
+  sectionShell,
+} from "./landingStyles";
 
-const globalStats = [
-  {
-    num: "Global",
-    label:
-      "Connecting skilled workers and the people who need them, worldwide.",
-  },
-  {
-    num: "Founding",
-    label: "Join the first cohort of workers shaping what Tesilix becomes.",
-  },
-  {
-    num: "$0",
-    label:
-      "Cost to join as a worker. Free, always - no subscriptions, no fees.",
-  },
+/** Mirrors the city list already shipped on /browse so the two pages agree. */
+const CITIES: {
+  city: string;
+  region: string;
+  workers: number;
+  live: boolean;
+}[] = [
+  { city: "Nairobi", region: "Kenya", workers: 142, live: true },
+  { city: "Lagos", region: "Nigeria", workers: 98, live: true },
+  { city: "London", region: "United Kingdom", workers: 87, live: true },
+  { city: "Accra", region: "Ghana", workers: 63, live: true },
+  { city: "Dubai", region: "United Arab Emirates", workers: 51, live: false },
 ];
 
-const mapDots = [
-  { left: "52%", top: "55%", navy: false },
-  { left: "42%", top: "48%", navy: false },
-  { left: "47%", top: "42%", navy: true },
-  { left: "55%", top: "38%", navy: false },
-  { left: "60%", top: "44%", navy: true },
-  { left: "48%", top: "60%", navy: false },
-  { left: "38%", top: "52%", navy: true },
-  { left: "65%", top: "50%", navy: false },
-];
+const d = (ms: number) => ({ "--d": `${ms}ms` }) as CSSProperties;
 
 export default function GlobalSection() {
   return (
-    <section
-      id="global"
-      className="scroll-mt-20 bg-cream-2 px-5 py-16 md:px-6 md:py-24"
-    >
-      <div className="max-w-[1080px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
-        <div className="reveal">
-          <div className="text-[11px] tracking-[0.12em] uppercase text-gold-deep font-medium mb-4">
-            Global by design
+    <section id="global" className={`scroll-mt-20 bg-cream ${sectionShell}`}>
+      <div
+        className={`${sectionInner} grid gap-14 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:gap-20`}
+      >
+        <div className="lg:sticky lg:top-28 lg:self-start" data-rise>
+          <div className="flex items-center gap-3.5">
+            <span className="h-1.5 w-1.5 rotate-45 bg-gold" />
+            <span className={eyebrowText}>Where it runs</span>
           </div>
-          <h2 className="font-serif text-[clamp(30px,4vw,50px)] font-normal tracking-[-0.025em] leading-[1.1] text-ink">
-            Built for workers
+          <h2 className={`mt-6 ${secTitle}`}>
+            Local work.
             <br />
-            <em className="italic font-light text-gold-dark">everywhere</em>
+            <em className="font-serif italic text-gold-dark">Global</em>{" "}
+            standard.
           </h2>
-          <p className="text-[15px] text-ink-2 leading-[1.7] font-light max-w-[480px] mt-4">
-            Connecting skilled tradespeople with the people who need them, in
-            every city. Join early and grow with us from day one.
+          <p className={`mt-6 max-w-[42ch] ${lede} text-[15px]`}>
+            A tiler in Nairobi and a tiler in Manchester are judged the same way
+            here: by the last thing they built. The reputation is portable, and
+            it belongs to the worker — not to the platform, and not to a
+            broker's contact list.
           </p>
-          <div className="flex flex-col gap-3.5 mt-10">
-            {globalStats.map((s) => (
-              <div
-                key={s.num}
-                className="flex items-center gap-4 p-4 bg-white border border-border rounded-lg"
-              >
-                <div className="font-serif text-[22px] font-medium text-navy min-w-16">
-                  {s.num}
-                </div>
-                <div className="text-sm text-ink-2 leading-[1.5]">
-                  {s.label}
-                </div>
-              </div>
-            ))}
-          </div>
+          <Link href="/browse" className={`${linkTravel} relative mt-8`}>
+            Open the directory
+            <span className="transition-transform duration-300 group-hover:translate-x-1">
+              →
+            </span>
+            <span className={linkTravelRule} />
+          </Link>
         </div>
-        <div className="reveal relative bg-white border border-border rounded-xl aspect-[4/3] flex items-center justify-center overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(circle,var(--color-border)_1px,transparent_1px)] bg-[length:24px_24px]" />
-          {mapDots.map((d) => (
-            <span
-              key={`${d.left}-${d.top}`}
-              className={`absolute w-2 h-2 rounded-full -translate-x-1/2 -translate-y-1/2 ${d.navy ? "bg-navy" : "bg-gold"}`}
-              style={{ left: d.left, top: d.top } as CSSProperties}
-            />
-          ))}
-          <div className="relative z-[2] text-center">
-            <div className="font-serif text-[32px] font-normal text-navy">
-              Worldwide
-            </div>
-            <div className="text-sm text-ink-3 tracking-[0.08em] uppercase mt-1">
-              Now in early access
-            </div>
+
+        {/* ── City index ───────────────────────────────────────────── */}
+        <div>
+          <div
+            className="flex items-baseline justify-between gap-4 pb-3 text-[10px] font-bold uppercase tracking-[0.18em] text-ink-3"
+            data-rise
+          >
+            <span>City</span>
+            <span>Workers listed</span>
           </div>
+
+          <ul>
+            {CITIES.map((c, i) => (
+              <li key={c.city} className="group">
+                <span
+                  className="block h-px w-full bg-border"
+                  data-draw
+                  style={d(i * 70)}
+                />
+                <div
+                  className="flex items-baseline justify-between gap-6 py-5 md:py-6"
+                  data-rise
+                  style={d(i * 70 + 50)}
+                >
+                  <div className="flex min-w-0 items-baseline gap-4">
+                    <span
+                      className={`h-1.5 w-1.5 shrink-0 translate-y-[-3px] rotate-45 transition-colors duration-500 ${
+                        c.live ? "bg-gold" : "bg-ink-4"
+                      }`}
+                      aria-hidden="true"
+                    />
+                    <div className="min-w-0">
+                      <span className="font-serif text-[26px] leading-none font-light text-ink transition-colors duration-500 group-hover:text-gold-deep md:text-[32px]">
+                        {c.city}
+                      </span>
+                      <span className="mt-2 block text-[12px] tracking-wide text-ink-3">
+                        {c.region}
+                        {!c.live && (
+                          <span className="ml-2 text-gold-deep uppercase">
+                            · opening soon
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                  <span className="shrink-0 font-serif text-[26px] leading-none font-light tabular-nums text-navy md:text-[32px]">
+                    {c.workers}
+                  </span>
+                </div>
+              </li>
+            ))}
+
+            <li>
+              <span
+                className="block h-px w-full bg-border"
+                data-draw
+                style={d(350)}
+              />
+              <Link
+                href="/register"
+                className="group flex items-baseline justify-between gap-6 py-5 no-underline md:py-6"
+                data-rise
+                style={d(400)}
+              >
+                <span className="font-serif text-[22px] leading-none font-light text-ink-3 transition-colors duration-500 group-hover:text-gold-deep md:text-[26px]">
+                  Somewhere else
+                </span>
+                <span className="shrink-0 text-[11px] font-bold uppercase tracking-[0.16em] text-gold-deep">
+                  Add your city
+                  <span className="ml-2 inline-block transition-transform duration-300 group-hover:translate-x-1">
+                    →
+                  </span>
+                </span>
+              </Link>
+              <span
+                className="block h-px w-full bg-border"
+                data-draw
+                style={d(430)}
+              />
+            </li>
+          </ul>
         </div>
       </div>
     </section>

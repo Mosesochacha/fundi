@@ -20,6 +20,9 @@ const FREEZE_CSS = `
   *, *::before, *::after { animation-duration: 0s !important; animation-delay: 0s !important; transition-duration: 0s !important; }
   .reveal { opacity: 1 !important; transform: none !important; }
   .animate-marquee, .animate-marquee-reverse { animation: none !important; }
+  /* Scroll-reveal targets (LandingMotion): force the settled state so a section
+     never screenshots blank just because the observer has not fired yet. */
+  [data-rise], [data-draw], [data-grow] { opacity: 1 !important; transform: none !important; }
 `;
 
 async function gotoLanding(page: Page) {
@@ -233,7 +236,11 @@ test("auth buttons and hero/CTA targets", async ({ page }) => {
     const out: { text: string; href: string }[] = [];
     document.querySelectorAll("a").forEach((a) => {
       const t = (a.textContent || "").trim();
-      if (/find a fundi|join as a worker|find a verified|find a fundi now/i.test(t)) {
+      if (
+        /browse the work|join as a worker|create your profile|find someone now|browse verified workers|open the directory|add your city/i.test(
+          t,
+        )
+      ) {
         out.push({ text: t, href: a.getAttribute("href") || "" });
       }
     });
@@ -283,17 +290,17 @@ test("contrast ratios (WCAG AA)", async ({ page }) => {
   const samples: { name: string; sel: string; nth?: number }[] = [
     { name: "hero-subhead (ink-2 on cream)", sel: "section h1 + p" },
     { name: "hero-stat-label (ink-3 on cream)", sel: "section .uppercase" },
-    { name: "eyebrow gold-dark on cream-2 (#how)", sel: "#how > div > .uppercase" },
+    { name: "eyebrow gold-deep on cream (#how)", sel: "#how span.uppercase" },
     { name: "how-step-desc (ink-2 on cream)", sel: "#how .grid .text-ink-2" },
-    { name: "why-body (white/45 on navy)", sel: "#why > div > p" },
-    { name: "why-card-desc (white/45 on navy)", sel: "#why .grid > div > .text-white\\/45" },
-    { name: "global-stat-desc (ink-2 on white)", sel: "#global .bg-white .text-ink-2" },
-    { name: "trust-desc (ink-2 on cream-2)", sel: "#trust .grid .text-ink-2" },
-    { name: "cta-subhead (ink-2 on gradient)", sel: "section:has-text('next great fundi') p" },
-    { name: "cta-microcopy (ink-3)", sel: "section:has-text('Free forever for workers')" },
-    { name: "footer-link (white/40 on navy)", sel: "footer a" },
-    { name: "footer-tagline (white/40 on navy)", sel: "footer p" },
-    { name: "footer-copyright (white/25 on navy)", sel: "footer .text-white\\/25 > div" },
+    { name: "why-lede (ink-2 on cream-2)", sel: "#why .text-ink-2" },
+    { name: "why-reason-desc (ink-2 on cream-2)", sel: "#why article .text-ink-2" },
+    { name: "global-lede (ink-2 on cream)", sel: "#global .text-ink-2" },
+    { name: "trust-desc (ink-2 on white)", sel: "#trust article .text-ink-2" },
+    { name: "cta-door-desc (ink-2 on gold-light)", sel: "section:has-text('Two ways in') p" },
+    { name: "cta-microcopy (gold-deep on gold-light)", sel: "section:has-text('Free for workers')" },
+    { name: "footer-link (ink-2 on cream)", sel: "footer a" },
+    { name: "footer-tagline (ink-2 on cream)", sel: "footer p" },
+    { name: "footer-copyright (ink-3 on cream)", sel: "footer .text-ink-3 span" },
   ];
 
   const measured: Record<string, { color: string; bg: string; ratio: number; size: string; weight: string }> = {};

@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  ChevronDown,
-  MapPin,
-  ShieldCheck,
-  Sparkles,
-  Wrench,
-  X,
-} from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { SEARCH_DEFAULTS, useSearchStore } from "@/store/searchStore";
@@ -21,24 +14,41 @@ import {
 
 type OpenPanel = "trade" | "location" | "exp" | "rating" | null;
 
-interface Props {
-  onAskAi: () => void;
+/* ── Control vocabulary ───────────────────────────────────────────────
+   Every control is a ruled field, not a pill: a hairline underline that
+   turns gold when the filter is carrying a value. Nothing is boxed, so the
+   strip reads as the head of a register rather than a toolbar of buttons. */
+
+const FIELD =
+  "group inline-flex items-center gap-2 border-b pb-1.5 text-[11.5px] font-bold uppercase tracking-[0.14em] cursor-pointer bg-transparent transition-colors duration-300";
+const FIELD_OFF = "border-border text-ink-2 hover:border-gold hover:text-navy";
+const FIELD_ON = "border-gold-dark text-gold-deep";
+
+const MENU =
+  "pop-in absolute left-0 top-[calc(100%+12px)] z-50 min-w-[224px] rounded-[3px] border border-border bg-white p-1 shadow-[0_28px_54px_-28px_rgba(34,29,22,0.5)]";
+const OPT =
+  "flex w-full cursor-pointer items-center justify-between gap-3 border-b border-border/60 bg-transparent px-3 py-2.5 text-left text-[13.5px] text-ink-2 transition-colors duration-200 last:border-b-0 hover:bg-cream-2 hover:text-navy";
+const OPT_ON = "font-semibold text-navy";
+
+const TAG =
+  "inline-flex items-center gap-2 rounded-[2px] border border-gold/45 bg-gold-light px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[0.12em] text-gold-deep";
+const TAG_X =
+  "flex h-3.5 w-3.5 cursor-pointer items-center justify-center bg-transparent text-gold-deep/70 transition-colors duration-200 hover:text-navy";
+
+/** Small rotated square — the page's marker for "selected". */
+function Mark({ on }: { on: boolean }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "h-[7px] w-[7px] flex-none rotate-45 transition-colors duration-200",
+        on ? "bg-gold-dark" : "border border-ink-4 group-hover:border-gold",
+      )}
+    />
+  );
 }
 
-const FB_BTN =
-  "flex items-center gap-[9px] rounded-[11px] border bg-white px-[15px] py-2.5 text-sm font-semibold text-ink-2 transition-colors duration-150 hover:border-ink-4";
-const FB_MENU =
-  "absolute left-0 top-[calc(100%+8px)] z-40 min-w-[200px] rounded-[14px] border border-border bg-white p-2.5 shadow-[0_16px_44px_rgba(33,28,20,0.18)]";
-const FB_OPT =
-  "flex w-full items-center gap-[11px] rounded-[9px] border-none bg-transparent px-2.5 py-2 text-left text-sm text-ink-2 cursor-pointer hover:bg-cream-2";
-const FB_OPT_ROW = "justify-between";
-const FB_TICK = "font-bold text-gold-dark";
-const FB_CHIP =
-  "flex items-center gap-[7px] rounded-full border border-border bg-white px-3 py-1.5 pl-[13px] text-sm font-semibold text-ink-2";
-const FB_CHIP_BTN =
-  "flex h-[18px] w-[18px] items-center justify-center rounded-full border-none bg-gold-light text-ink-3 cursor-pointer transition-all duration-150 hover:bg-navy hover:text-white";
-
-export default function FilterBar({ onAskAi }: Props) {
+export default function FilterBar() {
   const selectedTrades = useSearchStore((s) => s.selectedTrades);
   const location = useSearchStore((s) => s.location);
   const availableNow = useSearchStore((s) => s.availableNow);
@@ -90,50 +100,69 @@ export default function FilterBar({ onAskAi }: Props) {
   const expLabel = EXP_OPTIONS.find((o) => o.value === minExp)?.label;
   const ratingLabel = RATING_OPTIONS.find((o) => o.value === minRating)?.label;
 
-  const fbBtnActive = "bg-gold-light border-gold hover:border-gold";
-  const fbBtnBorder = "border-border";
-
   return (
     <div
-      className="relative z-30 mx-auto max-w-[1240px] px-5 pt-[30px] md:px-10"
+      className="relative z-40 border-b border-border bg-cream/92 backdrop-blur-[10px] md:sticky md:top-16"
       ref={barRef}
     >
-      <div className="flex flex-wrap items-start justify-between gap-3.5 md:items-center">
-        <div className="flex flex-wrap items-center gap-2.5">
+      <div className="mx-auto w-full max-w-[1180px] px-5 md:px-8">
+        <div className="flex flex-wrap items-end gap-x-6 gap-y-4 py-4">
+          <span className="hidden items-center gap-2.5 pb-1.5 text-[10px] font-bold tracking-[0.2em] text-ink-3 uppercase lg:inline-flex">
+            <span
+              aria-hidden="true"
+              className="h-1.5 w-1.5 rotate-45 bg-gold"
+            />
+            Refine
+          </span>
+
+          {/* Trade — multi-select */}
           <div className="relative">
             <button
               type="button"
-              className={cn(FB_BTN, tradeActive ? fbBtnActive : fbBtnBorder)}
+              className={cn(FIELD, tradeActive ? FIELD_ON : FIELD_OFF)}
               onClick={() => toggle("trade")}
               aria-expanded={open === "trade"}
+              aria-haspopup="true"
             >
-              <Wrench size={15} aria-hidden className="text-ink-3" />
-              {tradeActive ? `Trade · ${selectedTrades.length}` : "Trade"}
-              <ChevronDown size={13} className="text-ink-3" aria-hidden />
+              {tradeActive
+                ? `Trade · ${String(selectedTrades.length).padStart(2, "0")}`
+                : "Trade"}
+              <ChevronDown
+                size={12}
+                aria-hidden="true"
+                className={cn(
+                  "transition-transform duration-300",
+                  open === "trade" && "rotate-180",
+                )}
+              />
             </button>
             {open === "trade" && (
-              <div className={cn(FB_MENU, "min-w-[236px]")}>
+              <div className={cn(MENU, "min-w-[246px]")}>
                 {TRADES.map((t) => {
                   const checked = selectedTrades.includes(t.name);
                   return (
                     <button
                       key={t.name}
                       type="button"
-                      className={FB_OPT}
+                      className={cn(OPT, checked && OPT_ON)}
                       onClick={() => toggleTrade(t.name)}
+                      aria-pressed={checked}
                     >
-                      <span
-                        className={cn(
-                          "flex h-[18px] w-[18px] flex-none items-center justify-center rounded-[5px] border-[1.5px] text-[11px] font-bold text-white",
-                          checked
-                            ? "border-gold-dark bg-gold-dark"
-                            : "border-border bg-white",
-                        )}
-                        aria-hidden
-                      >
-                        {checked ? "✓" : ""}
+                      <span className="flex items-center gap-3">
+                        <span
+                          aria-hidden="true"
+                          className={cn(
+                            "h-[13px] w-[13px] flex-none rounded-[2px] border transition-colors duration-200",
+                            checked
+                              ? "border-gold-dark bg-gold-dark"
+                              : "border-ink-4 bg-white",
+                          )}
+                        />
+                        {t.name}
                       </span>
-                      <span className="flex-1">{t.name}</span>
+                      <span className="text-[11px] font-semibold tabular-nums text-ink-3">
+                        {t.count}
+                      </span>
                     </button>
                   );
                 })}
@@ -141,103 +170,55 @@ export default function FilterBar({ onAskAi }: Props) {
             )}
           </div>
 
+          {/* Location */}
           <div className="relative">
             <button
               type="button"
-              className={cn(FB_BTN, locActive ? fbBtnActive : fbBtnBorder)}
+              className={cn(FIELD, locActive ? FIELD_ON : FIELD_OFF)}
               onClick={() => toggle("location")}
               aria-expanded={open === "location"}
+              aria-haspopup="true"
             >
-              <MapPin size={15} aria-hidden className="text-ink-3" />
               {locActive ? location : "Location"}
-              <ChevronDown size={13} className="text-ink-3" aria-hidden />
+              <ChevronDown
+                size={12}
+                aria-hidden="true"
+                className={cn(
+                  "transition-transform duration-300",
+                  open === "location" && "rotate-180",
+                )}
+              />
             </button>
             {open === "location" && (
-              <div className={FB_MENU}>
+              <div className={MENU}>
                 <button
                   type="button"
-                  className={cn(FB_OPT, FB_OPT_ROW)}
+                  className={cn(OPT, !locActive && OPT_ON)}
                   onClick={() => {
                     setFilter("location", "");
                     setOpen(null);
                   }}
                 >
-                  <span className="flex-1">All locations</span>
-                  {!locActive && <span className={FB_TICK}>✓</span>}
+                  Everywhere
+                  {!locActive && <Mark on />}
                 </button>
                 {CITIES.map((c) => (
                   <button
                     key={c.name}
                     type="button"
-                    className={cn(FB_OPT, FB_OPT_ROW)}
+                    className={cn(OPT, location === c.name && OPT_ON)}
                     onClick={() => {
                       setFilter("location", location === c.name ? "" : c.name);
                       setOpen(null);
                     }}
                   >
-                    <span className="flex-1">{c.name}</span>
-                    {location === c.name && <span className={FB_TICK}>✓</span>}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="relative">
-            <button
-              type="button"
-              className={cn(FB_BTN, expActive ? fbBtnActive : fbBtnBorder)}
-              onClick={() => toggle("exp")}
-              aria-expanded={open === "exp"}
-            >
-              {expActive ? expLabel : "Experience"}
-              <ChevronDown size={13} className="text-ink-3" aria-hidden />
-            </button>
-            {open === "exp" && (
-              <div className={FB_MENU}>
-                {EXP_OPTIONS.map((o) => (
-                  <button
-                    key={o.value}
-                    type="button"
-                    className={cn(FB_OPT, FB_OPT_ROW)}
-                    onClick={() => {
-                      setFilter("minExp", o.value);
-                      setOpen(null);
-                    }}
-                  >
-                    <span className="flex-1">{o.label}</span>
-                    {minExp === o.value && <span className={FB_TICK}>✓</span>}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="relative">
-            <button
-              type="button"
-              className={cn(FB_BTN, ratingActive ? fbBtnActive : fbBtnBorder)}
-              onClick={() => toggle("rating")}
-              aria-expanded={open === "rating"}
-            >
-              {ratingActive ? ratingLabel : "Rating"}
-              <ChevronDown size={13} className="text-ink-3" aria-hidden />
-            </button>
-            {open === "rating" && (
-              <div className={FB_MENU}>
-                {RATING_OPTIONS.map((o) => (
-                  <button
-                    key={o.value}
-                    type="button"
-                    className={cn(FB_OPT, FB_OPT_ROW)}
-                    onClick={() => {
-                      setFilter("minRating", o.value);
-                      setOpen(null);
-                    }}
-                  >
-                    <span className="flex-1">{o.label}</span>
-                    {minRating === o.value && (
-                      <span className={FB_TICK}>✓</span>
+                    {c.name}
+                    {location === c.name ? (
+                      <Mark on />
+                    ) : (
+                      <span className="text-[11px] font-semibold tabular-nums text-ink-3">
+                        {c.count}
+                      </span>
                     )}
                   </button>
                 ))}
@@ -245,166 +226,225 @@ export default function FilterBar({ onAskAi }: Props) {
             )}
           </div>
 
+          {/* Experience */}
+          <div className="relative">
+            <button
+              type="button"
+              className={cn(FIELD, expActive ? FIELD_ON : FIELD_OFF)}
+              onClick={() => toggle("exp")}
+              aria-expanded={open === "exp"}
+              aria-haspopup="true"
+            >
+              {expActive ? expLabel : "Experience"}
+              <ChevronDown
+                size={12}
+                aria-hidden="true"
+                className={cn(
+                  "transition-transform duration-300",
+                  open === "exp" && "rotate-180",
+                )}
+              />
+            </button>
+            {open === "exp" && (
+              <div className={MENU}>
+                {EXP_OPTIONS.map((o) => (
+                  <button
+                    key={o.value}
+                    type="button"
+                    className={cn(OPT, minExp === o.value && OPT_ON)}
+                    onClick={() => {
+                      setFilter("minExp", o.value);
+                      setOpen(null);
+                    }}
+                  >
+                    {o.label}
+                    {minExp === o.value && <Mark on />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Rating */}
+          <div className="relative">
+            <button
+              type="button"
+              className={cn(FIELD, ratingActive ? FIELD_ON : FIELD_OFF)}
+              onClick={() => toggle("rating")}
+              aria-expanded={open === "rating"}
+              aria-haspopup="true"
+            >
+              {ratingActive ? ratingLabel : "Rating"}
+              <ChevronDown
+                size={12}
+                aria-hidden="true"
+                className={cn(
+                  "transition-transform duration-300",
+                  open === "rating" && "rotate-180",
+                )}
+              />
+            </button>
+            {open === "rating" && (
+              <div className={MENU}>
+                {RATING_OPTIONS.map((o) => (
+                  <button
+                    key={o.value}
+                    type="button"
+                    className={cn(OPT, minRating === o.value && OPT_ON)}
+                    onClick={() => {
+                      setFilter("minRating", o.value);
+                      setOpen(null);
+                    }}
+                  >
+                    {o.label}
+                    {minRating === o.value && <Mark on />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Binary switches — marked, not filled */}
           <button
             type="button"
-            className={cn(
-              "flex items-center gap-2 rounded-[11px] border px-4 py-2.5 text-sm font-semibold",
-              availableNow
-                ? "border-gold-dark bg-gold-dark text-white"
-                : "border-border bg-white text-ink-2",
-            )}
+            className={cn(FIELD, availableNow ? FIELD_ON : FIELD_OFF)}
             onClick={() => setFilter("availableNow", !availableNow)}
             aria-pressed={availableNow}
           >
-            <span
-              className={cn(
-                "h-2 w-2 rounded-full",
-                availableNow ? "bg-white" : "bg-green-500",
-              )}
-            />
+            <Mark on={availableNow} />
             Available now
           </button>
 
           <button
             type="button"
-            className={cn(
-              "flex items-center gap-2 rounded-[11px] border px-4 py-2.5 text-sm font-semibold",
-              verifiedOnly
-                ? "border-gold-dark bg-gold-dark text-white"
-                : "border-border bg-white text-ink-2",
-            )}
+            className={cn(FIELD, verifiedOnly ? FIELD_ON : FIELD_OFF)}
             onClick={() => setFilter("verifiedOnly", !verifiedOnly)}
             aria-pressed={verifiedOnly}
           >
-            <ShieldCheck
-              size={15}
-              aria-hidden
-              className={verifiedOnly ? "text-white" : "text-gold-dark"}
-            />
+            <Mark on={verifiedOnly} />
             Verified only
           </button>
-        </div>
 
-        <div className="flex w-full flex-wrap items-center justify-between gap-2.5 md:w-auto md:justify-start">
-          <button
-            type="button"
-            className="flex items-center gap-2 rounded-[11px] border border-navy bg-navy px-4 py-2.5 text-sm font-semibold text-white transition-colors duration-[180ms] hover:border-gold-dark hover:bg-gold-dark"
-            onClick={onAskAi}
-          >
-            <Sparkles size={15} aria-hidden />
-            Ask AI
-          </button>
-          <div className="relative">
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              aria-label="Sort workers"
-              className="cursor-pointer appearance-none rounded-[11px] border border-border bg-white py-2.5 pl-3.5 pr-[38px] text-sm text-ink-2 outline-none"
+          {/* Order — right-aligned, same ruled field language */}
+          <div className="relative ml-auto flex items-center gap-3">
+            <label
+              htmlFor="browse-sort"
+              className="hidden text-[10px] font-bold tracking-[0.16em] text-ink-3 uppercase sm:block"
             >
-              {SORT_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-            <ChevronDown
-              size={13}
-              className="pointer-events-none absolute right-[13px] top-1/2 -translate-y-1/2 text-ink-3"
-              aria-hidden
-            />
+              Ordered by
+            </label>
+            <div className="relative">
+              <select
+                id="browse-sort"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="cursor-pointer appearance-none border-b border-border bg-transparent pr-6 pb-1.5 text-[11.5px] font-bold tracking-[0.14em] text-navy uppercase outline-none transition-colors duration-300 hover:border-gold focus-visible:border-gold-dark"
+              >
+                {SORT_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown
+                size={12}
+                aria-hidden="true"
+                className="pointer-events-none absolute right-0 bottom-2 text-ink-3"
+              />
+            </div>
           </div>
         </div>
-      </div>
 
-      {anyActive && (
-        <div className="mt-3.5 flex flex-wrap items-center gap-2">
-          {selectedTrades.map((t) => (
-            <span key={t} className={FB_CHIP}>
-              {t}
-              <button
-                type="button"
-                className={FB_CHIP_BTN}
-                onClick={() => toggleTrade(t)}
-                aria-label={`Remove ${t}`}
-              >
-                <X size={11} aria-hidden />
-              </button>
-            </span>
-          ))}
-          {locActive && (
-            <span className={FB_CHIP}>
-              {location}
-              <button
-                type="button"
-                className={FB_CHIP_BTN}
-                onClick={() => setFilter("location", "")}
-                aria-label="Remove location"
-              >
-                <X size={11} aria-hidden />
-              </button>
-            </span>
-          )}
-          {expActive && (
-            <span className={FB_CHIP}>
-              {expLabel}
-              <button
-                type="button"
-                className={FB_CHIP_BTN}
-                onClick={() => setFilter("minExp", 0)}
-                aria-label="Remove experience filter"
-              >
-                <X size={11} aria-hidden />
-              </button>
-            </span>
-          )}
-          {ratingActive && (
-            <span className={FB_CHIP}>
-              {ratingLabel}
-              <button
-                type="button"
-                className={FB_CHIP_BTN}
-                onClick={() => setFilter("minRating", 0)}
-                aria-label="Remove rating filter"
-              >
-                <X size={11} aria-hidden />
-              </button>
-            </span>
-          )}
-          {availableNow && (
-            <span className={FB_CHIP}>
-              Available now
-              <button
-                type="button"
-                className={FB_CHIP_BTN}
-                onClick={() => setFilter("availableNow", false)}
-                aria-label="Remove availability filter"
-              >
-                <X size={11} aria-hidden />
-              </button>
-            </span>
-          )}
-          {verifiedOnly && (
-            <span className={FB_CHIP}>
-              Verified only
-              <button
-                type="button"
-                className={FB_CHIP_BTN}
-                onClick={() => setFilter("verifiedOnly", false)}
-                aria-label="Remove verified filter"
-              >
-                <X size={11} aria-hidden />
-              </button>
-            </span>
-          )}
-          <button
-            type="button"
-            className="border-none bg-transparent px-2 py-1.5 text-sm font-semibold text-gold-dark cursor-pointer"
-            onClick={() => resetFilters()}
-          >
-            Clear all
-          </button>
-        </div>
-      )}
+        {anyActive && (
+          <div className="flex flex-wrap items-center gap-2 border-t border-border/70 py-3">
+            {selectedTrades.map((t) => (
+              <span key={t} className={TAG}>
+                {t}
+                <button
+                  type="button"
+                  className={TAG_X}
+                  onClick={() => toggleTrade(t)}
+                  aria-label={`Remove ${t}`}
+                >
+                  <X size={11} aria-hidden="true" />
+                </button>
+              </span>
+            ))}
+            {locActive && (
+              <span className={TAG}>
+                {location}
+                <button
+                  type="button"
+                  className={TAG_X}
+                  onClick={() => setFilter("location", "")}
+                  aria-label="Remove location"
+                >
+                  <X size={11} aria-hidden="true" />
+                </button>
+              </span>
+            )}
+            {expActive && (
+              <span className={TAG}>
+                {expLabel}
+                <button
+                  type="button"
+                  className={TAG_X}
+                  onClick={() => setFilter("minExp", 0)}
+                  aria-label="Remove experience filter"
+                >
+                  <X size={11} aria-hidden="true" />
+                </button>
+              </span>
+            )}
+            {ratingActive && (
+              <span className={TAG}>
+                {ratingLabel}
+                <button
+                  type="button"
+                  className={TAG_X}
+                  onClick={() => setFilter("minRating", 0)}
+                  aria-label="Remove rating filter"
+                >
+                  <X size={11} aria-hidden="true" />
+                </button>
+              </span>
+            )}
+            {availableNow && (
+              <span className={TAG}>
+                Available now
+                <button
+                  type="button"
+                  className={TAG_X}
+                  onClick={() => setFilter("availableNow", false)}
+                  aria-label="Remove availability filter"
+                >
+                  <X size={11} aria-hidden="true" />
+                </button>
+              </span>
+            )}
+            {verifiedOnly && (
+              <span className={TAG}>
+                Verified only
+                <button
+                  type="button"
+                  className={TAG_X}
+                  onClick={() => setFilter("verifiedOnly", false)}
+                  aria-label="Remove verified filter"
+                >
+                  <X size={11} aria-hidden="true" />
+                </button>
+              </span>
+            )}
+            <button
+              type="button"
+              className="ml-1 cursor-pointer bg-transparent text-[10.5px] font-bold tracking-[0.14em] text-ink-3 uppercase underline decoration-border underline-offset-4 transition-colors duration-200 hover:text-navy hover:decoration-gold"
+              onClick={() => resetFilters()}
+            >
+              Clear all
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

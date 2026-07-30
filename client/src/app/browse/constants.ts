@@ -14,6 +14,7 @@ import {
   Wrench,
   Zap,
 } from "lucide-react";
+import type { TradeKey } from "@/components/landing/TradePlate";
 import { symbolOf } from "@/lib/currency";
 
 export interface TradeOption {
@@ -187,6 +188,30 @@ export function tradeAccent(trade: string): string {
 /** Diagonal cover gradient (banner → avatar tint), matching the design. */
 export function bannerGradient(trade: string): string {
   return `linear-gradient(120deg, ${bannerColor(trade)} 0%, ${avatarTint(trade)} 100%)`;
+}
+
+/**
+ * Trade → technical elevation used on a worker plate that has no photograph
+ * yet. First keyword hit wins; an unmatched trade returns null and the plate
+ * falls back to a monogram on the blueprint grid rather than a wrong drawing.
+ */
+const PLATE_KEYS: { keys: string[]; plate: TradeKey }[] = [
+  { keys: ["electric", "solar", "wiring", "power"], plate: "electrician" },
+  { keys: ["plumb", "pipe", "water", "drain"], plate: "plumber" },
+  {
+    keys: ["carp", "joiner", "furnitur", "wood", "cabinet"],
+    plate: "carpenter",
+  },
+  { keys: ["mason", "brick", "concret", "block", "plaster"], plate: "mason" },
+  { keys: ["weld", "fabricat", "metal", "steel", "grill"], plate: "welder" },
+  { keys: ["tile", "tiler", "floor", "terrazzo"], plate: "tiler" },
+];
+
+export function tradePlateKey(trade: string): TradeKey | null {
+  const t = (trade ?? "").toLowerCase();
+  return (
+    PLATE_KEYS.find((r) => r.keys.some((k) => t.includes(k)))?.plate ?? null
+  );
 }
 
 /** Money formatting for the rate pill. `currency` is an ISO 4217 code (e.g.

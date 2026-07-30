@@ -6,6 +6,7 @@ import Hero from "@/components/landing/Hero";
 import HowItWorks from "@/components/landing/HowItWorks";
 import LandingCta from "@/components/landing/LandingCta";
 import LandingFooter from "@/components/landing/LandingFooter";
+import LandingMotion from "@/components/landing/LandingMotion";
 import LandingNav from "@/components/landing/LandingNav";
 import TrustedMarquee from "@/components/landing/TrustedMarquee";
 import TrustSafety from "@/components/landing/TrustSafety";
@@ -16,14 +17,14 @@ import { dashboardPathForRole } from "@/lib/authRedirect";
 import { absoluteUrl, SITE_URL } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Hire Skilled Workers — Anywhere",
+  title: "Tesilix - Skilled Work, Verified",
   description:
-    "Tesilix connects you with verified, rated tradespeople - plumbers, electricians, carpenters and more - in minutes, not days.",
+    "Tesilix is a work network and hiring marketplace where skilled workers build trusted profiles and employers find verified tradespeople.",
   alternates: { canonical: SITE_URL },
   openGraph: {
-    title: "Tesilix — Hire Skilled Workers Anywhere",
+    title: "Tesilix - Skilled Work, Verified",
     description:
-      "Find verified, rated tradespeople near you - plumbers, electricians, carpenters and more.",
+      "A marketplace for blue-collar and skilled workers to showcase their work, earn trust, and connect with employers.",
     url: SITE_URL,
     type: "website",
   },
@@ -34,7 +35,8 @@ const websiteSchema = {
   "@type": "WebSite",
   name: "Tesilix",
   url: SITE_URL,
-  description: "Global marketplace for verified skilled workers.",
+  description:
+    "A work network and marketplace for verified skilled workers and the employers who hire them.",
   potentialAction: {
     "@type": "SearchAction",
     target: {
@@ -54,6 +56,7 @@ export default async function LandingPage() {
   return (
     <div className="bg-cream text-ink font-sans overflow-x-hidden">
       <JsonLd data={websiteSchema} />
+      <LandingMotion />
       <LandingNav />
       <main>
         <Hero />
