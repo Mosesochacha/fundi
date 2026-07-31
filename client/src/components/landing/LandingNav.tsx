@@ -33,9 +33,9 @@ const ROLE_LABEL: Record<string, string> = {
 };
 
 /**
- * The shared navy/gold marketing navbar. Reused on the landing page and /browse.
- * On /browse it retints to the warm-cream "Find a fundi" palette (serif logo,
- * pill buttons) to match that page's aesthetic.
+ * The shared navy/gold marketing navbar, used on the landing page and across
+ * /browse. Both now speak the same "trade ledger" language — square-cornered
+ * actions, hairline rules — so the bar is deliberately identical on each.
  */
 export default function LandingNav() {
   const pathname = usePathname();
@@ -43,7 +43,7 @@ export default function LandingNav() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const isBrowse = pathname === "/browse";
+  const isBrowse = pathname.startsWith("/browse");
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -67,13 +67,11 @@ export default function LandingNav() {
   const fullName = user ? `${user.firstName} ${user.lastName}`.trim() : "";
 
   const btnBase =
-    "inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium tracking-[0.01em] no-underline cursor-pointer border transition-all";
-  const btnOutline = isBrowse
-    ? "rounded-full border-border text-ink-2 font-semibold hover:border-gold-dark hover:text-ink"
-    : "rounded border-border bg-transparent text-ink hover:border-ink-2";
-  const btnGold = isBrowse
-    ? "rounded-full bg-gold-dark text-white border-gold-dark font-semibold hover:bg-gold hover:border-gold"
-    : "rounded bg-gold text-navy border-gold hover:bg-gold-dark hover:border-gold-dark";
+    "inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium no-underline cursor-pointer border transition-all";
+  const btnOutline =
+    "rounded-[3px] border-border bg-transparent text-ink hover:border-ink-2";
+  const btnGold =
+    "rounded-[3px] bg-gold text-navy border-gold hover:bg-gold-dark hover:border-gold-dark hover:text-white";
 
   return (
     <>
@@ -81,12 +79,10 @@ export default function LandingNav() {
         id="lp-navbar"
         className={cn(
           "fixed top-0 left-0 right-0 z-[100] h-16 backdrop-blur-[14px] border-b transition-colors",
-          isBrowse ? "bg-cream/86" : "bg-cream/94",
-          scrolled
-            ? isBrowse
-              ? "border-border"
-              : "border-border"
-            : "border-transparent",
+          "bg-cream/94",
+          // /browse keeps the rule permanently: the sticky filter strip docks
+          // straight beneath it, so the two must read as one stacked header.
+          scrolled || isBrowse ? "border-border" : "border-transparent",
         )}
       >
         <div className="mx-auto flex h-full w-full max-w-[1280px] items-center justify-between px-4 md:px-8">
@@ -117,11 +113,8 @@ export default function LandingNav() {
                   key={l.href}
                   href={l.href}
                   className={cn(
-                    "text-[15px] font-semibold tracking-[-0.01em] no-underline transition-colors",
-                    isBrowse
-                      ? "text-ink-2 hover:text-ink"
-                      : "text-ink-2 hover:text-ink",
-                    active && "text-gold-dark",
+                    "text-[15px] font-semibold no-underline transition-colors text-ink-2 hover:text-ink",
+                    active && "text-gold-deep",
                   )}
                 >
                   {l.label}
@@ -136,21 +129,9 @@ export default function LandingNav() {
                 <NotificationBell variant="nav" />
                 <Link
                   href={dashboardPathForRole(role)}
-                  className={cn(
-                    "flex items-center gap-2.5 pl-[5px] pr-2.5 py-[5px] border rounded-full bg-white no-underline transition-all",
-                    isBrowse
-                      ? "border-border hover:border-gold-dark"
-                      : "border-border hover:border-gold",
-                  )}
+                  className="flex items-center gap-2.5 pl-[5px] pr-2.5 py-[5px] border border-border rounded-[3px] bg-white no-underline transition-colors hover:border-gold"
                 >
-                  <span
-                    className={cn(
-                      "w-[30px] h-[30px] rounded-full flex items-center justify-center text-[11px] font-semibold flex-none",
-                      isBrowse
-                        ? "bg-gold-light text-gold-dark"
-                        : "bg-gold-light text-gold-dark",
-                    )}
-                  >
+                  <span className="w-[30px] h-[30px] rounded-[2px] flex items-center justify-center text-[11px] font-semibold flex-none bg-gold-light text-gold-dark">
                     {initials}
                   </span>
                   <span className="hidden md:flex flex-col leading-[1.15]">

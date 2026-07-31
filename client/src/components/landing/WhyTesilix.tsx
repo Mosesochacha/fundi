@@ -1,132 +1,189 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
-import { btnGold } from "./landingStyles";
+import type { CSSProperties } from "react";
+import {
+  eyebrowText,
+  lede,
+  linkTravel,
+  linkTravelRule,
+  secTitle,
+  sectionInner,
+  sectionShell,
+} from "./landingStyles";
 
-const reasons: {
-  num: string;
-  title: ReactNode;
-  desc: string;
-  icon: ReactNode;
-}[] = [
+const REASONS: { num: string; title: string; desc: string }[] = [
   {
     num: "01",
-    title: (
-      <>
-        Every worker is{" "}
-        <em className="italic font-light text-gold">verified</em>
-      </>
-    ),
-    desc: "Phone-confirmed identity on every profile. No anonymous strangers, no fake accounts. You know exactly who is coming to your door.",
-    icon: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />,
+    title: "A profile for work that is usually invisible",
+    desc: "Photographs, trade, rates, service area, availability and reviews in one place — instead of a reputation that only exists inside other people's phones.",
   },
   {
     num: "02",
-    title: (
-      <>
-        Reviews you can{" "}
-        <em className="italic font-light text-gold">actually trust</em>
-      </>
-    ),
-    desc: "Only real employers who completed a job can leave a review. Not friends, not the worker themselves. Every star is earned honestly.",
-    icon: (
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-    ),
+    title: "Signals an employer can actually compare",
+    desc: "Proof of skill, past jobs, response context and reliability, side by side, before anyone has to make an awkward first call.",
   },
   {
     num: "03",
-    title: (
-      <>
-        No brokers. <em className="italic font-light text-gold">No cuts.</em>
-      </>
-    ),
-    desc: "Agents take 20–40% and give you no guarantee. On Tesilix you talk directly to the worker, agree your own price, and keep 100% of what you earn.",
-    icon: (
-      <>
-        <line x1="12" y1="1" x2="12" y2="23" />
-        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-      </>
-    ),
+    title: "A direct line, with the reputation attached",
+    desc: "Both sides talk to each other, agree terms in the open, and stay accountable to a profile that follows them to the next job.",
   },
   {
     num: "04",
-    title: (
-      <>
-        See work{" "}
-        <em className="italic font-light text-gold">before you hire</em>
-      </>
-    ),
-    desc: "Every worker profile shows real photos of past jobs. No more hiring blind and hoping the quality matches the promise.",
-    icon: (
-      <>
-        <rect x="3" y="3" width="18" height="18" rx="2" />
-        <circle cx="8.5" cy="8.5" r="1.5" />
-        <polyline points="21 15 16 10 5 21" />
-      </>
-    ),
+    title: "Every finished job makes the next hire easier",
+    desc: "Completed work turns into reviews, repeat clients and a stronger profile. The market gets better at matching the longer it runs.",
   },
 ];
 
+const d = (ms: number) => ({ "--d": `${ms}ms` }) as CSSProperties;
+
+/** Shared axis for the two fee bars, so the comparison is honestly to scale. */
+function Axis() {
+  return (
+    <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.16em] tabular-nums text-ink-3">
+      <span>0%</span>
+      <span>Of the agreed fee</span>
+      <span>100%</span>
+    </div>
+  );
+}
+
 export default function WhyTesilix() {
   return (
-    <section
-      id="why"
-      className="relative scroll-mt-20 bg-navy px-5 py-16 md:px-6 md:py-24 overflow-hidden"
-    >
-      <div className="absolute top-1/2 -right-[200px] -translate-y-1/2 rounded-full border border-white/[0.04] w-[300px] h-[300px]" />
-      <div className="absolute top-1/2 -right-[200px] -translate-y-1/2 rounded-full border border-white/[0.04] w-[500px] h-[500px]" />
-      <div className="absolute top-1/2 -right-[200px] -translate-y-1/2 rounded-full border border-white/[0.04] w-[700px] h-[700px]" />
-      <div className="relative max-w-[1080px] mx-auto">
-        <div className="reveal text-[11px] tracking-[0.12em] uppercase text-gold font-medium mb-4">
-          Why Tesilix
+    <section id="why" className={`scroll-mt-20 bg-cream-2 ${sectionShell}`}>
+      <div className={sectionInner}>
+        <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] md:items-end md:gap-16">
+          <div data-rise>
+            <div className="flex items-center gap-3.5">
+              <span className="h-1.5 w-1.5 rotate-45 bg-gold" />
+              <span className={eyebrowText}>Why Tesilix</span>
+            </div>
+            <h2 className={`mt-6 max-w-[17ch] ${secTitle}`}>
+              The broker was never the{" "}
+              <em className="font-serif italic text-gold-dark">product</em>.
+            </h2>
+          </div>
+          <p
+            className={`max-w-[44ch] ${lede} text-[15px]`}
+            data-rise
+            style={d(90)}
+          >
+            Middlemen sold access to people they did not train and work they did
+            not do. Tesilix replaces that access with a public record — and
+            hands the fee back to the person holding the tools.
+          </p>
         </div>
-        <h2 className="reveal font-serif text-[clamp(30px,4vw,50px)] font-normal tracking-[-0.025em] leading-[1.1] text-white">
-          Stop guessing.
-          <br />
-          <em className="italic font-light text-gold">Start hiring right.</em>
-        </h2>
-        <p className="reveal text-[15px] text-white/55 font-light leading-[1.7] max-w-[420px] mt-4">
-          WhatsApp groups, brokers, and word of mouth leave you hoping for the
-          best. Tesilix gives you certainty.
-        </p>
-        <div className="reveal grid grid-cols-1 md:grid-cols-2 gap-px bg-white/[0.07] border border-white/[0.07] rounded-2xl overflow-hidden mt-14">
-          {reasons.map((r) => (
-            <div
-              key={r.num}
-              className="relative bg-navy px-[26px] py-8 md:px-9 md:py-10 transition-colors hover:bg-navy-2"
-            >
-              <div className="font-serif text-sm font-light text-gold tracking-[0.08em] mb-5 opacity-70">
-                {r.num}
+
+        {/* ── The fee diagram ──────────────────────────────────────── */}
+        <figure
+          className="mt-14 overflow-hidden rounded-[4px] border border-border bg-white md:mt-20"
+          data-rise
+        >
+          <figcaption className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-border px-6 py-4 md:px-9">
+            <span className="font-serif text-[19px] font-normal text-ink md:text-[22px]">
+              Where the money lands
+            </span>
+            <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-ink-3">
+              Per completed job
+            </span>
+          </figcaption>
+
+          <div className="px-6 pt-7 pb-8 md:px-9 md:pt-9 md:pb-10">
+            <Axis />
+
+            {/* Broker route */}
+            <div className="mt-4">
+              <div className="mb-2.5 text-[12px] font-bold uppercase tracking-[0.14em] text-ink-2">
+                Hired through a broker
               </div>
-              <div className="font-serif text-[22px] font-normal text-white leading-tight mb-3">
-                {r.title}
-              </div>
-              <div className="text-sm text-white/55 leading-[1.7] font-light">
-                {r.desc}
-              </div>
-              <div className="absolute bottom-6 right-6 md:bottom-8 md:right-8 w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center">
-                <svg
-                  viewBox="0 0 24 24"
-                  className="w-[18px] h-[18px] stroke-gold/40 fill-none [stroke-width:1.5]"
-                  aria-hidden="true"
-                >
-                  {r.icon}
-                </svg>
+              <div className="relative h-[58px] w-full overflow-hidden rounded-[3px] border border-border bg-cream">
+                <div
+                  className="absolute inset-y-0 left-0 w-[70%] bg-ink-4/45"
+                  data-grow
+                  style={d(120)}
+                />
+                <div
+                  className="hatch-loss absolute inset-y-0 right-0 w-[30%] border-l border-ink-4"
+                  data-rise
+                  style={d(700)}
+                />
+                <span className="absolute top-1/2 left-4 -translate-y-1/2 text-[13px] font-semibold tabular-nums text-ink-2">
+                  60–80% to the worker
+                </span>
+                <span className="absolute top-1/2 right-4 hidden -translate-y-1/2 text-[12px] font-bold tracking-wide text-ink-3 uppercase sm:block">
+                  20–40% cut
+                </span>
               </div>
             </div>
+
+            {/* Direct route */}
+            <div className="mt-6">
+              <div className="mb-2.5 text-[12px] font-bold uppercase tracking-[0.14em] text-gold-deep">
+                Hired on Tesilix
+              </div>
+              <div className="relative h-[58px] w-full overflow-hidden rounded-[3px] border border-gold/50 bg-gold-light">
+                <div
+                  className="absolute inset-y-0 left-0 w-full bg-gold/45"
+                  data-grow
+                  style={d(320)}
+                />
+                <span className="absolute top-1/2 left-4 -translate-y-1/2 text-[13px] font-semibold tabular-nums text-navy">
+                  100% to the worker
+                </span>
+                <span className="absolute top-1/2 right-4 hidden -translate-y-1/2 text-[12px] font-bold tracking-wide text-gold-deep uppercase sm:block">
+                  No cut
+                </span>
+              </div>
+            </div>
+
+            <p className="mt-6 max-w-[62ch] text-[13px] leading-[1.6] text-ink-3">
+              Tesilix takes nothing from the job itself. Employers pay the
+              worker; the worker keeps what they agreed.
+            </p>
+          </div>
+        </figure>
+
+        {/* ── The argument, as ledger rows ─────────────────────────── */}
+        <div className="mt-16 grid gap-x-14 md:mt-20 md:grid-cols-2">
+          {REASONS.map((r, i) => (
+            <article key={r.num} className="group">
+              <span
+                className="block h-px w-full bg-border"
+                data-draw
+                style={d((i % 2) * 80)}
+              />
+              <div
+                className="grid grid-cols-[46px_minmax(0,1fr)] gap-x-4 py-7 md:py-9"
+                data-rise
+                style={d((i % 2) * 80 + 50)}
+              >
+                <span className="font-serif text-[19px] leading-none font-light tabular-nums text-gold-dark">
+                  {r.num}
+                </span>
+                <div>
+                  <h3 className="max-w-[26ch] font-serif text-[20px] leading-[1.2] font-normal text-ink md:text-[22px]">
+                    {r.title}
+                  </h3>
+                  <p className="mt-3 max-w-[46ch] text-[14px] leading-[1.7] text-ink-2">
+                    {r.desc}
+                  </p>
+                </div>
+              </div>
+            </article>
           ))}
         </div>
-        <div className="reveal mt-10 px-6 py-6 md:px-9 md:py-7 bg-gold/[0.08] border border-gold/15 rounded-xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-5">
-          <p className="text-base text-white/60 font-light leading-[1.5]">
-            <strong className="text-white font-medium">
-              Still using WhatsApp groups?
-            </strong>{" "}
-            You deserve better than hoping someone replies.
+
+        <div
+          className="flex flex-col gap-5 border-t border-navy/15 pt-8 sm:flex-row sm:items-center sm:justify-between"
+          data-rise
+        >
+          <p className="max-w-[46ch] font-serif text-[20px] leading-[1.3] font-light text-ink md:text-[24px]">
+            Still hiring from a name someone forwarded you?
           </p>
-          <Link
-            href="/browse"
-            className={`${btnGold} max-sm:w-full whitespace-nowrap`}
-          >
-            Find a verified fundi →
+          <Link href="/browse" className={`${linkTravel} relative shrink-0`}>
+            Browse verified workers
+            <span className="transition-transform duration-300 group-hover:translate-x-1">
+              →
+            </span>
+            <span className={linkTravelRule} />
           </Link>
         </div>
       </div>
