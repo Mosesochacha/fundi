@@ -3,7 +3,7 @@ import type {
   AdminBadges,
   AdminEmployer,
   AdminJob,
-  AdminPayment,
+  AdminPaymentsData,
   AdminPayout,
   AdminReport,
   AdminReview,
@@ -81,7 +81,7 @@ export const adminService = {
   report: (id: string) => get<AdminReport>(`/admin/reports/${id}`),
 
   payments: (p?: ListParams) =>
-    get<Paginated<AdminPayment>>(`/admin/payments${qs(p)}`),
+    get<AdminPaymentsData>(`/admin/payments${qs(p)}`),
   payouts: (p?: ListParams) =>
     get<Paginated<AdminPayout>>(`/admin/payouts${qs(p)}`),
 

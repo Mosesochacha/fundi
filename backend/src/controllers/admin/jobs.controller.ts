@@ -55,7 +55,11 @@ class AdminJobsController {
 
   detail = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const job = await Db.JobRequest.findByPk(req.params.id, {
-      include: [profileInclude("worker"), profileInclude("employer")],
+      include: [
+        profileInclude("worker"),
+        profileInclude("employer"),
+        { model: Db.Conversation, as: "conversations", required: false, attributes: ["id", "lastMessageAt"] },
+      ],
     });
     if (!job) return sendError(res, HTTP_STATUS.NOT_FOUND, "Job not found");
 

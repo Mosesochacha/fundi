@@ -10,6 +10,7 @@ import {
   Send,
   ShieldCheck,
   Star,
+  TrendingUp,
   UserPlus,
   UserX,
 } from "lucide-react";
@@ -25,6 +26,7 @@ import { Badge } from "@/components/ui";
 import { useToastContext } from "@/context/ToastContext";
 import {
   type ActivityType,
+  adminEndpoints,
   type DashboardStat,
   type HealthState,
   useAdminAction,
@@ -128,6 +130,76 @@ const healthDot: Record<
   down: { dot: "bg-red-500", label: "Down", cls: "text-red-700" },
 };
 
+function ActiveUsersPanel({
+  activeUsers,
+}: {
+  activeUsers: NonNullable<
+    ReturnType<typeof useAdminDashboard>["data"]
+  >["activeUsers"];
+}) {
+  const max = Math.max(1, ...(activeUsers?.series ?? []).map((d) => d.count));
+  const activePct =
+    activeUsers && activeUsers.totalUsers > 0
+      ? Math.round((activeUsers.monthly / activeUsers.totalUsers) * 100)
+      : 0;
+
+  return (
+    <div className="bg-white border border-border rounded-xl">
+      <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-cream-2">
+        <h2 className="text-sm font-semibold text-ink">Active users</h2>
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-gold-dark bg-gold-light border border-gold/30 rounded-[20px] px-2.5 py-1">
+          <TrendingUp size={12} />
+          {activePct}% active in 30 days
+        </span>
+      </div>
+      <div className="p-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          <MiniMetric label="Today" value={activeUsers?.today ?? 0} />
+          <MiniMetric label="7 days" value={activeUsers?.weekly ?? 0} />
+          <MiniMetric label="30 days" value={activeUsers?.monthly ?? 0} />
+          <MiniMetric
+            label="Inactive 30d"
+            value={activeUsers?.inactive30Days ?? 0}
+          />
+        </div>
+
+        <div className="flex h-36 items-end gap-1.5 border-b border-cream-2 pb-2">
+          {(activeUsers?.series ?? []).map((point) => (
+            <div
+              key={point.date}
+              className="flex min-w-0 flex-1 flex-col items-center gap-1"
+              title={`${point.date}: ${point.count} active users`}
+            >
+              <div
+                className="w-full rounded-t bg-gold transition-[height]"
+                style={{
+                  height: `${Math.max(8, (point.count / max) * 112)}px`,
+                }}
+              />
+            </div>
+          ))}
+        </div>
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-ink-3">
+          <span>Unique successful logins per day</span>
+          <span>
+            Workers {activeUsers?.byRole.workers ?? 0} · Employers{" "}
+            {activeUsers?.byRole.employers ?? 0}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MiniMetric({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-lg border border-cream-2 bg-cream px-3 py-2">
+      <p className="text-[10px] uppercase tracking-wider text-ink-3">{label}</p>
+      <p className="mt-1 font-serif text-xl leading-none text-ink">{value}</p>
+    </div>
+  );
+}
+
 export default function AdminDashboardPage() {
   const { data, isLoading } = useAdminDashboard();
   const { success } = useToastContext();
@@ -138,11 +210,18 @@ export default function AdminDashboardPage() {
   const [body, setBody] = useState("");
 
   const sendBlast = async () => {
-    await blast.mutateAsync({ subject, body });
+    const result = await blast.mutateAsync(
+      adminEndpoints.sendEmailBlast({ subject, body }),
+    );
     setBlastOpen(false);
     setSubject("");
     setBody("");
-    success("Email blast queued for delivery.");
+    const sent =
+      (result as { sent?: number; recipients?: number } | null)?.sent ?? 0;
+    const recipients =
+      (result as { sent?: number; recipients?: number } | null)?.recipients ??
+      0;
+    success(`Email blast processed: ${sent}/${recipients} delivered.`);
   };
 
   return (
@@ -158,7 +237,7 @@ export default function AdminDashboardPage() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
         {isLoading
-          ? Array.from({ length: 8 }).map((_, i) => (
+          ? Array.from({ length: 9 }).map((_, i) => (
               <div
                 // biome-ignore lint/suspicious/noArrayIndexKey: fixed skeleton cards
                 key={`s-${i}`}
@@ -170,6 +249,8 @@ export default function AdminDashboardPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-4">
         <div className="flex flex-col gap-4">
+          <ActiveUsersPanel activeUsers={data?.activeUsers} />
+
           <div className="bg-white border border-border rounded-xl">
             <div className="flex items-center justify-between px-4 py-3 border-b border-cream-2">
               <h2 className="text-sm font-semibold text-ink">
@@ -376,7 +457,7 @@ export default function AdminDashboardPage() {
             className="w-full px-3.5 py-2.5 rounded-lg text-sm border border-border bg-cream text-ink placeholder:text-ink-3 outline-none focus:border-gold focus:bg-white resize-none"
           />
           <p className="flex items-center gap-1.5 text-[11px] text-ink-3">
-            <Send size={12} /> This is a mock — no emails are actually sent.
+            <Send size={12} /> Sends to active, email-verified users.
           </p>
         </div>
       </ConfirmModal>

@@ -1,13 +1,14 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ShieldCheck } from "lucide-react";
+import { Monitor, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { CurrencySelect } from "@/components/ui";
 import { useToastContext } from "@/context/ToastContext";
 import { useAuth } from "@/features/auth";
+import { useGetLoginHistory } from "@/features/auth/hooks/useSessions";
 import {
   useDisconnectGoogle,
   useUpdateEmail,
@@ -30,6 +31,16 @@ import {
   Panel,
   PanelBody,
 } from "../_components/ui";
+
+interface LoginHistoryItem {
+  id: string;
+  ipAddress: string | null;
+  userAgent: string | null;
+  city: string | null;
+  country: string | null;
+  status: "success" | "failed";
+  createdAt: string;
+}
 
 const emailSchema = z.object({
   email: z.string().email("Enter a valid email"),
@@ -64,6 +75,39 @@ function strengthOf(pw: string): 0 | 1 | 2 | 3 {
   if (/[0-9]/.test(pw) && /[^a-zA-Z0-9]/.test(pw)) score++;
   return score as 0 | 1 | 2 | 3;
 }
+function formatLoginDate(value: string) {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return d.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+function shortDevice(value?: string | null) {
+  if (!value) return "Unknown device";
+  const browser = value.includes("Edg/")
+    ? "Edge"
+    : value.includes("Chrome/")
+      ? "Chrome"
+      : value.includes("Firefox/")
+        ? "Firefox"
+        : value.includes("Safari/")
+          ? "Safari"
+          : "Browser";
+  const os = value.includes("Windows")
+    ? "Windows"
+    : value.includes("Mac OS")
+      ? "macOS"
+      : value.includes("Android")
+        ? "Android"
+        : value.includes("iPhone") || value.includes("iPad")
+          ? "iOS"
+          : "Device";
+  return `${browser} on ${os}`;
+}
 const STRENGTH = [
   { label: "", fill: "", text: "", width: "0%" },
   { label: "Weak", fill: "bg-red-600", text: "text-red-600", width: "33%" },
@@ -92,6 +136,8 @@ export default function AccountPanel({
   const updatePassword = useUpdatePassword();
   const disconnectGoogle = useDisconnectGoogle();
   const updateProfile = useUpdateProfile();
+  const { data: loginHistory, isLoading: loginHistoryLoading } =
+    useGetLoginHistory(10);
 
   const [email, setEmail] = useState(account.email);
   const [phone, setPhone] = useState(account.phone);
@@ -430,6 +476,57 @@ export default function AccountPanel({
                   Connect Google
                 </a>
               </>
+            )}
+          </div>
+        </div>
+
+        <div className="pt-4 mt-4 border-t-[0.5px] border-border">
+          <div className="text-sm font-medium text-ink mb-3.5">
+            Login history
+          </div>
+          <div className="divide-y divide-cream-2 rounded-lg border border-border overflow-hidden">
+            {loginHistoryLoading ? (
+              <div className="p-3 text-sm text-ink-3">Loading logins…</div>
+            ) : (loginHistory as LoginHistoryItem[] | undefined)?.length ? (
+              (loginHistory as LoginHistoryItem[]).map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-start gap-3 bg-white px-3 py-2.5"
+                >
+                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gold-light text-gold-dark">
+                    <Monitor size={15} />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <span className="text-sm font-medium text-ink">
+                        {formatLoginDate(item.createdAt)}
+                      </span>
+                      <span
+                        className={cn(
+                          "rounded-[20px] px-2 py-0.5 text-[11px] font-semibold",
+                          item.status === "success"
+                            ? "bg-green-50 text-green-700"
+                            : "bg-red-50 text-red-700",
+                        )}
+                      >
+                        {item.status === "success" ? "Successful" : "Failed"}
+                      </span>
+                    </div>
+                    <p className="mt-0.5 text-xs text-ink-3">
+                      {shortDevice(item.userAgent)} · IP {item.ipAddress ?? "—"}
+                    </p>
+                    {(item.city || item.country) && (
+                      <p className="mt-0.5 text-xs text-ink-3">
+                        {[item.city, item.country].filter(Boolean).join(", ")}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="p-3 text-sm text-ink-3">
+                No login history has been recorded yet.
+              </div>
             )}
           </div>
         </div>

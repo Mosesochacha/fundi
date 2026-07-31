@@ -1,6 +1,7 @@
 "use client";
 
 import { ExternalLink, Image as ImageIcon, Mail, Star, X } from "lucide-react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import {
@@ -22,75 +23,6 @@ import {
 } from "@/features/admin";
 
 type ConfirmKind = "suspend" | "approve" | "reject" | "removePhoto" | null;
-
-const JOB_HISTORY = [
-  {
-    id: "jh1",
-    employer: "Acme Builders",
-    type: "Pipe repair",
-    date: "2026-06-10",
-    status: "completed",
-    rating: 5,
-  },
-  {
-    id: "jh2",
-    employer: "Grace Wanjiru",
-    type: "Bathroom fitting",
-    date: "2026-05-28",
-    status: "completed",
-    rating: 4,
-  },
-  {
-    id: "jh3",
-    employer: "Skyline Apartments",
-    type: "Drainage install",
-    date: "2026-05-14",
-    status: "completed",
-    rating: 5,
-  },
-  {
-    id: "jh4",
-    employer: "John Otieno",
-    type: "Tap replacement",
-    date: "2026-04-30",
-    status: "cancelled",
-    rating: 0,
-  },
-  {
-    id: "jh5",
-    employer: "Riverside Hotel",
-    type: "Kitchen plumbing",
-    date: "2026-04-18",
-    status: "completed",
-    rating: 5,
-  },
-  {
-    id: "jh6",
-    employer: "Mary Achieng",
-    type: "Leak inspection",
-    date: "2026-04-02",
-    status: "active",
-    rating: 0,
-  },
-];
-
-const REVIEWS = [
-  {
-    id: "rv1",
-    rating: 5,
-    text: "Fast, professional and tidy. Fixed the leak in under an hour.",
-  },
-  {
-    id: "rv2",
-    rating: 4,
-    text: "Good work overall, arrived a little late but communicated well.",
-  },
-  {
-    id: "rv3",
-    rating: 5,
-    text: "Highly recommend. Honest pricing and great craftsmanship.",
-  },
-];
 
 function Stars({ value }: { value: number }) {
   return (
@@ -413,13 +345,13 @@ export default function AdminWorkerDetailPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {JOB_HISTORY.map((j) => (
+                  {(w.jobHistory ?? []).map((j) => (
                     <tr
                       key={j.id}
                       className="border-b border-cream-2 last:border-0"
                     >
-                      <td className="py-2 px-4 text-ink-2">{j.employer}</td>
-                      <td className="py-2 px-2 text-ink-3">{j.type}</td>
+                      <td className="py-2 px-4 text-ink-2">{j.counterparty}</td>
+                      <td className="py-2 px-2 text-ink-3">{j.title}</td>
                       <td className="py-2 px-2 text-ink-3 whitespace-nowrap">
                         {formatDate(j.date)}
                       </td>
@@ -427,10 +359,20 @@ export default function AdminWorkerDetailPage() {
                         <StatusBadge status={j.status} />
                       </td>
                       <td className="py-2 px-4 text-right text-ink-2 tabular-nums">
-                        {j.rating > 0 ? j.rating.toFixed(1) : "—"}
+                        {j.rating ? j.rating.toFixed(1) : "—"}
                       </td>
                     </tr>
                   ))}
+                  {(w.jobHistory ?? []).length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={5}
+                        className="py-6 px-4 text-center text-ink-3"
+                      >
+                        No jobs yet.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -459,38 +401,52 @@ export default function AdminWorkerDetailPage() {
           <DetailCard
             title="Reviews received"
             action={
-              <button
-                type="button"
-                onClick={() => success("Opening reviews…")}
+              <Link
+                href="/admin/reviews"
                 className="text-sm text-gold-dark hover:underline cursor-pointer"
               >
                 View full list
-              </button>
+              </Link>
             }
           >
             <ul className="flex flex-col divide-y divide-cream-2">
-              {REVIEWS.map((r) => (
-                <li key={r.id} className="py-2.5 first:pt-0 last:pb-0">
-                  <Stars value={r.rating} />
-                  <p className="mt-1 text-sm text-ink-2 leading-snug">
-                    {r.text}
-                  </p>
-                </li>
-              ))}
+              {(w.reviews ?? []).length === 0 ? (
+                <li className="py-2.5 text-sm text-ink-3">No reviews yet.</li>
+              ) : (
+                w.reviews?.map((r) => (
+                  <li key={r.id} className="py-2.5 first:pt-0 last:pb-0">
+                    <Stars value={r.rating} />
+                    <p className="mt-1 text-sm text-ink-2 leading-snug">
+                      {r.text || "No review text provided."}
+                    </p>
+                    <p className="mt-1 text-[11px] text-ink-3">
+                      By {r.person} · {formatDate(r.date)}
+                    </p>
+                  </li>
+                ))
+              )}
             </ul>
           </DetailCard>
 
           <DetailCard title="Reports">
-            <div className="flex items-center gap-2.5">
-              <span className="inline-block w-2.5 h-2.5 rounded-full shrink-0 bg-ink-4" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-ink truncate">
-                  Late arrival dispute
-                </p>
-                <p className="text-[11px] text-ink-3">Filed by an employer</p>
+            {(w.reports ?? []).length === 0 ? (
+              <p className="text-sm text-ink-3">None.</p>
+            ) : (
+              <div className="flex flex-col gap-2.5">
+                {w.reports?.map((r) => (
+                  <div key={r.id} className="flex items-center gap-2.5">
+                    <span className="inline-block w-2.5 h-2.5 rounded-full shrink-0 bg-ink-4" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-ink truncate">{r.title}</p>
+                      <p className="text-[11px] text-ink-3">
+                        {formatDate(r.date)}
+                      </p>
+                    </div>
+                    <StatusBadge status={r.status} />
+                  </div>
+                ))}
               </div>
-              <StatusBadge status="resolved" />
-            </div>
+            )}
           </DetailCard>
         </div>
       </div>

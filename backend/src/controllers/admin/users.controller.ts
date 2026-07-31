@@ -9,6 +9,9 @@ import {
   paginated,
   parseListParams,
   shapeUser,
+  shapeCompactReport,
+  shapeRelatedJob,
+  shapeTimelineEvent,
   timeAgo,
 } from "../../utils/adminShape";
 
@@ -96,21 +99,128 @@ class AdminUsersController {
     if (!user) return sendError(res, HTTP_STATUS.NOT_FOUND, "User not found");
 
     const profileId = user.profile?.id;
-    const [counts, totalLogins, lastLogin] = await Promise.all([
+    const [counts, totalLogins, lastLogin, recentLogins, auditRows, jobRows, reportsAgainst, reportsFiled, reviewRows] = await Promise.all([
       profileId ? jobCounts([profileId]) : Promise.resolve({} as Record<string, number>),
       Db.LoginHistory.count({ where: { userId: user.id } }).catch(() => 0),
       Db.LoginHistory.findOne({
         where: { userId: user.id },
         order: [["createdAt", "DESC"]],
       }).catch(() => null),
+      Db.LoginHistory.findAll({
+        where: { userId: user.id, status: "success" },
+        order: [["createdAt", "DESC"]],
+        limit: 5,
+        raw: true,
+      }).catch(() => []),
+      Db.AuditLog.findAll({
+        where: { resourceId: user.id },
+        order: [["createdAt", "DESC"]],
+        limit: 5,
+        raw: true,
+      }).catch(() => []),
+      profileId
+        ? Db.JobRequest.findAll({
+            where: { [Op.or]: [{ workerId: profileId }, { employerId: profileId }] },
+            include: [
+              { model: Db.Profile, as: "worker", required: false, attributes: ["id", "userId", "fullName", "profession"] },
+              { model: Db.Profile, as: "employer", required: false, attributes: ["id", "userId", "fullName", "profession"] },
+            ],
+            order: [["createdAt", "DESC"]],
+            limit: 10,
+          })
+        : Promise.resolve([]),
+      Db.UserReport.findAll({
+        where: { reportedUserId: user.id },
+        order: [["createdAt", "DESC"]],
+        limit: 5,
+        raw: true,
+      }),
+      Db.UserReport.findAll({
+        where: { filedById: user.id },
+        order: [["createdAt", "DESC"]],
+        limit: 5,
+        raw: true,
+      }),
+      profileId
+        ? Db.JobRequest.findAll({
+            where: {
+              reviewRating: { [Op.ne]: null },
+              [Op.or]: [{ workerId: profileId }, { employerId: profileId }],
+            },
+            include: [
+              { model: Db.Profile, as: "worker", required: false, attributes: ["id", "fullName"] },
+              { model: Db.Profile, as: "employer", required: false, attributes: ["id", "fullName"] },
+            ],
+            order: [["reviewedAt", "DESC"]],
+            limit: 100,
+          })
+        : Promise.resolve([]),
     ]);
 
     const shaped = shapeUser(user, user.profile, {
       jobs: profileId ? counts[profileId] || 0 : 0,
       totalLogins,
       lastActive: lastLogin?.createdAt ?? user.updatedAt,
+      device: lastLogin?.userAgent ?? "—",
     });
-    return sendSuccess(res, "User detail", shaped);
+
+    const role = user.accountType === "employer" ? "employer" : "worker";
+    const jobs = jobRows.map((j: any) =>
+      role === "worker"
+        ? shapeRelatedJob(j, j.employer, "employer")
+        : shapeRelatedJob(j, j.worker, "worker"),
+    );
+    const reviewStats = reviewRows.reduce(
+      (acc: any, j: any) => {
+        if (j.workerId === profileId) {
+          acc.received += 1;
+          acc.receivedSum += j.reviewRating || 0;
+        }
+        if (j.employerId === profileId) {
+          acc.given += 1;
+          acc.givenSum += j.reviewRating || 0;
+        }
+        return acc;
+      },
+      { received: 0, receivedSum: 0, given: 0, givenSum: 0 },
+    );
+    const timeline = [
+      ...recentLogins.map((l: any) =>
+        shapeTimelineEvent({
+          id: `login-${l.id}`,
+          text: `Logged in${l.city || l.country ? ` from ${[l.city, l.country].filter(Boolean).join(", ")}` : ""}`,
+          at: l.createdAt,
+          tone: "blue",
+        }),
+      ),
+      ...auditRows.map((a: any) =>
+        shapeTimelineEvent({
+          id: `audit-${a.id}`,
+          text: String(a.action).replace(/_/g, " "),
+          at: a.createdAt,
+          tone: String(a.action).includes("suspend") || String(a.action).includes("ban") ? "red" : "purple",
+        }),
+      ),
+      shapeTimelineEvent({
+        id: `created-${user.id}`,
+        text: "Account created",
+        at: user.createdAt,
+        tone: "neutral",
+      }),
+    ].sort((a: any, b: any) => +new Date(b.at || 0) - +new Date(a.at || 0)).slice(0, 12);
+
+    return sendSuccess(res, "User detail", {
+      ...shaped,
+      timeline: timeline.map(({ at, ...ev }: any) => ev),
+      jobsHistory: jobs,
+      reportsAgainst: reportsAgainst.map(shapeCompactReport),
+      reportsFiled: reportsFiled.map(shapeCompactReport),
+      reviewStats: {
+        averageReceived: reviewStats.received ? Math.round((reviewStats.receivedSum / reviewStats.received) * 10) / 10 : 0,
+        received: reviewStats.received,
+        given: reviewStats.given,
+      },
+    });
   });
 
   suspend = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {

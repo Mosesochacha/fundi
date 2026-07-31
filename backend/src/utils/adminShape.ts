@@ -7,6 +7,7 @@ export interface Paginated<T> {
   page: number;
   pageSize: number;
   totalPages: number;
+  [key: string]: unknown;
 }
 
 export function paginated<T>(
@@ -14,6 +15,7 @@ export function paginated<T>(
   total: number,
   page: number,
   pageSize: number,
+  extras: Record<string, unknown> = {},
 ): Paginated<T> {
   return {
     rows,
@@ -21,6 +23,7 @@ export function paginated<T>(
     page,
     pageSize,
     totalPages: Math.max(1, Math.ceil(total / pageSize)),
+    ...extras,
   };
 }
 
@@ -177,6 +180,9 @@ export function shapeJob(job: AnyRec, workerProfile?: AnyRec | null, employerPro
     review: reviewVisible
       ? { rating: job.reviewRating, text: job.reviewText || "" }
       : null,
+    conversationId: Array.isArray(job.conversations) && job.conversations[0]
+      ? job.conversations[0].id
+      : undefined,
   };
 }
 
@@ -284,6 +290,63 @@ export function shapePayout(payout: AnyRec, workerName?: string) {
     destination: payout.destination || "—",
     status: payout.status as "pending" | "processing" | "paid" | "failed",
     requested: payout.createdAt,
+  };
+}
+
+export function shapeRelatedJob(job: AnyRec, profile?: AnyRec | null, role: "worker" | "employer" = "worker") {
+  return {
+    id: job.id,
+    title: job.title,
+    counterparty: profile?.fullName || "—",
+    date: job.scheduledAt || job.createdAt,
+    status: JOB_STATUS[job.status] || "pending",
+    amount: job.agreedRate ?? 0,
+    rating: job.reviewRating ?? null,
+    trade: profile?.profession || (Array.isArray(job.tags) ? job.tags[0] : "") || "—",
+    role,
+  };
+}
+
+export function shapeRelatedReview(job: AnyRec, profile?: AnyRec | null) {
+  return {
+    id: job.id,
+    person: profile?.fullName || "—",
+    rating: job.reviewRating ?? 0,
+    text: job.reviewText || "",
+    date: job.reviewedAt || job.updatedAt,
+  };
+}
+
+export function shapeCompactReport(report: AnyRec) {
+  return {
+    id: report.id,
+    severity: report.severity as "high" | "medium" | "low",
+    title: REPORT_TYPE_LABEL[report.type] || "Other",
+    date: report.createdAt,
+    status: report.status as "open" | "in_review" | "resolved",
+  };
+}
+
+export function shapeTimelineEvent(event: {
+  id: string;
+  text: string;
+  at: Date | string | null | undefined;
+  tone?: "blue" | "green" | "gold" | "red" | "purple" | "neutral";
+}) {
+  const dot = {
+    blue: "bg-blue-500",
+    green: "bg-green-500",
+    gold: "bg-gold",
+    red: "bg-red-500",
+    purple: "bg-purple-500",
+    neutral: "bg-ink-3",
+  }[event.tone || "neutral"];
+  return {
+    id: event.id,
+    text: event.text,
+    when: timeAgo(event.at),
+    dot,
+    at: event.at,
   };
 }
 
